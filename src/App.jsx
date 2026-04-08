@@ -1,4 +1,4 @@
-import Hero, { WhatWeDo, CTABanner, TeamMembers } from "./Components/Hero";
+import Hero, { WhatWeDo, CTABanner, TeamMembers, SimpleTestimonials } from "./Components/Hero";
 import Navbar from "./Components/Navbar";
 import About from "./Components/About";
 
@@ -11,6 +11,7 @@ export default function App() {
       <WhatWeDo />
       <TeamMembers />
       <CTABanner />
+      <SimpleTestimonials />
     </>
   );
 }
