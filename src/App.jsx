@@ -1,6 +1,7 @@
 import Hero, { WhatWeDo, CTABanner, TeamMembers, SimpleTestimonials } from "./Components/Hero";
 import Navbar from "./Components/Navbar";
 import About from "./Components/About";
+import Footer from "./Components/Footer";
 
 export default function App() {
   return (
@@ -12,6 +13,7 @@ export default function App() {
       <TeamMembers />
       <CTABanner />
       <SimpleTestimonials />
+      <Footer />
     </>
   );
 }
