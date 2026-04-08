@@ -75,7 +75,17 @@ export default function Navbar() {
             <Search size={18} />
           </button>
 
-          <button className="bg-red-500 text-white px-6 py-3 rounded-full font-semibold flex items-center gap-2 hover:bg-red-600 hover:scale-105 transition-all duration-200 shadow-md hover:shadow-lg">
+          <button
+            onClick={() => {
+              if (localStorage.getItem("vv_auth")) {
+                navigate("/donate");
+              } else {
+                localStorage.setItem("vv_redirect", "/donate");
+                navigate("/auth");
+              }
+            }}
+            className="bg-red-500 text-white px-6 py-3 rounded-full font-semibold flex items-center gap-2 hover:bg-red-600 hover:scale-105 transition-all duration-200 shadow-md hover:shadow-lg"
+          >
             DONATE NOW ✋
           </button>
 
