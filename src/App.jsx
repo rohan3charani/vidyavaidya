@@ -1,3 +1,7 @@
+import Hero, { WhatWeDo, CTABanner, TeamMembers, SimpleTestimonials } from "./Components/Hero";
+import Navbar from "./Components/Navbar";
+import About from "./Components/About";
+import Footer from "./Components/Footer";
 import { Route, Routes } from "react-router-dom";
 import Hero, { WhatWeDo, CTABanner, TeamMembers } from "./Components/Hero";
 import Navbar from "./Components/Navbar";
@@ -15,6 +19,8 @@ function LandingPage() {
       <WhatWeDo />
       <TeamMembers />
       <CTABanner />
+      <SimpleTestimonials />
+      <Footer />
     </>
   );
 }

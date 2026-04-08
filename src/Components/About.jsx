@@ -49,7 +49,7 @@ export default function About() {
       <div className="about-container">
         {/* ── LEFT CONTENT ── */}
         <div className="about-left">
-          <p className="about-tag">About Trusthand</p>
+          <p className="about-tag">About Vidyavaidya</p>
 
           <h2 className="about-heading">
             Our Mission Is to <br />

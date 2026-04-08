@@ -227,6 +227,194 @@ export function WhatWeDo() {
   );
 }
 
+function StarRating({ count, color }) {
+  return (
+    <div className="testi-stars" aria-label={`${count} out of 5 stars`}>
+      {Array.from({ length: 5 }).map((_, i) => (
+        <svg
+          key={i}
+          viewBox="0 0 20 20"
+          width="16"
+          height="16"
+          fill={i < count ? color : "none"}
+          stroke={i < count ? color : "rgba(255,255,255,0.2)"}
+          strokeWidth="1.4"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true"
+        >
+          <path d="M10 1l2.545 5.16 5.693.827-4.119 4.015.972 5.672L10 14.03l-5.09 2.644.972-5.672L1.762 6.987l5.693-.827z" />
+        </svg>
+      ))}
+    </div>
+  );
+}
+
+const QuoteIcon = () => (
+  <svg viewBox="0 0 48 48" width="40" height="40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <path d="M10 28c0-6.627 4.477-12 10-12v4c-3.314 0-6 2.686-6 8v8H6V28h4Zm22 0c0-6.627 4.477-12 10-12v4c-3.314 0-6 2.686-6 8v8H28V28h4Z" fill="currentColor" opacity="0.3"/>
+  </svg>
+);
+
+export function Testimonials() {
+  const sectionRef = useRef(null);
+  const [visible, setVisible] = useState(false);
+  const [current, setCurrent] = useState(0);
+  const [animDir, setAnimDir] = useState("next");
+
+  const total = TESTIMONIALS.length;
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setVisible(true); observer.disconnect(); } },
+      { threshold: 0.08 }
+    );
+    if (sectionRef.current) observer.observe(sectionRef.current);
+    return () => observer.disconnect();
+  }, []);
+
+  const prev = () => { setAnimDir("prev"); setCurrent((c) => (c - 1 + total) % total); };
+  const next = () => { setAnimDir("next"); setCurrent((c) => (c + 1) % total); };
+
+  const getCardIndex = (offset) => (current + offset + total) % total;
+
+  return (
+    <section
+      className={`testi-section ${visible ? "testi-visible" : ""}`}
+      ref={sectionRef}
+      id="testimonials"
+    >
+      {/* ── Ambient background orbs ── */}
+      <span className="testi-orb testi-orb--1" aria-hidden="true" />
+      <span className="testi-orb testi-orb--2" aria-hidden="true" />
+      <span className="testi-orb testi-orb--3" aria-hidden="true" />
+
+      {/* ── Decorative grid lines ── */}
+      <div className="testi-grid-lines" aria-hidden="true" />
+
+      {/* ── Section Header ── */}
+      <div className="testi-header">
+        <div className="testi-eyebrow">
+          <span className="testi-eyebrow-line" />
+          <span>TESTIMONIALS</span>
+          <span className="testi-eyebrow-line" />
+        </div>
+        <h2 className="testi-heading">
+          What They're{" "}
+          <span className="testi-heading-glow">Saying</span>
+          <br />About Us?
+        </h2>
+        <p className="testi-subtext">
+          Hear from the families and students whose lives have been
+          transformed through our dedicated education programmes.
+        </p>
+      </div>
+
+      {/* ── Carousel ── */}
+      <div className="testi-stage">
+        {/* Featured (center) card */}
+        <article
+          className="testi-card testi-card--featured"
+          key={`main-${current}`}
+          style={{ "--accent": TESTIMONIALS[current].accent }}
+        >
+          <QuoteIcon />
+          <blockquote className="testi-quote">
+            {TESTIMONIALS[current].quote}
+          </blockquote>
+          <StarRating count={TESTIMONIALS[current].rating} color={TESTIMONIALS[current].accent} />
+          <div className="testi-author">
+            <div className="testi-avatar-wrap">
+              <img
+                src={TESTIMONIALS[current].img}
+                alt={TESTIMONIALS[current].name}
+                className="testi-avatar"
+                loading="lazy"
+              />
+              <span className="testi-avatar-glow" style={{ background: TESTIMONIALS[current].accent }} />
+            </div>
+            <div className="testi-author-info">
+              <strong className="testi-author-name">{TESTIMONIALS[current].name}</strong>
+              <span className="testi-author-role">{TESTIMONIALS[current].role}</span>
+            </div>
+          </div>
+          <span className="testi-card-accent-bar" style={{ background: TESTIMONIALS[current].accent }} />
+        </article>
+
+        {/* Side preview card */}
+        <article
+          className="testi-card testi-card--peek"
+          key={`peek-${getCardIndex(1)}`}
+          style={{ "--accent": TESTIMONIALS[getCardIndex(1)].accent }}
+          onClick={next}
+        >
+          <QuoteIcon />
+          <blockquote className="testi-quote">
+            {TESTIMONIALS[getCardIndex(1)].quote}
+          </blockquote>
+          <StarRating count={TESTIMONIALS[getCardIndex(1)].rating} color={TESTIMONIALS[getCardIndex(1)].accent} />
+          <div className="testi-author">
+            <div className="testi-avatar-wrap">
+              <img
+                src={TESTIMONIALS[getCardIndex(1)].img}
+                alt={TESTIMONIALS[getCardIndex(1)].name}
+                className="testi-avatar"
+                loading="lazy"
+              />
+              <span className="testi-avatar-glow" style={{ background: TESTIMONIALS[getCardIndex(1)].accent }} />
+            </div>
+            <div className="testi-author-info">
+              <strong className="testi-author-name">{TESTIMONIALS[getCardIndex(1)].name}</strong>
+              <span className="testi-author-role">{TESTIMONIALS[getCardIndex(1)].role}</span>
+            </div>
+          </div>
+          <span className="testi-card-accent-bar" style={{ background: TESTIMONIALS[getCardIndex(1)].accent }} />
+        </article>
+      </div>
+
+      {/* ── Nav + dots ── */}
+      <div className="testi-controls">
+        <button className="testi-nav-btn" onClick={prev} aria-label="Previous testimonial">
+          <svg viewBox="0 0 20 20" width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M13 15l-5-5 5-5" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+
+        <div className="testi-dots">
+          {TESTIMONIALS.map((_, i) => (
+            <button
+              key={i}
+              className={`testi-dot ${i === current ? "active" : ""}`}
+              onClick={() => setCurrent(i)}
+              aria-label={`Go to testimonial ${i + 1}`}
+              style={i === current ? { background: TESTIMONIALS[current].accent } : {}}
+            />
+          ))}
+        </div>
+
+        <button className="testi-nav-btn" onClick={next} aria-label="Next testimonial">
+          <svg viewBox="0 0 20 20" width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M7 5l5 5-5 5" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+      </div>
+
+      {/* ── Trust strip ── */}
+      <div className="testi-trust">
+        {[
+          { num: "4.9★", label: "Average Rating" },
+          { num: "2,400+", label: "Happy Students" },
+          { num: "98%", label: "Recommend Us" },
+        ].map(({ num, label }) => (
+          <div className="testi-trust-item" key={label}>
+            <strong>{num}</strong>
+            <span>{label}</span>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 /* ─── Named export: CTA Banner (Premium) ─── */
 export function CTABanner() {
   const ctaRef = useRef(null);
@@ -465,6 +653,114 @@ export function TeamMembers() {
             </div>
           </article>
         ))}
+      </div>
+    </section>
+  );
+}
+
+/* ─── Testimonials data ─── */
+const TESTIMONIALS = [
+  {
+    img: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&q=80",
+    name: "Marvin McKinney",
+    role: "Manager",
+    text: "Mattis cras magna morb nulla punar aenean aliquet in. Risus a arcu eget mi hendrerit gravida elit scelerisque tempor Pharetra fringilla tellus vivera eget sapien viverra faucibus facilisis sed facilisi dictum.",
+  },
+  {
+    img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&q=80",
+    name: "Darlene Robertson",
+    role: "Manager",
+    text: "Mattis cras magna morb nulla punar aenean aliquet in. Risus a arcu eget mi hendrerit gravida elit scelerisque tempor Pharetra fringilla tellus vivera eget sapien viverra faucibus facilisis sed facilisi dictum.",
+  },
+  {
+    img: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&q=80",
+    name: "rajesh",
+    role: "Manager",
+    text: "Mattis cras magna morb nulla punar aenean aliquet in. Risus a arcu eget mi hendrerit gravida elit scelerisque tempor Pharetra fringilla tellus vivera eget sapien viverra faucibus facilisis sed facilisi dictum.",
+  },
+  {
+    img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&q=80",
+    name: "ramu",
+    role: "Manager",
+    text: "Mattis cras magna morb nulla punar aenean aliquet in. Risus a arcu eget mi hendrerit gravida elit scelerisque tempor Pharetra fringilla tellus vivera eget sapien viverra faucibus facilisis sed facilisi dictum.",
+  },
+  {
+    img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&q=80",
+    name: "ramu",
+    role: "Manager",
+    text: "Mattis cras magna morb nulla punar aenean aliquet in. Risus a arcu eget mi hendrerit gravida elit scelerisque tempor Pharetra fringilla tellus vivera eget sapien viverra faucibus facilisis sed facilisi dictum.",
+  },
+  {
+    img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&q=80",
+    name: "ramu",
+    role: "Manager",
+    text: "Mattis cras magna morb nulla punar aenean aliquet in. Risus a arcu eget mi hendrerit gravida elit scelerisque tempor Pharetra fringilla tellus vivera eget sapien viverra faucibus facilisis sed facilisi dictum.",
+  },
+];
+
+/* ─── Named export: Simple Testimonials (Image Style) ─── */
+export function SimpleTestimonials() {
+  const [current, setCurrent] = useState(0);
+
+  const perPage = 2;
+  const pages = Math.ceil(TESTIMONIALS.length / perPage);
+
+  return (
+    <section className="st-section">
+      <div className="st-container">
+        {/* Left Info */}
+        <div className="st-left">
+          <span className="st-tag">T E S T I M O N I A L S</span>
+          <h2 className="st-heading">What They're Say About Us?</h2>
+          <p className="st-desc">
+            Amet dui scelerisque vel habitant eget tincidunt facilisis pretium. Porttitor mi nisi,
+            non vitae tempus.
+          </p>
+          <div className="st-nav">
+            <button
+              className="st-nav-btn"
+              disabled={current === 0}
+              onClick={() => setCurrent((c) => c - 1)}
+            >
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+            </button>
+            <button
+              className="st-nav-btn"
+              disabled={current === pages - 1}
+              onClick={() => setCurrent((c) => c + 1)}
+            >
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+            </button>
+          </div>
+        </div>
+
+        {/* Right Cards — sliding carousel */}
+        <div className="st-right" style={{ overflow: "hidden" }}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: `repeat(${TESTIMONIALS.length}, calc(50% - 12px))`,
+              gap: "24px",
+              transition: "transform 0.45s cubic-bezier(0.4, 0, 0.2, 1)",
+              transform: `translateX(calc(${current} * (-100% - 24px)))`,
+            }}
+          >
+            {TESTIMONIALS.map((t, i) => (
+              <div className="st-card" key={i}>
+                <div className="st-avatar-wrap">
+                  <img src={t.img} alt={t.name} className="st-avatar" />
+                  <div className="st-quote-badge">99</div>
+                </div>
+                <p className="st-text">"{t.text}"</p>
+                <div className="st-stars">
+                  <StarRating count={5} color="#facc15" />
+                </div>
+                <h4 className="st-name">{t.name}</h4>
+                <p className="st-role">{t.role}</p>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </section>
   );
