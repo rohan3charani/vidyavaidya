@@ -1,0 +1,136 @@
+.vv-navbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  width: 100%;
+  background: #ffffff;
+  box-shadow: 0 8px 20px rgba(11, 60, 93, 0.08);
+}
+
+.vv-navbar-inner {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.vv-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.vv-brand-mark {
+  color: #1abc9c;
+  font-size: 1.2rem;
+}
+
+.vv-brand-text {
+  color: #0b3c5d;
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+.vv-menu {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.vv-menu button {
+  border: 0;
+  background: transparent;
+  color: #334a5c;
+  font-size: 0.92rem;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.vv-menu button:hover {
+  color: #0b3c5d;
+}
+
+.vv-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.vv-donate-btn,
+.vv-login-btn {
+  border-radius: 999px;
+  padding: 9px 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.vv-donate-btn {
+  border: 0;
+  color: #ffffff;
+  background: linear-gradient(90deg, #0b3c5d 0%, #1abc9c 100%);
+}
+
+.vv-login-btn {
+  border: 1px solid #0b3c5d;
+  color: #0b3c5d;
+  background: #ffffff;
+}
+
+.vv-donate-btn:hover,
+.vv-login-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(11, 60, 93, 0.15);
+}
+
+.vv-menu-toggle {
+  display: none;
+  border: 1px solid #d4dfe9;
+  background: #ffffff;
+  color: #0b3c5d;
+  border-radius: 8px;
+  padding: 7px 10px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+@media (max-width: 980px) {
+  .vv-menu-toggle {
+    display: block;
+  }
+
+  .vv-menu {
+    display: none;
+    position: absolute;
+    top: 64px;
+    left: 14px;
+    right: 14px;
+    background: #ffffff;
+    border: 1px solid #d8e2eb;
+    border-radius: 12px;
+    box-shadow: 0 16px 30px rgba(11, 60, 93, 0.1);
+    padding: 10px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .vv-menu.open {
+    display: flex;
+  }
+
+  .vv-menu button {
+    width: 100%;
+    text-align: left;
+    padding: 8px;
+    border-radius: 8px;
+  }
+
+  .vv-menu button:hover {
+    background: #f4f8fb;
+  }
+}
