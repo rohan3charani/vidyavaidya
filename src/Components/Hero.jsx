@@ -84,7 +84,7 @@ const SERVICES = [
 export default function Hero() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isHovered, setIsHovered]       = useState(false);
-  const isLoaded = true;
+  const [isLoaded]                      = useState(true);
 
   useEffect(() => {
     if (isHovered) return;
@@ -257,7 +257,6 @@ export function Testimonials() {
   const sectionRef = useRef(null);
   const [visible, setVisible] = useState(false);
   const [current, setCurrent] = useState(0);
-  const [animDir, setAnimDir] = useState("next");
 
   const total = TESTIMONIALS.length;
 
@@ -270,8 +269,8 @@ export function Testimonials() {
     return () => observer.disconnect();
   }, []);
 
-  const prev = () => { setAnimDir("prev"); setCurrent((c) => (c - 1 + total) % total); };
-  const next = () => { setAnimDir("next"); setCurrent((c) => (c + 1) % total); };
+  const prev = () => { setCurrent((c) => (c - 1 + total) % total); };
+  const next = () => { setCurrent((c) => (c + 1) % total); };
 
   const getCardIndex = (offset) => (current + offset + total) % total;
 

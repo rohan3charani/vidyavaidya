@@ -15,7 +15,7 @@ export default function AuthPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [activeTab, setActiveTab] = useState(() => location.state?.tab === "signup" ? "signup" : "login");
+  const [activeTab, setActiveTab] = useState(() => location.state?.tab === "signup" || location.state?.tab === "login" ? location.state.tab : "login");
   const [loginEmail, setLoginEmail] = useState(() => location.state?.email || "");
   const [signupEmail, setSignupEmail] = useState("");
   const [fullName, setFullName] = useState("");
