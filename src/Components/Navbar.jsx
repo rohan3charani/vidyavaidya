@@ -12,7 +12,7 @@ export default function Navbar() {
 
         {/* LEFT - LOGO */}
         <div className="flex items-center gap-3">
-          <div className="text-yellow-500 text-3xl">✱</div>
+          <img src="src/assets/VIDYA-VAIDYA.png" alt="logo" className="h-10"/>
           <h1 className="text-2xl font-bold text-gray-800 font-serif">
             VidyaVaidya
           </h1>
