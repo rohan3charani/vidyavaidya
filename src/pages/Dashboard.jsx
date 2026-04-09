@@ -13,9 +13,9 @@ import {
 import "./Dashboard.css";
 
 const USER = {
-  name: "RLVNS LAVANYA",
-  email: "lavanyarlvns@gmail.com",
-  phone: "+917386717278",
+  name: "VIDYA VAIDYA",
+  email: "vidyavaidyanlr@gmail.com",
+  phone: "+91 1234567890",
 };
 
 export default function Dashboard() {

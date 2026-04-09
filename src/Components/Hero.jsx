@@ -84,9 +84,7 @@ const SERVICES = [
 export default function Hero() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isHovered, setIsHovered]       = useState(false);
-  const [isLoaded, setIsLoaded]         = useState(false);
-
-  useEffect(() => { setIsLoaded(true); }, []);
+  const isLoaded = true;
 
   useEffect(() => {
     if (isHovered) return;
