@@ -1,0 +1,228 @@
+.auth-layout {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: #f5f8fc;
+}
+
+.auth-left-pane {
+  background: linear-gradient(145deg, #0b3c5d 0%, #1abc9c 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+}
+
+.auth-left-content {
+  max-width: 520px;
+  color: #ffffff;
+  text-align: center;
+}
+
+.auth-left-content h1 {
+  font-size: clamp(2rem, 3vw, 3.1rem);
+  line-height: 1.2;
+  margin-bottom: 20px;
+}
+
+.auth-left-description {
+  font-size: 1rem;
+  line-height: 1.7;
+  margin-bottom: 22px;
+  opacity: 0.95;
+}
+
+.auth-left-quote {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.auth-left-extra {
+  font-size: 0.95rem;
+  opacity: 0.92;
+}
+
+.auth-right-pane {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 36px 20px;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 500px;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 36px 34px;
+  box-shadow: 0 16px 36px rgba(11, 60, 93, 0.14);
+  transition: box-shadow 0.25s ease, transform 0.25s ease;
+}
+
+.auth-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 22px 44px rgba(11, 60, 93, 0.18);
+}
+
+.auth-card h2 {
+  text-align: center;
+  color: #0b3c5d;
+  font-size: 2rem;
+  margin-bottom: 6px;
+}
+
+.auth-subtitle {
+  text-align: center;
+  color: #4d5f6f;
+  margin-bottom: 20px;
+}
+
+.auth-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border: 1px solid #d6e0e8;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 22px;
+  background: #f7fafc;
+}
+
+.auth-tabs button {
+  border: 0;
+  padding: 10px 12px;
+  font-weight: 600;
+  color: #607284;
+  cursor: pointer;
+  background: transparent;
+  transition: all 0.2s ease;
+}
+
+.auth-tabs button.active {
+  background: #0b3c5d;
+  color: #ffffff;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.auth-form label {
+  color: #0b3c5d;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid #d2dee8;
+  border-radius: 10px;
+  padding: 10px 12px;
+  color: #466178;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.input-wrap:focus-within,
+.code-wrap:focus-within {
+  border-color: #1abc9c;
+  box-shadow: 0 0 0 3px rgba(26, 188, 156, 0.14);
+}
+
+.input-wrap.input-error {
+  border-color: #e5484d;
+  box-shadow: 0 0 0 3px rgba(229, 72, 77, 0.12);
+}
+
+.input-wrap input,
+.code-wrap input {
+  border: 0;
+  width: 100%;
+  outline: 0;
+  font-size: 0.95rem;
+  color: #1f3446;
+  background: transparent;
+}
+
+.phone-group {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 10px;
+}
+
+.code-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #d2dee8;
+  border-radius: 10px;
+  padding: 10px 10px;
+  color: #466178;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.auth-primary-btn {
+  margin-top: 12px;
+  border: 0;
+  border-radius: 10px;
+  color: #ffffff;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 12px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: linear-gradient(90deg, #1abc9c 0%, #16a085 100%);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.auth-primary-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(26, 188, 156, 0.35);
+}
+
+.auth-footer {
+  text-align: center;
+  color: #647789;
+  font-size: 0.92rem;
+  margin-top: 8px;
+}
+
+.auth-footer button {
+  border: 0;
+  background: transparent;
+  color: #0b3c5d;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.field-error {
+  color: #c62828;
+  font-size: 0.84rem;
+  margin-top: -4px;
+  margin-bottom: 2px;
+}
+
+.success-note {
+  color: #0c7c67;
+  background: #e8f8f3;
+  border: 1px solid #cceee5;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 0.86rem;
+}
+
+@media (max-width: 980px) {
+  .auth-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-left-pane {
+    min-height: 42vh;
+  }
+}
