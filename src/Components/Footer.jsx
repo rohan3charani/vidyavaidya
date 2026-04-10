@@ -8,7 +8,7 @@ export default function Footer() {
         {/* Column 1: Brand & Description */}
         <div className="footer-col col-brand">
           <div className="footer-logo-wrapper">
-            <img src="https://via.placeholder.com/150x60/1a1a1a/00eeff?text=AGARAM+FOUNDATION" alt="VIDYA-VAIDYA FOUNDATION" className="footer-logo" />
+            <img src="src/assets/Vidya.png" alt="VIDYA-VAIDYA FOUNDATION" className="footer-logo" style={{width: "80px", height: "80px", borderRadius: "50%"}}/>
             {/* The image shows a specific logo with Tamil text "அறம் செய விரும்பு". Using placeholder for now. */}
           </div>
           <p className="footer-desc">
