@@ -54,7 +54,7 @@ const QUERY_TYPES = [
     "Tax Benefits (FCRA)",
     "Partnership / Collaboration",
     "Volunteer Abroad",
-    "Other",
+    "Others",
 ];
 
 /* ── VALIDATION ─────────────────────────────────────────── */
