@@ -25,7 +25,7 @@ export default function Navbar() {
         {/* Brand */}
         <NavLink to="/" className="vv-brand">
           <img src={logo} alt="VidyaVaidya Logo" className="vv-logo" style={{width: "70px", height: "70px"}}/>
-          <span className="vv-brand-text" style={{color: "#000000ff",fontWeight: "bold",fontFamily: "math",   fontSize: "1.5rem"}}>VidyaVaidya</span>
+          <span className="vv-brand-text" style={{color: "#000000ff",fontWeight: "bold",fontFamily: "Playfair Display",   fontSize: "1.5rem"}}>VidyaVaidya</span>
         </NavLink>
 
         {/* Desktop Navigation */}
