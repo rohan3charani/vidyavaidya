@@ -45,7 +45,7 @@ background: linear-gradient(13deg,rgb(44, 96, 181));padding: 60px 5% 0}
 
 .footer-badges {
   display: flex;
-  gap: 15px;
+  gap: 16px;
 }
 
 .footer-badge {

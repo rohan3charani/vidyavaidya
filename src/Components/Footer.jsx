@@ -57,9 +57,8 @@ export default function Footer() {
 
           <h4 className="footer-heading footer-heading-spaced">Office Address:</h4>
           <p className="footer-address">
-            15/4, Arulambal Street, T.Nagar,<br/>
-            Chennai - 600 017<br/>
-            Tamil Nadu, India.
+            15/4, Arulambal Street,hyderabad,<br/>
+            Telangana, India.
           </p>
           <a href="#" className="footer-map-btn">
             <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>

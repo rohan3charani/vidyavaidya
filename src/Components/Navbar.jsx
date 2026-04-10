@@ -12,7 +12,9 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-4">
         <div className="flex items-center gap-3">
           <div className="text-yellow-500 text-3xl">✱</div>
-          <h1 className="text-2xl font-bold text-gray-800 font-serif">VidyaVaidya</h1>
+          <h1 className="text-2xl font-bold text-gray-800 font-serif">
+            VidyaVaidya
+          </h1>
         </div>
 
         <nav className="hidden lg:flex items-center gap-8 text-gray-700 font-medium relative">
