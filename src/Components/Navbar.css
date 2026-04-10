@@ -42,17 +42,15 @@
   cursor: pointer;
 }
 
-.vv-brand-mark {
-  color: #f59e0b; /* Yellow star */
-  font-size: 28px;
+.vv-logo {
+  height: 48px;
+  width: auto;
+  object-fit: contain;
+  transition: transform var(--transition-speed) ease;
 }
 
-.vv-brand-text {
-  font-family: 'Playfair Display', serif; /* Or project default */
-  font-size: 24px;
-  font-weight: 700;
-  color: #1a202c;
-  letter-spacing: -0.5px;
+.vv-logo:hover {
+  transform: scale(1.05);
 }
 
 /* Navigation Menu */

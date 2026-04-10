@@ -2,6 +2,7 @@ import { Search, Menu, X } from "lucide-react";
 import { useState } from "react";
 import { useNavigate, NavLink, useLocation } from "react-router-dom";
 import "./Navbar.css";
+import logo from "../assets/VIDYA-VAIDYA.png";
 
 export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -23,8 +24,7 @@ export default function Navbar() {
       <div className="vv-navbar-inner">
         {/* Brand */}
         <NavLink to="/" className="vv-brand">
-          <div className="vv-brand-mark">✱</div>
-          <h1 className="vv-brand-text">VidyaVaidya</h1>
+          <img src={logo} alt="VidyaVaidya Logo" className="vv-logo" />
         </NavLink>
 
         {/* Desktop Navigation */}
