@@ -8,6 +8,12 @@ import OtpPage from "./pages/OtpPage";
 import Dashboard from "./pages/Dashboard";
 import Donate from "./pages/Donate";
 import Payment from "./pages/Payment";
+import JoinCommunity from "./pages/JoinCommunity";
+import VolunteerForm from "./pages/forms/VolunteerForm";
+import DonorForm from "./pages/forms/DonorForm";
+import CorporateForm from "./pages/forms/CorporateForm";
+import HospitalForm from "./pages/forms/HospitalForm";
+import ProtectedRoute from "./routes/ProtectedRoute";
 
 function LandingPage() {
   return (
@@ -33,6 +39,48 @@ export default function App() {
       <Route path="/otp" element={<OtpPage />} />
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/payment" element={<Payment />} />
+      
+      {/* Community Routes - Protected */}
+      <Route 
+        path="/join-community" 
+        element={
+          <ProtectedRoute>
+            <JoinCommunity />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/join/volunteer" 
+        element={
+          <ProtectedRoute>
+            <VolunteerForm />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/join/donor" 
+        element={
+          <ProtectedRoute>
+            <DonorForm />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/join/corporate" 
+        element={
+          <ProtectedRoute>
+            <CorporateForm />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/join/hospital" 
+        element={
+          <ProtectedRoute>
+            <HospitalForm />
+          </ProtectedRoute>
+        } 
+      />
     </Routes>
   );
 }

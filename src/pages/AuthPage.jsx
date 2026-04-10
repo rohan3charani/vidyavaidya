@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Mail, User, Phone, KeyRound, ArrowRight } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "./AuthPage.css";
@@ -15,13 +15,17 @@ export default function AuthPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [activeTab, setActiveTab] = useState(() => location.state?.tab === "signup" || location.state?.tab === "login" ? location.state.tab : "login");
-  const [loginEmail, setLoginEmail] = useState(() => location.state?.email || "");
+  const [activeTab, setActiveTab] = useState(location.state?.tab === "login" ? "login" : "signup");
+  const [loginEmail, setLoginEmail] = useState(location.state?.email || "");
   const [signupEmail, setSignupEmail] = useState("");
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [errors, setErrors] = useState({});
-  const [signupNotice, setSignupNotice] = useState(() => location.state?.notice || "");
+  const [signupNotice, setSignupNotice] = useState(location.state?.notice || "");
+
+  useEffect(() => {
+    navigate(location.pathname, { replace: true, state: null });
+  }, [navigate, location.pathname]);
 
   const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
   const isValidPhone = (value) => /^\d{10}$/.test(value);
