@@ -84,9 +84,6 @@ const SERVICES = [
 export default function Hero() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isHovered, setIsHovered]       = useState(false);
-  const [isLoaded, setIsLoaded]         = useState(false);
-
-  useEffect(() => { setIsLoaded(true); }, []);
 
   useEffect(() => {
     if (isHovered) return;
@@ -99,7 +96,7 @@ export default function Hero() {
   const handleDotClick = (i) => setCurrentSlide(i);
 
   return (
-    <section className={`hero-section ${isLoaded ? "loaded" : ""}`}>
+    <section className="hero-section loaded">
 
       {/* LEFT CONTENT */}
       <div className="hero-left">
@@ -249,6 +246,46 @@ function StarRating({ count, color }) {
   );
 }
 
+/* ─── Testimonials data ─── */
+const TESTIMONIALS = [
+  {
+    img: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&q=80",
+    name: "Marvin McKinney",
+    role: "Manager",
+    rating: 5,
+    accent: "#34a853",
+    quote: "Mattis cras magna morb nulla punar aenean aliquet in. Risus a arcu eget mi hendrerit gravida elit scelerisque tempor.",
+    text: "Mattis cras magna morb nulla punar aenean aliquet in. Risus a arcu eget mi hendrerit gravida elit scelerisque tempor Pharetra fringilla tellus vivera eget sapien viverra faucibus facilisis sed facilisi dictum.",
+  },
+  {
+    img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&q=80",
+    name: "Darlene Robertson",
+    role: "Volunteer",
+    rating: 5,
+    accent: "#fbbc04",
+    quote: "Every donation made here goes directly to children who need it most. Truly life-changing work.",
+    text: "Mattis cras magna morb nulla punar aenean aliquet in. Risus a arcu eget mi hendrerit gravida elit scelerisque tempor Pharetra fringilla tellus vivera eget sapien viverra faucibus facilisis sed facilisi dictum.",
+  },
+  {
+    img: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&q=80",
+    name: "Priya Singh",
+    role: "Donor",
+    rating: 4,
+    accent: "#8b5cf6",
+    quote: "I am proud to support an organization that truly cares about the community.",
+    text: "Mattis cras magna morb nulla punar aenean aliquet in. Risus a arcu eget mi hendrerit gravida elit scelerisque tempor Pharetra fringilla tellus vivera eget sapien viverra faucibus facilisis sed facilisi dictum.",
+  },
+  {
+    img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&q=80",
+    name: "Rajesh Kumar",
+    role: "Community Member",
+    rating: 5,
+    accent: "#e05252",
+    quote: "The impact Vidyavaidya has made in our village is immeasurable. Thank you!",
+    text: "Mattis cras magna morb nulla punar aenean aliquet in. Risus a arcu eget mi hendrerit gravida elit scelerisque tempor Pharetra fringilla tellus vivera eget sapien viverra faucibus facilisis sed facilisi dictum.",
+  },
+];
+
 const QuoteIcon = () => (
   <svg viewBox="0 0 48 48" width="40" height="40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
     <path d="M10 28c0-6.627 4.477-12 10-12v4c-3.314 0-6 2.686-6 8v8H6V28h4Zm22 0c0-6.627 4.477-12 10-12v4c-3.314 0-6 2.686-6 8v8H28V28h4Z" fill="currentColor" opacity="0.3"/>
@@ -259,7 +296,6 @@ export function Testimonials() {
   const sectionRef = useRef(null);
   const [visible, setVisible] = useState(false);
   const [current, setCurrent] = useState(0);
-  const [animDir, setAnimDir] = useState("next");
 
   const total = TESTIMONIALS.length;
 
@@ -272,8 +308,8 @@ export function Testimonials() {
     return () => observer.disconnect();
   }, []);
 
-  const prev = () => { setAnimDir("prev"); setCurrent((c) => (c - 1 + total) % total); };
-  const next = () => { setAnimDir("next"); setCurrent((c) => (c + 1) % total); };
+  const prev = () => { setCurrent((c) => (c - 1 + total) % total); };
+  const next = () => { setCurrent((c) => (c + 1) % total); };
 
   const getCardIndex = (offset) => (current + offset + total) % total;
 
@@ -658,45 +694,7 @@ export function TeamMembers() {
   );
 }
 
-/* ─── Testimonials data ─── */
-const TESTIMONIALS = [
-  {
-    img: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&q=80",
-    name: "Marvin McKinney",
-    role: "Manager",
-    text: "Mattis cras magna morb nulla punar aenean aliquet in. Risus a arcu eget mi hendrerit gravida elit scelerisque tempor Pharetra fringilla tellus vivera eget sapien viverra faucibus facilisis sed facilisi dictum.",
-  },
-  {
-    img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&q=80",
-    name: "Darlene Robertson",
-    role: "Manager",
-    text: "Mattis cras magna morb nulla punar aenean aliquet in. Risus a arcu eget mi hendrerit gravida elit scelerisque tempor Pharetra fringilla tellus vivera eget sapien viverra faucibus facilisis sed facilisi dictum.",
-  },
-  {
-    img: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&q=80",
-    name: "rajesh",
-    role: "Manager",
-    text: "Mattis cras magna morb nulla punar aenean aliquet in. Risus a arcu eget mi hendrerit gravida elit scelerisque tempor Pharetra fringilla tellus vivera eget sapien viverra faucibus facilisis sed facilisi dictum.",
-  },
-  {
-    img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&q=80",
-    name: "ramu",
-    role: "Manager",
-    text: "Mattis cras magna morb nulla punar aenean aliquet in. Risus a arcu eget mi hendrerit gravida elit scelerisque tempor Pharetra fringilla tellus vivera eget sapien viverra faucibus facilisis sed facilisi dictum.",
-  },
-  {
-    img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&q=80",
-    name: "ramu",
-    role: "Manager",
-    text: "Mattis cras magna morb nulla punar aenean aliquet in. Risus a arcu eget mi hendrerit gravida elit scelerisque tempor Pharetra fringilla tellus vivera eget sapien viverra faucibus facilisis sed facilisi dictum.",
-  },
-  {
-    img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&q=80",
-    name: "ramu",
-    role: "Manager",
-    text: "Mattis cras magna morb nulla punar aenean aliquet in. Risus a arcu eget mi hendrerit gravida elit scelerisque tempor Pharetra fringilla tellus vivera eget sapien viverra faucibus facilisis sed facilisi dictum.",
-  },
-];
+/* TESTIMONIALS data moved to line ~249 to fix temporal dead zone error */
 
 /* ─── Named export: Simple Testimonials (Image Style) ─── */
 export function SimpleTestimonials() {

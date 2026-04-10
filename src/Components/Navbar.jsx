@@ -1,94 +1,171 @@
-import { Search } from "lucide-react";
+import { Search, Menu, X } from "lucide-react";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, NavLink, useLocation } from "react-router-dom";
+import "./Navbar.css";
 
 export default function Navbar() {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [eventsDropdown, setEventsDropdown] = useState(false);
   const [storiesDropdown, setStoriesDropdown] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
+
+  const navLinks = [
+    { title: "Home", path: "/" },
+    { title: "Our Mission", path: "/mission" },
+    { title: "Partners", path: "/partners" },
+  ];
 
   return (
-    <header className="w-full bg-white border-b">
-      <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-4">
-        <div className="flex items-center gap-3">
-          <img src="src/assets/Vidya.png" alt="VIDYA VAIDYA LOGO" style={{width: "60px", height: "60px", borderRadius: "50%"}}/>
-          <h1 className="text-2xl font-bold text-gray-800 font-serif">
-            VidyaVaidya
-          </h1>
-        </div>
+    <header className="vv-navbar">
+      <div className="vv-navbar-inner">
+        {/* Brand */}
+        <NavLink to="/" className="vv-brand">
+          <div className="vv-brand-mark">✱</div>
+          <h1 className="vv-brand-text">VidyaVaidya</h1>
+        </NavLink>
 
-        <nav className="hidden lg:flex items-center gap-8 text-gray-700 font-medium relative">
-          <a href="#" className="text-red-500">
-            Home
-          </a>
-          <a href="#">Our Mission</a>
-          <a href="#">Partners</a>
-          <div className="relative">
-            <button
-              onMouseEnter={() => setEventsDropdown(true)}
-              onMouseLeave={() => setEventsDropdown(false)}
-              className="flex items-center gap-1 hover:text-red-500 transition"
+        {/* Desktop Navigation */}
+        <nav className="vv-nav-group">
+          {navLinks.map((link) => (
+            <NavLink
+              key={link.title}
+              to={link.path}
+              className={({ isActive }) => (isActive ? "vv-nav-link active" : "vv-nav-link")}
             >
-              Events ▾
+              {link.title}
+            </NavLink>
+          ))}
+
+          {/* Events Dropdown */}
+          <div
+            className="vv-dropdown-container"
+            onMouseEnter={() => setEventsDropdown(true)}
+            onMouseLeave={() => setEventsDropdown(false)}
+          >
+            <button className="vv-nav-link">
+              Events <span>▾</span>
             </button>
             {eventsDropdown && (
-              <div
-                className="absolute top-full left-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg py-2 z-50"
-                onMouseEnter={() => setEventsDropdown(true)}
-                onMouseLeave={() => setEventsDropdown(false)}
-              >
-                <a href="#" className="block px-4 py-2 text-sm hover:bg-gray-100 transition">
-                  Photo Gallery
-                </a>
-                <a href="#" className="block px-4 py-2 text-sm hover:bg-gray-100 transition">
-                  Video Gallery
-                </a>
+              <div className="vv-dropdown-menu">
+                <NavLink to="/events/photos" className="vv-dropdown-item">Photo Gallery</NavLink>
+                <NavLink to="/events/videos" className="vv-dropdown-item">Video Gallery</NavLink>
               </div>
             )}
           </div>
-          <div className="relative">
-            <button
-              onMouseEnter={() => setStoriesDropdown(true)}
-              onMouseLeave={() => setStoriesDropdown(false)}
-              className="flex items-center gap-1 hover:text-red-500 transition"
-            >
-              Stories & News ▾
+
+          {/* Stories Dropdown */}
+          <div
+            className="vv-dropdown-container"
+            onMouseEnter={() => setStoriesDropdown(true)}
+            onMouseLeave={() => setStoriesDropdown(false)}
+          >
+            <button className="vv-nav-link">
+              Stories & News <span>▾</span>
             </button>
             {storiesDropdown && (
-              <div
-                className="absolute top-full left-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg py-2 z-50"
-                onMouseEnter={() => setStoriesDropdown(true)}
-                onMouseLeave={() => setStoriesDropdown(false)}
-              >
-                <a href="#" className="block px-4 py-2 text-sm hover:bg-gray-100 transition">
-                  News
-                </a>
-                <a href="#" className="block px-4 py-2 text-sm hover:bg-gray-100 transition">
-                  Publishings
-                </a>
+              <div className="vv-dropdown-menu">
+                <NavLink to="/news" className="vv-dropdown-item">News</NavLink>
+                <NavLink to="/publishings" className="vv-dropdown-item">Publishings</NavLink>
               </div>
             )}
           </div>
-          <a href="#">Contact</a>
+
+          <NavLink
+            to="/contact"
+            className={({ isActive }) => (isActive ? "vv-nav-link active" : "vv-nav-link")}
+          >
+            Contact
+          </NavLink>
+
+          <button
+            onClick={() => {
+              if (localStorage.getItem("vv_auth")) {
+                navigate("/join-community");
+              } else {
+                localStorage.setItem("vv_redirect", "/join-community");
+                navigate("/auth");
+              }
+            }}
+            className={location.pathname === "/join-community" ? "vv-nav-link vv-join-community active" : "vv-nav-link vv-join-community"}
+          >
+            Join in the Community
+          </button>
         </nav>
 
-        <div className="flex items-center gap-4">
-          <button className="w-10 h-10 rounded-full border flex items-center justify-center">
+        {/* Actions */}
+        <div className="vv-actions">
+          <button className="vv-search-btn" aria-label="Search">
             <Search size={18} />
           </button>
 
-          <button className="bg-red-500 text-white px-6 py-3 rounded-full font-semibold flex items-center gap-2 hover:bg-red-600 hover:scale-105 transition-all duration-200 shadow-md hover:shadow-lg">
+          <button
+            onClick={() => {
+              if (localStorage.getItem("vv_auth")) {
+                navigate("/donate");
+              } else {
+                localStorage.setItem("vv_redirect", "/donate");
+                navigate("/auth");
+              }
+            }}
+            className="vv-btn vv-btn-donate"
+          >
             DONATE NOW ✋
           </button>
 
           <button
             onClick={() => navigate("/auth")}
-            className="bg-blue-500 text-white px-6 py-3 rounded-full font-semibold flex items-center gap-2 hover:bg-blue-600 hover:scale-105 transition-all duration-200 shadow-md hover:shadow-lg"
+            className="vv-btn vv-btn-login desktop-only"
+          >
+            Login
+          </button>
+
+          {/* Mobile Toggle */}
+          <button className="vv-mobile-toggle" onClick={toggleMobileMenu}>
+            {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile Menu Overlay */}
+      {isMobileMenuOpen && (
+        <div className="vv-mobile-menu">
+          {navLinks.map((link) => (
+            <NavLink
+              key={link.title}
+              to={link.path}
+              className="vv-nav-link"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              {link.title}
+            </NavLink>
+          ))}
+          <NavLink to="/events" className="vv-nav-link" onClick={() => setIsMobileMenuOpen(false)}>Events</NavLink>
+          <NavLink to="/news" className="vv-nav-link" onClick={() => setIsMobileMenuOpen(false)}>Stories & News</NavLink>
+          <NavLink to="/contact" className="vv-nav-link" onClick={() => setIsMobileMenuOpen(false)}>Contact</NavLink>
+          <button
+            onClick={() => {
+              setIsMobileMenuOpen(false);
+              navigate("/join-community");
+            }}
+            className="vv-nav-link vv-join-community"
+          >
+            Join in the Community
+          </button>
+          <button
+            onClick={() => {
+              setIsMobileMenuOpen(false);
+              navigate("/auth");
+            }}
+            className="vv-btn vv-btn-login"
           >
             Login
           </button>
         </div>
-      </div>
+      )}
     </header>
   );
 }
+

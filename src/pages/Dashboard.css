@@ -455,3 +455,38 @@
     display: none;
   }
 }
+
+/* Animations and Utilities */
+.spin-icon {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.ghost-btn.refreshing {
+  background: #f8fafc;
+  color: #1abc9c;
+  border-color: #1abc9c;
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+.ghost-btn:hover:not(:disabled) {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.logout-btn:hover {
+  background: #fff0f3;
+  border-color: #fecaca;
+  transform: translateY(-1px);
+  transition: all 0.2s;
+}
+

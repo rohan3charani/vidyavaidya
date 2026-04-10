@@ -12,28 +12,20 @@ const LEFT_CONTENT = {
 };
 
 export default function AuthPage() {
-  const [activeTab, setActiveTab] = useState("login");
-  const [loginEmail, setLoginEmail] = useState("");
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const [activeTab, setActiveTab] = useState(location.state?.tab === "login" ? "login" : "signup");
+  const [loginEmail, setLoginEmail] = useState(location.state?.email || "");
   const [signupEmail, setSignupEmail] = useState("");
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [errors, setErrors] = useState({});
-  const [signupNotice, setSignupNotice] = useState("");
-  const navigate = useNavigate();
-  const location = useLocation();
+  const [signupNotice, setSignupNotice] = useState(location.state?.notice || "");
 
   useEffect(() => {
-    if (location.state?.tab === "login") {
-      setActiveTab("login");
-      if (location.state?.email) {
-        setLoginEmail(location.state.email);
-      }
-      if (location.state?.notice) {
-        setSignupNotice(location.state.notice);
-      }
-      navigate(location.pathname, { replace: true, state: null });
-    }
-  }, [location.pathname, location.state, navigate]);
+    navigate(location.pathname, { replace: true, state: null });
+  }, [navigate, location.pathname]);
 
   const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
   const isValidPhone = (value) => /^\d{10}$/.test(value);

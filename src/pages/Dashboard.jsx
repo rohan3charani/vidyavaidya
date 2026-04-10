@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   CalendarDays,
   CircleUserRound,
@@ -12,9 +13,9 @@ import {
 import "./Dashboard.css";
 
 const USER = {
-  name: "RLVNS LAVANYA",
-  email: "lavanyarlvns@gmail.com",
-  phone: "+917386717278",
+  name: "VIDYA VAIDYA",
+  email: "vidyavaidyanlr@gmail.com",
+  phone: "+91 1234567890",
 };
 
 export default function Dashboard() {
@@ -22,6 +23,9 @@ export default function Dashboard() {
   const [category, setCategory] = useState("All types");
   const [type, setType] = useState("All types");
   const [status, setStatus] = useState("All status");
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  
+  const navigate = useNavigate();
 
   const greeting = useMemo(() => {
     const hour = new Date().getHours();
@@ -29,6 +33,20 @@ export default function Dashboard() {
     if (hour < 17) return "Good afternoon";
     return "Good evening";
   }, []);
+
+  const handleLogout = () => {
+    // Clear any auth data if it exists
+    localStorage.removeItem("vv_auth");
+    navigate("/");
+  };
+
+  const handleRefresh = () => {
+    setIsRefreshing(true);
+    // Simulate data fetch refresh
+    setTimeout(() => {
+      setIsRefreshing(false);
+    }, 1000);
+  };
 
   const initial = USER.name.charAt(0);
 
@@ -41,10 +59,16 @@ export default function Dashboard() {
             <span>{USER.name}</span>
           </div>
           <div className="profile-actions">
-            <button type="button" className="ghost-btn">
-              <RefreshCw size={14} /> Refresh
+            <button 
+              type="button" 
+              className={`ghost-btn ${isRefreshing ? "refreshing" : ""}`}
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+            >
+              <RefreshCw size={14} className={isRefreshing ? "spin-icon" : ""} /> 
+              {isRefreshing ? "Refreshing..." : "Refresh"}
             </button>
-            <button type="button" className="logout-btn">
+            <button type="button" className="logout-btn" onClick={handleLogout}>
               Log out
             </button>
           </div>
