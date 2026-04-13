@@ -9,6 +9,11 @@ import Dashboard from "./pages/Dashboard";
 import Donate from "./pages/Donate";
 import Payment from "./pages/Payment";
 import JoinCommunity from "./pages/JoinCommunity";
+import OurMission from "./pages/OurMission";
+import Partners from "./pages/Partners";
+import Events from "./pages/Events";
+import News from "./pages/News";
+import Contact from "./pages/Contact";
 import VolunteerForm from "./pages/forms/VolunteerForm";
 import DonorForm from "./pages/forms/DonorForm";
 import CorporateForm from "./pages/forms/CorporateForm";
@@ -39,6 +44,13 @@ export default function App() {
       <Route path="/otp" element={<OtpPage />} />
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/payment" element={<Payment />} />
+      
+      {/* Information Pages */}
+      <Route path="/our-mission" element={<OurMission />} />
+      <Route path="/partners" element={<Partners />} />
+      <Route path="/events" element={<Events />} />
+      <Route path="/news" element={<News />} />
+      <Route path="/contact" element={<Contact />} />
       
       {/* Community Routes - Protected */}
       <Route 

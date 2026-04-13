@@ -1,11 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./Hero.css";
+import VidyaImage from "../assets/vidyavaidya.png";
 
 /* ─── Slider images ─── */
 const images = [
-  "https://images.unsplash.com/photo-1607746882042-944635dfe10e?w=800&q=80",
-  "https://images.unsplash.com/photo-1593113630400-ea4288922497?w=800&q=80",
-  "https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?w=800&q=80",
+  VidyaImage,
 ];
 
 /* ─── What We Do — card data ─── */
@@ -80,21 +79,8 @@ const SERVICES = [
   },
 ];
 
-/* ─── Main Hero Component (slider only) ─── */
+/* ─── Main Hero Component (static image only) ─── */
 export default function Hero() {
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [isHovered, setIsHovered]       = useState(false);
-
-  useEffect(() => {
-    if (isHovered) return;
-    const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev === images.length - 1 ? 0 : prev + 1));
-    }, 4000);
-    return () => clearInterval(interval);
-  }, [isHovered]);
-
-  const handleDotClick = (i) => setCurrentSlide(i);
-
   return (
     <section className="hero-section loaded">
 
@@ -124,48 +110,13 @@ export default function Hero() {
         </div>
       </div>
 
-      {/* RIGHT SLIDER */}
+      {/* RIGHT IMAGE */}
       <div className="hero-right">
         <div className="bg-blob" />
         <div className="bg-brush" />
-        <div
-          className="slider-wrapper"
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
-        >
-          <div className="slider-float">
-            <div className="slider-container">
-              <div className="slides-clipper">
-                {images.map((img, index) => {
-                  let slideClass = "slide";
-                  if (index === currentSlide) slideClass += " active";
-                  else if (
-                    index === currentSlide - 1 ||
-                    (currentSlide === 0 && index === images.length - 1)
-                  ) slideClass += " prev";
-                  return (
-                    <div key={index} className={slideClass}>
-                      <div className="parallax-inner">
-                        <img src={img} alt={`Education Impact ${index + 1}`} />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-              <div className="floating-badge">
-                <span className="badge-icon">💰</span>
-                <span className="badge-text">Exchange Finance $552.99</span>
-              </div>
-            </div>
-          </div>
-          <div className="slider-dots">
-            {images.map((_, index) => (
-              <button
-                key={index}
-                className={`dot ${index === currentSlide ? "active" : ""}`}
-                onClick={() => handleDotClick(index)}
-              />
-            ))}
+        <div className="image-wrapper">
+          <div className="image-container">
+            <img src={images[0]} alt="Vidya Vaidya Foundation" className="hero-image" />
           </div>
         </div>
       </div>
