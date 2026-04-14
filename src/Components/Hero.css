@@ -46,7 +46,7 @@
 /* ── Decorative shapes ── */
 .hero-shape {
   position: absolute;
-  top: 0;
+  top: 15;
   bottom: 0;
   z-index: 2;
   pointer-events: none;
@@ -81,7 +81,7 @@
   z-index: 5;
   width: 100%;
 
-  padding-left: 12%;    /* ← push content right  */
+  padding-left: 7%;    /* ← push content right  */
   padding-right: 5%;
   padding-top: 0;       /* ← push content down   */
   padding-bottom: 0;
@@ -89,7 +89,7 @@
 
 /* ── Content block ── */
 .hero-content {
-  max-width: 680px;     /* ← limit text width    */
+  max-width: 960px;     /* ← limit text width    */
 }
 
 /* ── Tagline ── */
@@ -197,6 +197,122 @@
 @media (max-width: 575px) {
   .hero-heading { font-size: 40px; }
   .hero-actions { flex-direction: column; align-items: flex-start; gap: 20px; }
+}
+
+
+/* ============================================================
+   HERO BACKGROUND SLIDER
+   ============================================================ */
+
+/* Each bg slide sits absolutely behind everything */
+.hero-slide {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0;
+  transform: scale(1.04);
+  transition: opacity 0.9s ease, transform 0.9s ease;
+  z-index: 0;
+}
+
+/* Active slide — fully visible */
+.hero-slide--active {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Outgoing slide — fade & shrink */
+.hero-slide--prev {
+  opacity: 0;
+  transform: scale(0.97);
+}
+
+/* ── Prev / Next + dots row ── */
+.hero-slider-controls {
+  position: absolute;
+  bottom: 36px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.hero-nav-btn {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.25s ease, border-color 0.25s ease, transform 0.2s ease;
+}
+.hero-nav-btn:hover {
+  background: #ffc220;
+  border-color: #ffc220;
+  color: #1a1a2e;
+  transform: scale(1.1);
+}
+
+/* ── Dot indicators ── */
+.hero-dots {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hero-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.35);
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.25s ease, transform 0.25s ease, width 0.3s ease, border-radius 0.3s ease;
+}
+
+.hero-dot--active {
+  background: #ffc220;
+  transform: scale(1.2);
+  width: 24px;
+  border-radius: 4px;
+}
+
+/* ── Auto-play progress bar ── */
+.hero-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.12);
+  z-index: 6;
+}
+
+.hero-progress-bar {
+  height: 100%;
+  width: 0%;
+  background: #ffc220;
+  border-radius: 0 2px 2px 0;
+}
+
+.hero-progress-bar--running {
+  animation: hero-progress-fill 3s linear forwards;
+}
+
+@keyframes hero-progress-fill {
+  from { width: 0%; }
+  to   { width: 100%; }
 }
 
 
