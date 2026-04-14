@@ -687,69 +687,12 @@ import shape3 from "../assets/hero/shape-3.png";
 import shape  from "../assets/hero/shape.png";
 import Bg     from "../assets/hero/01.jpg";
 import "./Hero.css";
+import VidyaImage from "../assets/vidyavaidya.png";
 
-/* ─────────────────────────────────────────
-   HERO CONFIG — edit text / links here only
-───────────────────────────────────────────*/
-const HERO = {
-  tagline    : "Non - Profit Charity",
-  heading    : (<>Make Someone's <br />Life By Giving Of <br />Yours's.</>),
-  primaryBtn : { label: "Join With Us \u2197", href: "#contact" },
-  videoBtn   : { href: "https://www.youtube.com/watch?v=Cn4G2lZ_g2I", label: "Video Playing Theme" },
-};
-
-/* ─── Main Hero Component ─── */
-export default function Hero() {
-  return (
-    <section className="hero-bg" style={{ backgroundImage: `url(${Bg})` }}>
-
-      {/* dark gradient overlay */}
-      <div className="hero-overlay" />
-
-      {/* decorative shapes */}
-      <div className="hero-shape hero-shape--left">
-        <img src={shape2} alt="" aria-hidden="true" />
-      </div>
-      <div className="hero-shape hero-shape--right">
-        <img src={shape3} alt="" aria-hidden="true" />
-      </div>
-      <div className="hero-shape hero-shape--left2">
-        <img src={shape} alt="" aria-hidden="true" />
-      </div>
-
-      {/* ── content wrapper — adjust .hero-container in CSS to reposition ── */}
-      <div className="hero-container">
-        <div className="hero-content">
-
-          <p className="hero-tagline">{HERO.tagline}</p>
-
-          <h1 className="hero-heading">{HERO.heading}</h1>
-
-          <div className="hero-actions">
-            <a href={HERO.primaryBtn.href} className="hero-btn-primary">
-              {HERO.primaryBtn.label}
-            </a>
-
-            <span className="hero-video-wrap">
-              <a
-                href={HERO.videoBtn.href}
-                className="hero-video-btn"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Play video"
-              >
-                <i className="fa-solid fa-play" aria-hidden="true" />
-              </a>
-              <span className="hero-video-label">{HERO.videoBtn.label}</span>
-            </span>
-          </div>
-
-        </div>
-      </div>
-
-    </section>
-  );
-}
+/* ─── Slider images ─── */
+const images = [
+  VidyaImage,
+];
 
 /* ─────────────────────────────────────────
    WHAT WE DO DATA — edit cards here
@@ -814,6 +757,52 @@ const SERVICES = [
   },
 ];
 
+/* ─── Main Hero Component (static image only) ─── */
+export default function Hero() {
+  return (
+    <section className="hero-section loaded">
+
+      {/* LEFT CONTENT */}
+      <div className="hero-left">
+        <div className="hero-content">
+          <p className="hero-tagline">TOGETHER WE CREATE IMPACT</p>
+          <h1 className="hero-heading">
+            Education Changes The <br />
+            <span className="text-highlight">World - Support</span> <br />
+            Education.
+          </h1>
+          <p className="hero-description">
+            Overall, I cannot recommend the gourmet bistro highly enough.
+            If you're looking for a restaurant that serves delicious,
+            beautifully presented dishes with impeccable service.
+          </p>
+          <div className="hero-actions">
+            <button className="btn-primary">Join With Us &rarr;</button>
+            <div className="play-action">
+              <button className="btn-play">
+                <span className="play-icon">▶</span>
+              </button>
+              <span className="play-text">Video Playing Theme</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* RIGHT IMAGE */}
+      <div className="hero-right">
+        <div className="bg-blob" />
+        <div className="bg-brush" />
+        <div className="image-wrapper">
+          <div className="image-container">
+            <img src={images[0]} alt="Vidya Vaidya Foundation" className="hero-image" />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─── Named export: What We Do section (placed after About in App) ─── */
 export function WhatWeDo() {
   const svcRef = useRef(null);
   const [svcVisible, setSvcVisible] = useState(false);
