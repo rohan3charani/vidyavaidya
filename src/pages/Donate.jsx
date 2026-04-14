@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Donate.css";
 
@@ -66,14 +66,6 @@ const isValidPin = (v) => /^\d{6}$/.test(v);
 /* ── COMPONENT ───────────────────────────────────────────── */
 export default function Donate() {
     const navigate = useNavigate();
-
-    /* redirect if not logged in */
-    useEffect(() => {
-        if (!localStorage.getItem("vv_auth")) {
-            localStorage.setItem("vv_redirect", "/donate");
-            navigate("/auth");
-        }
-    }, [navigate]);
 
     const [tab, setTab] = useState("onetime");
 

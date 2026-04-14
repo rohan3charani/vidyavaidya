@@ -51,8 +51,8 @@ export default function Navbar() {
             </button>
             {eventsDropdown && (
               <div className="vv-dropdown-menu">
-                <NavLink to="/events/photos" className="vv-dropdown-item">Photo Gallery</NavLink>
-                <NavLink to="/events/videos" className="vv-dropdown-item">Video Gallery</NavLink>
+                <NavLink to="/PhotoGallery" className="vv-dropdown-item">Photo Gallery</NavLink>
+                <NavLink to="/VideoGallery" className="vv-dropdown-item">Video Gallery</NavLink>
               </div>
             )}
           </div>
@@ -90,8 +90,7 @@ export default function Navbar() {
                 navigate("/auth");
               }
             }}
-            className={location.pathname === "/join-community" ? "vv-nav-link vv-join-community active" : "vv-nav-link vv-join-community"}
-          >
+            className={location.pathname === "/join-community" ? "vv-nav-link vv-join-community active" : "vv-nav-link vv-join-community"}>
             Join in the Community
           </button>
         </nav>
@@ -103,16 +102,8 @@ export default function Navbar() {
           </button>
 
           <button
-            onClick={() => {
-              if (localStorage.getItem("vv_auth")) {
-                navigate("/donate");
-              } else {
-                localStorage.setItem("vv_redirect", "/donate");
-                navigate("/auth");
-              }
-            }}
-            className="vv-btn vv-btn-donate"
-          >
+            onClick={() => navigate("/donate")}
+            className="vv-btn vv-btn-donate">
             DONATE NOW ✋
           </button>
 
