@@ -15,7 +15,7 @@ export default function Navbar() {
 
   const navLinks = [
     { title: "Home", path: "/" },
-    { title: "Our Mission", path: "/mission" },
+    { title: "Our Mission", path: "/our-mission" },
     { title: "Partners", path: "/partners" },
   ];
 
@@ -41,38 +41,36 @@ export default function Navbar() {
           ))}
 
           {/* Events Dropdown */}
-          <div
-            className="vv-dropdown-container"
-            onMouseEnter={() => setEventsDropdown(true)}
-            onMouseLeave={() => setEventsDropdown(false)}
-          >
-            <button className="vv-nav-link">
-              Events <span>▾</span>
-            </button>
-            {eventsDropdown && (
-              <div className="vv-dropdown-menu">
-                <NavLink to="/events/photos" className="vv-dropdown-item">Photo Gallery</NavLink>
-                <NavLink to="/events/videos" className="vv-dropdown-item">Video Gallery</NavLink>
-              </div>
-            )}
-          </div>
+            <div
+              className="vv-dropdown-container"
+              onClick={() => setEventsDropdown(!eventsDropdown)}
+            >
+              <button className="vv-nav-link">
+                Events <span>▾</span>
+              </button>
+              {eventsDropdown && (
+                <div className="vv-dropdown-menu">
+                  <NavLink to="/events" className="vv-dropdown-item" onClick={() => setEventsDropdown(false)}>Upcoming Events</NavLink>
+                  <NavLink to="/events" className="vv-dropdown-item" onClick={() => setEventsDropdown(false)}>Past Events</NavLink>
+                </div>
+              )}
+            </div>
 
           {/* Stories Dropdown */}
-          <div
-            className="vv-dropdown-container"
-            onMouseEnter={() => setStoriesDropdown(true)}
-            onMouseLeave={() => setStoriesDropdown(false)}
-          >
-            <button className="vv-nav-link">
-              Stories & News <span>▾</span>
-            </button>
-            {storiesDropdown && (
-              <div className="vv-dropdown-menu">
-                <NavLink to="/news" className="vv-dropdown-item">News</NavLink>
-                <NavLink to="/publishings" className="vv-dropdown-item">Publishings</NavLink>
-              </div>
-            )}
-          </div>
+            <div
+              className="vv-dropdown-container"
+              onClick={() => setStoriesDropdown(!storiesDropdown)}
+            >
+              <button className="vv-nav-link">
+                Stories & News <span>▾</span>
+              </button>
+              {storiesDropdown && (
+                <div className="vv-dropdown-menu">
+                  <NavLink to="/news" className="vv-dropdown-item" onClick={() => setStoriesDropdown(false)}>Stories & News</NavLink>
+                  <NavLink to="/news" className="vv-dropdown-item" onClick={() => setStoriesDropdown(false)}>Impact Updates</NavLink>
+                </div>
+              )}
+            </div>
 
           <NavLink
             to="/contact"
@@ -98,19 +96,14 @@ export default function Navbar() {
 
         {/* Actions */}
         <div className="vv-actions">
+
           <button className="vv-search-btn" aria-label="Search">
             <Search size={18} />
           </button>
 
+
           <button
-            onClick={() => {
-              if (localStorage.getItem("vv_auth")) {
-                navigate("/donate");
-              } else {
-                localStorage.setItem("vv_redirect", "/donate");
-                navigate("/auth");
-              }
-            }}
+            onClick={() => navigate("/donate")}
             className="vv-btn vv-btn-donate"
           >
             DONATE NOW ✋
