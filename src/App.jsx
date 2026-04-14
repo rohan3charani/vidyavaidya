@@ -15,6 +15,15 @@ import CorporateForm from "./pages/forms/CorporateForm";
 import HospitalForm from "./pages/forms/HospitalForm";
 import ProtectedRoute from "./routes/ProtectedRoute";
 
+import OurMission from "./pages/OurMission";
+import Partners from "./pages/Partners";
+import PhotoGallery from "./pages/PhotoGallery";
+import VideoGallery from "./pages/VideoGallery";
+import News from "./pages/News";
+import Publishings from "./pages/Publishings";
+import Contact from "./pages/Contact";
+import Home from "./Components/Hero";
+
 function LandingPage() {
   return (
     <>
@@ -39,6 +48,15 @@ export default function App() {
       <Route path="/otp" element={<OtpPage />} />
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/payment" element={<Payment />} />
+      
+      <Route path="/mission" element={<OurMission />} />
+      <Route path="/partners" element={<Partners />} />
+      <Route path="/PhotoGallery" element={<PhotoGallery />} />
+      <Route path="/VideoGallery" element={<VideoGallery />} />
+      <Route path="/news" element={<News />} />
+      <Route path="/publishings" element={<Publishings />} />
+      <Route path="/contact" element={<Contact />} />
+      <Route path="/Hero" element={<Home />} />
       
       {/* Community Routes - Protected */}
       <Route 

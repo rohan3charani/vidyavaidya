@@ -105,31 +105,31 @@ export default function Hero() {
         </div>
       </div>
 
-      {/* ── Slider controls — prev / dots / next ── */}
-      <div className="hero-slider-controls">
-        <button className="hero-nav-btn" onClick={goPrev} aria-label="Previous slide">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M15 18l-6-6 6-6" />
-          </svg>
-        </button>
+      {/* ── Prev button — left edge, vertically centered ── */}
+      <button className="hero-nav-btn hero-nav-btn--left" onClick={goPrev} aria-label="Previous slide">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M15 18l-6-6 6-6" />
+        </svg>
+      </button>
 
-        <div className="hero-dots">
-          {BG_IMAGES.map((_, i) => (
-            <button
-              key={i}
-              className={`hero-dot${i === current ? " hero-dot--active" : ""}`}
-              onClick={() => goTo(i)}
-              aria-label={`Go to slide ${i + 1}`}
-            />
-          ))}
-        </div>
-
-        <button className="hero-nav-btn" onClick={goNext} aria-label="Next slide">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M9 6l6 6-6 6" />
-          </svg>
-        </button>
+      {/* ── Dots — bottom center only ── */}
+      <div className="hero-dots">
+        {BG_IMAGES.map((_, i) => (
+          <button
+            key={i}
+            className={`hero-dot${i === current ? " hero-dot--active" : ""}`}
+            onClick={() => goTo(i)}
+            aria-label={`Go to slide ${i + 1}`}
+          />
+        ))}
       </div>
+
+      {/* ── Next button — right edge, vertically centered ── */}
+      <button className="hero-nav-btn hero-nav-btn--right" onClick={goNext} aria-label="Next slide">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M9 6l6 6-6 6" />
+        </svg>
+      </button>
 
       {/* ── Progress bar ── */}
       <div className="hero-progress">

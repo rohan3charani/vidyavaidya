@@ -229,19 +229,12 @@
   transform: scale(0.97);
 }
 
-/* ── Prev / Next + dots row ── */
-.hero-slider-controls {
-  position: absolute;
-  bottom: 36px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 6;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
+/* ── Prev / Next buttons — left & right edges, vertically centered ── */
 .hero-nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 6;
   width: 46px;
   height: 46px;
   border-radius: 50%;
@@ -256,15 +249,22 @@
   flex-shrink: 0;
   transition: background 0.25s ease, border-color 0.25s ease, transform 0.2s ease;
 }
-.hero-nav-btn:hover {
+.hero-nav-btn--left  { left: 20px; background: rgba(0,0,0,0.75);}
+.hero-nav-btn--right { right: 20px; background: rgba(0,0,0,0.75);}
+.hero-nav-btn:hover { 
   background: #ffc220;
   border-color: #ffc220;
-  color: #1a1a2e;
-  transform: scale(1.1);
+  color: #30723a;
+  transform: translateY(-50%) scale(1.1);
 }
 
-/* ── Dot indicators ── */
+/* ── Dot indicators — bottom center only ── */
 .hero-dots {
+  position: absolute;
+  bottom: 36px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 6;
   display: flex;
   align-items: center;
   gap: 8px;
