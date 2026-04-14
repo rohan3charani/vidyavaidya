@@ -1,8 +1,12 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import shape2 from "../assets/hero/shape-2.png";
 import shape3 from "../assets/hero/shape-3.png";
 import shape  from "../assets/hero/shape.png";
-import Bg     from "../assets/hero/01.jpg";
+import Bg     from "../assets/bg/01.jpg";
+import Bg2    from "../assets/bg/1.jpg";
+import Bg3    from "../assets/bg/2.jpg";
+import Bg4    from "../assets/bg/3.jpg";  
+
 import "./Hero.css";
 
 /* ─────────────────────────────────────────
@@ -15,10 +19,49 @@ const HERO = {
   videoBtn   : { href: "https://www.youtube.com/watch?v=Cn4G2lZ_g2I", label: "Video Playing Theme" },
 };
 
+/* ─────────────────────────────────────────
+   HERO BACKGROUND IMAGES — add/remove here
+───────────────────────────────────────────*/
+const BG_IMAGES = [Bg, Bg2, Bg3, Bg4];
+
 /* ─── Main Hero Component ─── */
 export default function Hero() {
+  const [current, setCurrent] = useState(0);
+  const [prev,    setPrev]    = useState(null);
+  const [paused,  setPaused]  = useState(false);
+  const total = BG_IMAGES.length;
+
+  const goTo = useCallback((n) => {
+    setPrev(current);
+    setCurrent(n);
+    setTimeout(() => setPrev(null), 3000);
+  }, [current]);
+
+  /* auto-advance every 5 s */
+  useEffect(() => {
+    if (paused) return;
+    const t = setInterval(() => goTo((current + 1) % total), 3000);
+    return () => clearInterval(t);
+  }, [current, paused, goTo, total]);
+
+  const goPrev = () => goTo((current - 1 + total) % total);
+  const goNext = () => goTo((current + 1) % total);
+
   return (
-    <section className="hero-bg" style={{ backgroundImage: `url(${Bg})` }}>
+    <section
+      className="hero-bg"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+    >
+      {/* ── Background slides ── */}
+      {BG_IMAGES.map((img, i) => (
+        <div
+          key={i}
+          className={`hero-slide${i === current ? " hero-slide--active" : ""}${i === prev ? " hero-slide--prev" : ""}`}
+          style={{ backgroundImage: `url(${img})` }}
+          aria-hidden={i !== current}
+        />
+      ))}
 
       {/* dark gradient overlay */}
       <div className="hero-overlay" />
@@ -39,14 +82,12 @@ export default function Hero() {
         <div className="hero-content">
 
           <p className="hero-tagline">{HERO.tagline}</p>
-
           <h1 className="hero-heading">{HERO.heading}</h1>
 
           <div className="hero-actions">
             <a href={HERO.primaryBtn.href} className="hero-btn-primary">
               {HERO.primaryBtn.label}
             </a>
-
             <span className="hero-video-wrap">
               <a
                 href={HERO.videoBtn.href}
@@ -62,6 +103,40 @@ export default function Hero() {
           </div>
 
         </div>
+      </div>
+
+      {/* ── Slider controls — prev / dots / next ── */}
+      <div className="hero-slider-controls">
+        <button className="hero-nav-btn" onClick={goPrev} aria-label="Previous slide">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M15 18l-6-6 6-6" />
+          </svg>
+        </button>
+
+        <div className="hero-dots">
+          {BG_IMAGES.map((_, i) => (
+            <button
+              key={i}
+              className={`hero-dot${i === current ? " hero-dot--active" : ""}`}
+              onClick={() => goTo(i)}
+              aria-label={`Go to slide ${i + 1}`}
+            />
+          ))}
+        </div>
+
+        <button className="hero-nav-btn" onClick={goNext} aria-label="Next slide">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 6l6 6-6 6" />
+          </svg>
+        </button>
+      </div>
+
+      {/* ── Progress bar ── */}
+      <div className="hero-progress">
+        <div
+          key={current}
+          className={`hero-progress-bar${!paused ? " hero-progress-bar--running" : ""}`}
+        />
       </div>
 
     </section>
