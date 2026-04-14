@@ -2,7 +2,7 @@ import { Search, Menu, X } from "lucide-react";
 import { useState } from "react";
 import { useNavigate, NavLink, useLocation } from "react-router-dom";
 import "./Navbar.css";
-import logo from "../assets/Vidya.png";
+import logo from "../assets/Vidya1.png";
 
 export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
