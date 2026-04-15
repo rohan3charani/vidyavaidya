@@ -1,6 +1,6 @@
 /* =====================================================
-   ABOUT SECTION — Trusthand Charity Website
-   Kindi-inspired premium two-column layout
+   ABOUT SECTION — Trusthand / Vidyavaidya Charity
+   Single large hero circle with crossfade carousel
    ===================================================== */
 
 /* ── Section wrapper ── */
@@ -51,8 +51,6 @@
 .about-left {
   flex: 1;
   min-width: 0;
-
-  /* Slide-up animation — starts hidden */
   opacity: 0;
   transform: translateY(50px);
   transition: opacity 0.9s ease-out, transform 0.9s ease-out;
@@ -63,7 +61,6 @@
   transition-delay: 0.1s;
 }
 
-/* Tag line */
 .about-tag {
   display: inline-block;
   font-size: 0.8rem;
@@ -87,7 +84,6 @@
   border-radius: 2px;
 }
 
-/* Heading */
 .about-heading {
   font-size: clamp(2rem, 3.5vw, 3rem);
   font-weight: 800;
@@ -95,11 +91,8 @@
   color: #111827;
   margin-bottom: 1.25rem;
 }
-.about-heading--accent {
-  color: #dc2626;
-}
+.about-heading--accent { color: #dc2626; }
 
-/* Description */
 .about-desc {
   color: #6b7280;
   font-size: 1rem;
@@ -125,9 +118,7 @@
   border-radius: 20px;
   padding: 1.25rem;
   box-shadow: 0 4px 16px rgba(0,0,0,0.05);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-
-  /* Individual fade-in — controlled via inline transitionDelay */
+  transition: transform 0.3s ease, box-shadow 0.3s ease, opacity 0.7s ease;
   opacity: 0;
   transform: translateY(20px);
 }
@@ -149,12 +140,8 @@
   place-items: center;
   font-size: 1.5rem;
 }
-.icon-bg--gold {
-  background: linear-gradient(135deg, #fef3c7, #fde68a);
-}
-.icon-bg--purple {
-  background: linear-gradient(135deg, #ede9fe, #c4b5fd);
-}
+.icon-bg--gold   { background: linear-gradient(135deg, #fef3c7, #fde68a); }
+.icon-bg--purple { background: linear-gradient(135deg, #ede9fe, #c4b5fd); }
 
 .about-feature__text h4 {
   margin: 0 0 4px;
@@ -186,12 +173,12 @@
   border: none;
   cursor: pointer;
   transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
-  box-shadow: 0 8px 24px rgba(220, 38, 38, 0.3);
+  box-shadow: 0 8px 24px rgba(220,38,38,0.3);
 }
 .about-btn:hover {
   background: #b91c1c;
   transform: translateY(-2px);
-  box-shadow: 0 14px 30px rgba(220, 38, 38, 0.4);
+  box-shadow: 0 14px 30px rgba(220,38,38,0.4);
 }
 .about-btn__arrow {
   font-size: 1.1rem;
@@ -202,13 +189,16 @@
 }
 
 /* =====================================================
-   RIGHT COLUMN — Image cluster
+   RIGHT COLUMN — Hero circle
    ===================================================== */
 .about-right {
   position: relative;
   flex: 1;
   min-width: 0;
-  min-height: 520px;
+  min-height: 560px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   opacity: 0;
   transform: translateX(60px);
@@ -220,95 +210,108 @@
   transition-delay: 0.3s;
 }
 
-/* Circular images shared styles */
-.about-img {
-  position: absolute;
-  border-radius: 50%;
-  overflow: hidden;
-  border: 6px solid #ffffff;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
-  transition: transform 0.5s ease;
-}
-.about-img img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-  transition: transform 0.6s ease;
-  will-change: transform;
-}
-.about-img:hover img {
-  transform: scale(1.07);
-}
-
-/* Large circle */
-.about-img--large {
-  width: 340px;
-  height: 340px;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-.about-visible .about-img--large {
-  transform: translate(-50%, -50%);
-}
-
-/* Small circle — overlapping bottom-left */
-.about-img--small {
-  width: 180px;
-  height: 180px;
-  bottom: 10px;
-  left: 5%;
-  border: 5px solid #ffffff;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
-  z-index: 2;
-  animation: about-float 5s ease-in-out infinite;
-}
-
-@keyframes about-float {
-  0%, 100% { transform: translateY(0); }
-  50%       { transform: translateY(-10px); }
-}
-
-/* ── Dotted pattern ── */
+/* ── Dotted pattern (top-right) ── */
 .about-dots {
   position: absolute;
   top: 0;
   right: 0;
   width: 110px;
   height: 110px;
-  background-image:
-    radial-gradient(circle, rgba(220,38,38,0.35) 1.5px, transparent 1.5px);
+  background-image: radial-gradient(circle, rgba(220,38,38,0.35) 1.5px, transparent 1.5px);
   background-size: 14px 14px;
   z-index: 0;
   border-radius: 8px;
 }
 
-/* ── Yellow / orange accent ring ── */
+/* ── Yellow accent ring ── */
 .about-ring {
   position: absolute;
-  width: 160px;
-  height: 160px;
+  width: 200px;
+  height: 200px;
   border-radius: 50%;
-  border: 12px solid #f4b400;
-  top: 8px;
-  right: 12%;
+  border: 14px solid #f4b400;
+  top: 0px;
+  right: 8%;
   z-index: 0;
   animation: about-ring-rotate 12s linear infinite;
   opacity: 0.85;
 }
-
 @keyframes about-ring-rotate {
-  from { transform: rotate(0deg) scale(1);   }
+  from { transform: rotate(0deg) scale(1);    }
   50%  { transform: rotate(180deg) scale(1.06); }
   to   { transform: rotate(360deg) scale(1);   }
+}
+
+/* ── HERO CIRCLE ── */
+.about-img {
+  border-radius: 50%;
+  overflow: hidden;
+  border: 7px solid #ffffff;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.18);
+  position: relative;
+  z-index: 2;
+}
+
+/* Single large circle — centered */
+.about-img--hero {
+  width: 440px;
+  height: 440px;
+  position: relative;
+  flex-shrink: 0;
+}
+
+/* ── Crossfade carousel inside circle ── */
+.about-img--hero {
+  /* stack children */
+  display: block;
+}
+
+/* Images sit stacked, crossfade via opacity */
+.about-carousel__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  transition: opacity 0.9s ease;
+}
+.about-carousel__img--in  { opacity: 1;  z-index: 2; }
+.about-carousel__img--out { opacity: 0;  z-index: 1; }
+
+/* ── Nav dots (inside bottom of circle) ── */
+.about-carousel__dots {
+  position: absolute;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 7px;
+  z-index: 10;
+}
+.about-carousel__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.5);
+  border: 2px solid rgba(255,255,255,0.7);
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.3s ease, transform 0.3s ease;
+}
+.about-carousel__dot--active {
+  background: #ffffff;
+  transform: scale(1.4);
+}
+.about-carousel__dot:hover {
+  background: rgba(255,255,255,0.85);
 }
 
 /* ── Stats badge ── */
 .about-badge {
   position: absolute;
-  bottom: 20px;
-  right: 6%;
+  bottom: 30px;
+  right: 4%;
   background: #111827;
   color: #ffffff;
   border-radius: 20px;
@@ -317,11 +320,11 @@
   flex-direction: column;
   align-items: center;
   box-shadow: 0 10px 28px rgba(0,0,0,0.25);
-  z-index: 3;
-  animation: badge-float 4s ease-in-out infinite alternate;
+  z-index: 5;
+  animation: badge-float 3s ease-in-out infinite alternate;
 }
 @keyframes badge-float {
-  from { transform: translateY(0);   }
+  from { transform: translateY(0);    }
   to   { transform: translateY(-8px); }
 }
 .about-badge__number {
@@ -346,10 +349,9 @@
     flex-direction: column;
     gap: 3rem;
   }
-
   .about-right {
     width: 100%;
-    min-height: 400px;
+    min-height: 460px;
     transform: none;
     opacity: 0;
   }
@@ -357,20 +359,13 @@
     opacity: 1;
     transform: none;
   }
-
-  .about-img--large {
-    width: 260px;
-    height: 260px;
+  .about-img--hero {
+    width: 360px;
+    height: 360px;
   }
-
-  .about-img--small {
+  .about-ring {
     width: 140px;
     height: 140px;
-  }
-
-  .about-ring {
-    width: 110px;
-    height: 110px;
   }
 }
 
@@ -378,19 +373,15 @@
   .about-section {
     padding: 5rem 6%;
   }
-
   .about-features {
     grid-template-columns: 1fr;
   }
-
-  .about-img--large {
-    width: 220px;
-    height: 220px;
+  .about-img--hero {
+    width: 280px;
+    height: 280px;
   }
-
-  .about-img--small {
-    width: 120px;
-    height: 120px;
-    left: 0;
+  .about-ring {
+    width: 110px;
+    height: 110px;
   }
 }

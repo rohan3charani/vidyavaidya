@@ -18,6 +18,85 @@ const FEATURES = [
   },
 ];
 
+/*
+  ── HOW TO ADD LOCAL IMAGES ──────────────────────────────────────────────
+  OPTION A – Public folder (no import needed):
+    { src: "/about/photo1.jpg", alt: "Description" }
+
+  OPTION B – Import at top of file:
+    import img1 from "./assets/photo1.jpg";
+    then use: { src: img1, alt: "Description" }
+
+  Just replace or add entries in the array below.
+  ─────────────────────────────────────────────────────────────────────── */
+const ABOUT_IMAGES = [
+  { src: "src/assets/bg/1.jpg", alt: "Volunteers with children" },
+  { src: "src/assets/bg/2.jpg", alt: "Volunteer mentoring a child" },
+  { src: "src/assets/bg/3.jpg", alt: "Community outreach" },
+  { src: "src/assets/bg/01.jpg", alt: "Children learning" },
+  { src: "src/assets/bg/02.jpg", alt: "Food distribution" },
+  { src: "src/assets/bg/03.jpg", alt: "Charity event" },
+  // ← Add more: { src: "/about/photo7.jpg", alt: "Your description" }
+];
+
+function AboutImageCarousel() {
+  const [current, setCurrent] = useState(0);
+  const [prev, setPrev] = useState(null);
+  const [transitioning, setTransitioning] = useState(false);
+  const total = ABOUT_IMAGES.length;
+
+  const goTo = (index) => {
+    if (index === current || transitioning) return;
+    setPrev(current);
+    setCurrent(index);
+    setTransitioning(true);
+    setTimeout(() => {
+      setPrev(null);
+      setTransitioning(false);
+    }, 900);
+  };
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      goTo((current + 1) % total);
+    }, 3000);
+    return () => clearInterval(timer);
+  }, [current, transitioning]);
+
+  return (
+    <>
+      {/* Outgoing image */}
+      {prev !== null && (
+        <img
+          key={`prev-${prev}`}
+          src={ABOUT_IMAGES[prev].src}
+          alt={ABOUT_IMAGES[prev].alt}
+          className="about-carousel__img about-carousel__img--out"
+        />
+      )}
+      {/* Incoming image */}
+      <img
+        key={`curr-${current}`}
+        src={ABOUT_IMAGES[current].src}
+        alt={ABOUT_IMAGES[current].alt}
+        className="about-carousel__img about-carousel__img--in"
+      />
+
+      {/* Navigation dots */}
+      <div className="about-carousel__dots">
+        {ABOUT_IMAGES.map((_, i) => (
+          <button
+            key={i}
+            className={`about-carousel__dot${i === current ? " about-carousel__dot--active" : ""}`}
+            onClick={() => goTo(i)}
+            aria-label={`Go to image ${i + 1}`}
+          />
+        ))}
+      </div>
+    </>
+  );
+}
+
 export default function About() {
   const sectionRef = useRef(null);
   const [visible, setVisible] = useState(false);
@@ -42,7 +121,6 @@ export default function About() {
       ref={sectionRef}
       id="about"
     >
-      {/* Subtle background blobs */}
       <div className="about-bg-blob about-bg-blob--1" aria-hidden="true" />
       <div className="about-bg-blob about-bg-blob--2" aria-hidden="true" />
 
@@ -62,7 +140,6 @@ export default function About() {
             initiatives, we transform lives one family at a time.
           </p>
 
-          {/* Feature cards */}
           <div className="about-features">
             {FEATURES.map((f, i) => (
               <div
@@ -87,30 +164,14 @@ export default function About() {
           </a>
         </div>
 
-        {/* ── RIGHT IMAGES ── */}
-        <div className="about-right" aria-hidden="true">
-          {/* Dotted pattern */}
-          <div className="about-dots" />
+        {/* ── RIGHT — Single large hero circle ── */}
+        <div className="about-right" aria-label="Image gallery">
+          <div className="about-dots" aria-hidden="true" />
+          <div className="about-ring" aria-hidden="true" />
 
-          {/* Yellow ring */}
-          <div className="about-ring" />
-
-          {/* Large circle image */}
-          <div className="about-img about-img--large">
-            <img
-              src="https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=700&q=80"
-              alt="Volunteers with children"
-              loading="lazy"
-            />
-          </div>
-
-          {/* Small overlapping circle image */}
-          <div className="about-img about-img--small">
-            <img
-              src="https://images.unsplash.com/photo-1509099836639-18ba1795216d?w=400&q=80"
-              alt="Volunteer mentoring a child"
-              loading="lazy"
-            />
+          {/* Hero circle */}
+          <div className="about-img about-img--hero">
+            <AboutImageCarousel />
           </div>
 
           {/* Stats badge */}
