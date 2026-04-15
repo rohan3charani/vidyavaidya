@@ -14,6 +14,9 @@ import DonorForm from "./pages/forms/DonorForm";
 import CorporateForm from "./pages/forms/CorporateForm";
 import HospitalForm from "./pages/forms/HospitalForm";
 import ProtectedRoute from "./routes/ProtectedRoute";
+import AdminRoute from "./routes/AdminRoute";
+import AdminLogin from "./pages/admin/AdminLogin";
+import AdminDashboard from "./pages/admin/AdminDashboard";
 
 import OurMission from "./pages/OurMission";
 import Partners from "./pages/Partners";
@@ -57,6 +60,17 @@ export default function App() {
       <Route path="/publishings" element={<Publishings />} />
       <Route path="/contact" element={<Contact />} />
       <Route path="/Hero" element={<Home />} />
+
+      {/* ── Admin Routes ── */}
+      <Route path="/admin" element={<AdminLogin />} />
+      <Route
+        path="/admin/dashboard"
+        element={
+          <AdminRoute>
+            <AdminDashboard />
+          </AdminRoute>
+        }
+      />
       
       {/* Community Routes - Protected */}
       <Route 
