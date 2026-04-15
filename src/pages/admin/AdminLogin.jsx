@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ShieldCheck, Eye, EyeOff, Lock, User } from "lucide-react";
+import vidyaLogo from "../../assets/Vidya1.png";
 import "./AdminLogin.css";
 
 const ADMIN_CREDENTIALS = {
@@ -40,104 +41,115 @@ export default function AdminLogin() {
 
   return (
     <div className="admin-login-root">
-      {/* Animated Background */}
-      <div className="abl-bg">
-        <div className="abl-orb abl-orb-1" />
-        <div className="abl-orb abl-orb-2" />
-        <div className="abl-orb abl-orb-3" />
-        <div className="abl-grid-overlay" />
+      
+      {/* ── Left Pane: Animated Background Logo ── */}
+      <div className="al-left-pane">
+        <div className="al-bg-effects">
+          <div className="al-orb al-orb-1" />
+          <div className="al-orb al-orb-2" />
+        </div>
+        
+        <div className="al-logo-container">
+          <div className="al-logo-glow" />
+          <img src={vidyaLogo} alt="VidyaVaidya Logo" />
+        </div>
       </div>
 
-      <div className={`abl-card ${shake ? "abl-shake" : ""}`}>
-        {/* Logo/Brand */}
-        <div className="abl-brand">
-          <div className="abl-shield">
-            <ShieldCheck size={28} />
-          </div>
-          <div>
-            <h1>VidyaVaidya</h1>
-            <span>Admin Control Panel</span>
-          </div>
-        </div>
-
-        <div className="abl-divider" />
-
-        <h2>Sign in to continue</h2>
-        <p className="abl-sub">Restricted access — authorised personnel only</p>
-
-        <form className="abl-form" onSubmit={handleLogin}>
-          <div className="abl-field">
-            <label htmlFor="admin-username">Username</label>
-            <div className="abl-input-wrap">
-              <User size={16} />
-              <input
-                id="admin-username"
-                type="text"
-                autoComplete="username"
-                placeholder="Enter admin username"
-                value={username}
-                onChange={(e) => { setUsername(e.target.value); setError(""); }}
-                required
-              />
+      {/* ── Right Pane: Form Card ── */}
+      <div className="al-right-pane">
+        <div className={`al-card ${shake ? "al-shake" : ""}`}>
+          
+          <div className="al-brand">
+            <div className="al-shield">
+              <ShieldCheck size={28} />
+            </div>
+            <div>
+              <h1>VidyaVaidya</h1>
+              <span>Admin Control Panel</span>
             </div>
           </div>
 
-          <div className="abl-field">
-            <label htmlFor="admin-password">Password</label>
-            <div className="abl-input-wrap">
-              <Lock size={16} />
-              <input
-                id="admin-password"
-                type={showPassword ? "text" : "password"}
-                autoComplete="current-password"
-                placeholder="Enter admin password"
-                value={password}
-                onChange={(e) => { setPassword(e.target.value); setError(""); }}
-                required
-              />
-              <button
-                type="button"
-                className="abl-eye-btn"
-                onClick={() => setShowPassword((p) => !p)}
-                tabIndex={-1}
-              >
-                {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
-              </button>
-            </div>
-          </div>
+          <div className="al-divider" />
 
-          {error && (
-            <div className="abl-error" role="alert">
-              <span>⚠</span> {error}
-            </div>
-          )}
+          <h2>Sign in to continue</h2>
+          <p className="al-sub">Restricted access — authorised personnel only</p>
 
-          <button
-            type="submit"
-            className={`abl-submit ${loading ? "abl-loading" : ""}`}
-            disabled={loading}
-          >
-            {loading ? (
-              <>
-                <span className="abl-spinner" /> Verifying…
-              </>
-            ) : (
-              <>
-                <ShieldCheck size={16} /> Access Dashboard
-              </>
+          <form className="al-form" onSubmit={handleLogin}>
+            <div className="al-field">
+              <label htmlFor="admin-username">Username</label>
+              <div className="al-input-wrap">
+                <User size={16} />
+                <input
+                  id="admin-username"
+                  type="text"
+                  autoComplete="username"
+                  placeholder="Enter admin username"
+                  value={username}
+                  onChange={(e) => { setUsername(e.target.value); setError(""); }}
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="al-field">
+              <label htmlFor="admin-password">Password</label>
+              <div className="al-input-wrap">
+                <Lock size={16} />
+                <input
+                  id="admin-password"
+                  type={showPassword ? "text" : "password"}
+                  autoComplete="current-password"
+                  placeholder="Enter admin password"
+                  value={password}
+                  onChange={(e) => { setPassword(e.target.value); setError(""); }}
+                  required
+                />
+                <button
+                  type="button"
+                  className="al-eye-btn"
+                  onClick={() => setShowPassword((p) => !p)}
+                  tabIndex={-1}
+                >
+                  {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                </button>
+              </div>
+            </div>
+
+            {error && (
+              <div className="al-error" role="alert">
+                <span>⚠</span> {error}
+              </div>
             )}
-          </button>
-        </form>
 
-        <p className="abl-back-link">
-          <a href="/">← Back to main website</a>
-        </p>
+            <button
+              type="submit"
+              className={`al-submit ${loading ? "al-loading" : ""}`}
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <span className="al-spinner" /> Verifying…
+                </>
+              ) : (
+                <>
+                  <ShieldCheck size={16} /> Access Dashboard
+                </>
+              )}
+            </button>
+          </form>
 
-        <div className="abl-hint-box">
-          <strong>Demo credentials:</strong>
-          <code>admin / vidyavaidya@2024</code>
+          <p className="al-back-link">
+            <a href="/">← Back to main website</a>
+          </p>
+
+          <div className="al-hint-box">
+            <strong>Demo credentials:</strong>
+            <code>admin / vidyavaidya@2024</code>
+          </div>
+          
         </div>
       </div>
+
     </div>
   );
 }
