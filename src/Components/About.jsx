@@ -158,7 +158,7 @@ export default function About() {
             ))}
           </div>
 
-          <a href="#contact" className="about-btn" aria-label="Contact Us">
+          <a href="/contact" className="about-btn" aria-label="Contact Us">
             Contact Us
             <span className="about-btn__arrow" aria-hidden="true">→</span>
           </a>

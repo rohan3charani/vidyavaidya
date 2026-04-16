@@ -2,7 +2,9 @@ import Hero, { WhatWeDo, CTABanner, TeamMembers, SimpleTestimonials } from "./Co
 import Navbar from "./Components/Navbar";
 import About from "./Components/About";
 import Footer from "./Components/Footer";
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
+import Loader from "./Components/Loader";
 import AuthPage from "./pages/AuthPage";
 import OtpPage from "./pages/OtpPage";
 import Dashboard from "./pages/Dashboard";
@@ -43,76 +45,97 @@ function LandingPage() {
 }
 
 export default function App() {
-  return (
-    <Routes>
-      <Route path="/" element={<LandingPage />} />
-      <Route path="/donate" element={<Donate />} />
-      <Route path="/auth" element={<AuthPage />} />
-      <Route path="/otp" element={<OtpPage />} />
-      <Route path="/dashboard" element={<Dashboard />} />
-      <Route path="/payment" element={<Payment />} />
-      
-      <Route path="/mission" element={<OurMission />} />
-      <Route path="/partners" element={<Partners />} />
-      <Route path="/PhotoGallery" element={<PhotoGallery />} />
-      <Route path="/VideoGallery" element={<VideoGallery />} />
-      <Route path="/news" element={<News />} />
-      <Route path="/publishings" element={<Publishings />} />
-      <Route path="/contact" element={<Contact />} />
-      <Route path="/Hero" element={<Home />} />
+  const [loading, setLoading] = useState(true);
+  const location = useLocation();
 
-      {/* ── Admin Routes ── */}
-      <Route path="/admin" element={<AdminLogin />} />
-      <Route
-        path="/admin/dashboard"
-        element={
-          <AdminRoute>
-            <AdminDashboard />
-          </AdminRoute>
-        }
-      />
+  useEffect(() => {
+    setLoading(true);
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 1200);
+    return () => clearTimeout(timer);
+  }, [location.pathname]);
+
+  return (
+    <>
+      <div 
+        className={`fixed inset-0 z-50 transition-all duration-700 pointer-events-none ${
+          loading ? "opacity-100" : "opacity-0 invisible delay-300"
+        }`}
+      >
+        <Loader />
+      </div>
       
-      {/* Community Routes - Protected */}
-      <Route 
-        path="/join-community" 
-        element={
-          <ProtectedRoute>
-            <JoinCommunity />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/join/volunteer" 
-        element={
-          <ProtectedRoute>
-            <VolunteerForm />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/join/donor" 
-        element={
-          <ProtectedRoute>
-            <DonorForm />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/join/corporate" 
-        element={
-          <ProtectedRoute>
-            <CorporateForm />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/join/hospital" 
-        element={
-          <ProtectedRoute>
-            <HospitalForm />
-          </ProtectedRoute>
-        } 
-      />
-    </Routes>
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/donate" element={<Donate />} />
+        <Route path="/auth" element={<AuthPage />} />
+        <Route path="/otp" element={<OtpPage />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/payment" element={<Payment />} />
+        
+        <Route path="/mission" element={<OurMission />} />
+        <Route path="/partners" element={<Partners />} />
+        <Route path="/PhotoGallery" element={<PhotoGallery />} />
+        <Route path="/VideoGallery" element={<VideoGallery />} />
+        <Route path="/news" element={<News />} />
+        <Route path="/publishings" element={<Publishings />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/Hero" element={<Home />} />
+
+        {/* ── Admin Routes ── */}
+        <Route path="/admin" element={<AdminLogin />} />
+        <Route
+          path="/admin/dashboard"
+          element={
+            <AdminRoute>
+              <AdminDashboard />
+            </AdminRoute>
+          }
+        />
+        
+        {/* Community Routes - Protected */}
+        <Route 
+          path="/join-community" 
+          element={
+            <ProtectedRoute>
+              <JoinCommunity />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/join/volunteer" 
+          element={
+            <ProtectedRoute>
+              <VolunteerForm />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/join/donor" 
+          element={
+            <ProtectedRoute>
+              <DonorForm />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/join/corporate" 
+          element={
+            <ProtectedRoute>
+              <CorporateForm />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/join/hospital" 
+          element={
+            <ProtectedRoute>
+              <HospitalForm />
+            </ProtectedRoute>
+          } 
+        />
+      </Routes>
+    </>
   );
 }

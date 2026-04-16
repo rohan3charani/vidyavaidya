@@ -57,7 +57,7 @@ export default function Hero() {
       {BG_IMAGES.map((img, i) => (
         <div
           key={i}
-          className={`hero-slide${i === current ? " hero-slide--active" : ""}${i === prev ? " hero-slide--prev" : ""}`}
+          className={`hero-slide${i === current ? " hero-slide--active animate-zoom-in" : ""}${i === prev ? " hero-slide--prev" : ""}`}
           style={{ backgroundImage: `url(${img})` }}
           aria-hidden={i !== current}
         />
@@ -81,10 +81,10 @@ export default function Hero() {
       <div className="hero-container">
         <div className="hero-content">
 
-          <p className="hero-tagline">{HERO.tagline}</p>
-          <h1 className="hero-heading">{HERO.heading}</h1>
+          <p className="hero-tagline animate-slide-up delay-100">{HERO.tagline}</p>
+          <h1 className="hero-heading animate-slide-up delay-200">{HERO.heading}</h1>
 
-          <div className="hero-actions">
+          <div className="hero-actions animate-slide-up delay-300">
             <a href={HERO.primaryBtn.href} className="hero-btn-primary">
               {HERO.primaryBtn.label}
             </a>
