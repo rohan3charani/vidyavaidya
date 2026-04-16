@@ -826,7 +826,9 @@ export default function AdminDashboard() {
 
         {/* Content */}
         <main className="adm-content">
-          {SECTIONS[activeSection]}
+          <div key={activeSection} className="animate-slide-up">
+            {SECTIONS[activeSection]}
+          </div>
         </main>
       </div>
     </div>

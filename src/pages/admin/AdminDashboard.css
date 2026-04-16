@@ -602,9 +602,24 @@
   vertical-align: middle;
 }
 
+.adm-table tbody tr {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  z-index: 1;
+}
+
 .adm-table tbody tr:last-child td { border-bottom: none; }
 
-.adm-table tbody tr:hover td { background: var(--ad-page-bg); }
+.adm-table tbody tr:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(11, 30, 48, 0.08);
+  z-index: 10;
+}
+
+.adm-table tbody tr:hover td { 
+  background: rgba(26, 188, 156, 0.03); 
+  border-bottom-color: transparent;
+}
 
 .adm-table .adm-center { text-align: center; }
 
@@ -620,6 +635,11 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.adm-table tbody tr:hover .adm-donor-cell {
+  transform: translateX(6px);
 }
 
 .adm-avatar-sm {
@@ -631,6 +651,13 @@
   font-weight: 700;
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.adm-table tbody tr:hover .adm-avatar-sm,
+.adm-ud-user-item:hover .adm-avatar-sm {
+  transform: scale(1.15) rotate(5deg);
+  box-shadow: 0 4px 10px rgba(26, 188, 156, 0.35);
 }
 
 .adm-avatar-lg {
@@ -649,6 +676,12 @@
   font-weight: 600;
   color: var(--ad-text-main);
   font-size: 0.85rem;
+  transition: color 0.3s ease;
+}
+
+.adm-table tbody tr:hover .adm-donor-name,
+.adm-ud-user-item:hover .adm-donor-name {
+  color: var(--ad-primary-dark);
 }
 
 .adm-donor-email {
@@ -794,12 +827,14 @@
   padding: 10px 12px;
   border-radius: 10px;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   border: 1px solid transparent;
 }
 
 .adm-ud-user-item:hover {
   background: var(--ad-page-bg);
+  transform: translateX(4px);
+  box-shadow: 0 4px 14px rgba(11,30,48,0.08);
 }
 
 .adm-ud-active {
