@@ -11,14 +11,14 @@ const COMMUNITY_CARDS = [
     title: "Become a Volunteer",
     description: "Dedicate your time and skills to help children receive better education and healthcare.",
     icon: <Users size={32} />,
-    path: "/join/volunteer"
+    path: "/contact"
   },
   {
     id: "donor",
     title: "Become a Donor",
     description: "Your contributions can provide life-changing resources for underprivileged communities.",
     icon: <Heart size={32} />,
-    path: "/join/donor"
+    path: "/donate"
   },
   {
     id: "corporate",

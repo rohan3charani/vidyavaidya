@@ -419,14 +419,14 @@ export function CTABanner() {
         <h2 className="cta-heading">Join the Community of Over a <span className="cta-heading-accent">Million</span> People</h2>
         <p className="cta-desc">Together we create lasting change — one life, one community, one future at a time. Your support makes all the difference.</p>
         <div className="cta-actions">
-          <a href="#contact" className="cta-btn-primary">
+          <a href="/donate" className="cta-btn-primary">
             <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" width="17" height="17" aria-hidden="true" className="cta-btn-icon">
               <path d="M10 2a2 2 0 0 0-2 2v6.5l-1.2-.6a1.5 1.5 0 0 0-2 2l2.5 1.3V16a2 2 0 0 0 2 2h3a2 2 0 0 0 2-2v-5.6l.5-.4a2 2 0 0 0 .5-1.4V4a2 2 0 0 0-2-2h-3Z" fill="white"/>
             </svg>
             Become A Donor
             <span className="cta-btn-shine" aria-hidden="true" />
           </a>
-          <a href="#about" className="cta-btn-outline">
+          <a href="/contact" className="cta-btn-outline">
             Become A Volunteer
             <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" width="16" height="16" aria-hidden="true">
               <path d="M4 10h12M11 5l5 5-5 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
