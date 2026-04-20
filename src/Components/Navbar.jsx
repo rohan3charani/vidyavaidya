@@ -91,7 +91,7 @@ export default function Navbar() {
               }
             }}
             className={location.pathname === "/join-community" ? "vv-nav-link vv-join-community active" : "vv-nav-link vv-join-community"}>
-            Be Part of Us
+            Be A Part of Us
           </button>
         </nav>
 
