@@ -91,7 +91,7 @@ export default function Navbar() {
               }
             }}
             className={location.pathname === "/join-community" ? "vv-nav-link vv-join-community active" : "vv-nav-link vv-join-community"}>
-            Join in the Community
+            Be Part of Us
           </button>
         </nav>
 
@@ -144,7 +144,7 @@ export default function Navbar() {
             }}
             className="vv-nav-link vv-join-community"
           >
-            Be Part of Usn
+            Be Part of Us
           </button>
           <button
             onClick={() => {
