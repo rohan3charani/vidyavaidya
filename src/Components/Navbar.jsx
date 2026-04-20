@@ -144,7 +144,7 @@ export default function Navbar() {
             }}
             className="vv-nav-link vv-join-community"
           >
-            Be Part of Us
+            Be Part of Usn
           </button>
           <button
             onClick={() => {
