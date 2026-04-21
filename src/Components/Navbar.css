@@ -81,12 +81,19 @@
   background: none;
   border: none;
   padding: 8px 0;
+  outline: none;
 }
 
 .vv-nav-link:hover {
   color: var(--green-accent);
   transform: scale(1.05);
   text-decoration: none !important; /* Force no underline */
+}
+
+.vv-nav-link:focus-visible,
+.vv-dropdown-container button:focus-visible {
+  outline: none;
+  box-shadow: none;
 }
 
 .vv-nav-link.active {

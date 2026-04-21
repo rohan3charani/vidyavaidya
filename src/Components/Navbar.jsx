@@ -64,11 +64,11 @@ export default function Navbar() {
             onMouseLeave={() => setStoriesDropdown(false)}
           >
             <button className="vv-nav-link">
-              Stories & News <span>▾</span>
+              News <span>▾</span>
             </button>
             {storiesDropdown && (
               <div className="vv-dropdown-menu">
-                <NavLink to="/news" className="vv-dropdown-item">News</NavLink>
+                <NavLink to="/news" className="vv-dropdown-item">Articles</NavLink>
                 <NavLink to="/publishings" className="vv-dropdown-item">Publishings</NavLink>
               </div>
             )}
@@ -135,7 +135,8 @@ export default function Navbar() {
             </NavLink>
           ))}
           <NavLink to="/events" className="vv-nav-link" onClick={() => setIsMobileMenuOpen(false)}>Events</NavLink>
-          <NavLink to="/news" className="vv-nav-link" onClick={() => setIsMobileMenuOpen(false)}>Stories & News</NavLink>
+          <NavLink to="/news" className="vv-nav-link" onClick={() => setIsMobileMenuOpen(false)}>Articles</NavLink>
+          <NavLink to="/publishings" className="vv-nav-link" onClick={() => setIsMobileMenuOpen(false)}>Publishings</NavLink>
           <NavLink to="/contact" className="vv-nav-link" onClick={() => setIsMobileMenuOpen(false)}>Contact</NavLink>
           <button
             onClick={() => {

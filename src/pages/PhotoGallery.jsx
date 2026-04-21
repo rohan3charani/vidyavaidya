@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import Navbar from "../Components/Navbar";
 import Footer from "../Components/Footer";
 
-const categories = ["All", "Education", "Health", "Events", "Volunteers", "Impact Stories"];
+const categories = ["All", "Education", "Health", "Volunteers", "Impact Stories"];
 
 const galleryPhotos = [
   {
@@ -191,13 +191,12 @@ export default function PhotoGallery() {
                 >
                   View Photos
                 </button>
-                <button
-                  type="button"
-                  onClick={() => videoSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
+                <Link
+                  to="/VideoGallery"
                   className="inline-flex items-center justify-center rounded-full border border-white/30 bg-white/10 px-7 py-3 text-sm font-semibold text-white transition hover:border-white hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-emerald-300"
                 >
                   Watch Videos
-                </button>
+                </Link>
               </div>
             </div>
           </div>
@@ -230,7 +229,7 @@ export default function PhotoGallery() {
                 Beautiful moments of learning, care, and community.
               </h2>
               <p className="max-w-2xl text-base text-slate-600 sm:text-lg">
-                Filter the gallery to explore how VidyaVaidya brings impact through education, health, events, volunteer action, and heartfelt stories.
+                Filter the gallery to explore how VidyaVaidya brings impact through education, health, volunteer action, and heartfelt stories.
               </p>
             </div>
             <p className="text-sm text-slate-500">Showing {filteredPhotos.length} of {galleryPhotos.length} photos</p>
