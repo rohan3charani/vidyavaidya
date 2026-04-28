@@ -3,7 +3,7 @@ import Navbar from "../Components/Navbar";
 import Footer from "../Components/Footer";
 import "./Pages.css";
 
-const articleImages = import.meta.glob("../assets/articles/*.{jpg,png,jpeg}", { eager: true });
+const articleImages = import.meta.glob("../assets/Articles/*.{jpg,png,jpeg}", { eager: true });
 const images = Object.values(articleImages).map((module) => module.default);
 
 // Split images into two halves
