@@ -1,5 +1,6 @@
 import React from 'react';
 import './Footer.css';
+import vidyaLogo from '../assets/Vidya1.png';
 
 export default function Footer() {
   return (
@@ -8,7 +9,7 @@ export default function Footer() {
         {/* Column 1: Brand & Description */}
         <div className="footer-col col-brand">
           <div className="footer-logo-wrapper">
-            <img src="/src/assets/Vidya1.png" alt="VIDYA-VAIDYA FOUNDATION" className="footer-logo" style={{width: "80px", height: "80px", borderRadius: "50%"}}/>
+            <img src={vidyaLogo} alt="VIDYA-VAIDYA FOUNDATION" className="footer-logo" style={{width: "80px", height: "80px", borderRadius: "50%"}}/>
             <span className="footer-brand-text">VIDYA-VAIDYA FOUNDATION</span>
           </div>
           <p className="footer-desc">
