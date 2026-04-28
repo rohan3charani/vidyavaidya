@@ -2,7 +2,7 @@ import Hero, { WhatWeDo, CTABanner, TeamMembers, SimpleTestimonials } from "./Co
 import Navbar from "./Components/Navbar";
 import About from "./Components/About";
 import Footer from "./Components/Footer";
-import { Route, Routes, useLocation } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 import { useState, useEffect } from "react";
 import Loader from "./Components/Loader";
 import AuthPage from "./pages/AuthPage";
@@ -22,6 +22,10 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 
 import OurMission from "./pages/OurMission";
 import Partners from "./pages/Partners";
+import GlobalHealthCare from "./pages/GlobalHealthCare";
+import SairamHospital from "./pages/SairamHospital";
+import TechForGood from "./pages/TechForGood";
+import CharaniInfotech from "./pages/CharaniInfotech";
 import PhotoGallery from "./pages/PhotoGallery";
 import VideoGallery from "./pages/VideoGallery";
 import News from "./pages/News";
@@ -46,15 +50,14 @@ function LandingPage() {
 
 export default function App() {
   const [loading, setLoading] = useState(true);
-  const location = useLocation();
 
+  // Run the loading animation ONLY on the initial app load
   useEffect(() => {
-    setLoading(true);
     const timer = setTimeout(() => {
       setLoading(false);
     }, 1200);
     return () => clearTimeout(timer);
-  }, [location.pathname]);
+  }, []);
 
   return (
     <>
@@ -76,6 +79,10 @@ export default function App() {
         
         <Route path="/mission" element={<OurMission />} />
         <Route path="/partners" element={<Partners />} />
+        <Route path="/partners/global-health-care" element={<GlobalHealthCare />} />
+        <Route path="/partners/sairam-hospital" element={<SairamHospital />} />
+        <Route path="/partners/tech-for-good" element={<TechForGood />} />
+        <Route path="/partners/charani-infotech" element={<CharaniInfotech />} />
         <Route path="/PhotoGallery" element={<PhotoGallery />} />
         <Route path="/VideoGallery" element={<VideoGallery />} />
         <Route path="/news" element={<News />} />

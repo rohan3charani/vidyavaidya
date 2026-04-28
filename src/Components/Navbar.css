@@ -55,7 +55,8 @@
 
 /* Navigation Menu */
 .vv-nav-group {
-  display: none; /* Mobile first is hidden */
+  display: none;
+  /* Mobile first is hidden */
   align-items: center;
   gap: 28px;
   margin-left: auto;
@@ -86,7 +87,8 @@
 .vv-nav-link:hover {
   color: var(--green-accent);
   transform: scale(1.05);
-  text-decoration: none !important; /* Force no underline */
+  text-decoration: none !important;
+  /* Force no underline */
 }
 
 .vv-nav-link.active {
@@ -273,4 +275,3 @@
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
   z-index: 999;
 }
-
