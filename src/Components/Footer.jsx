@@ -8,8 +8,8 @@ export default function Footer() {
         {/* Column 1: Brand & Description */}
         <div className="footer-col col-brand">
           <div className="footer-logo-wrapper">
-            <img src="src/assets/Vidya1.png" alt="VIDYA-VAIDYA FOUNDATION" className="footer-logo" style={{width: "80px", height: "80px", borderRadius: "50%"}}/>
-            {/* The image shows a specific logo with Tamil text "அறம் செய விரும்பு". Using placeholder for now. */}
+            <img src="/src/assets/Vidya1.png" alt="VIDYA-VAIDYA FOUNDATION" className="footer-logo" style={{width: "80px", height: "80px", borderRadius: "50%"}}/>
+            <span className="footer-brand-text">VIDYA-VAIDYA FOUNDATION</span>
           </div>
           <p className="footer-desc">
             To bring about a significant positive change in the socio-economic status of the rural
