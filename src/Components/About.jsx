@@ -1,5 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import "./About.css";
+import bg1 from "../assets/bg/1.jpg";
+import bg2 from "../assets/bg/2.jpg";
+import bg3 from "../assets/bg/3.jpg";
+import bg01 from "../assets/bg/01.jpg";
 
 const FEATURES = [
   {
@@ -30,13 +34,10 @@ const FEATURES = [
   Just replace or add entries in the array below.
   ─────────────────────────────────────────────────────────────────────── */
 const ABOUT_IMAGES = [
-  { src: "src/assets/bg/1.jpg", alt: "Volunteers with children" },
-  { src: "src/assets/bg/2.jpg", alt: "Volunteer mentoring a child" },
-  { src: "src/assets/bg/3.jpg", alt: "Community outreach" },
-  { src: "src/assets/bg/01.jpg", alt: "Children learning" },
-  { src: "src/assets/bg/02.jpg", alt: "Food distribution" },
-  { src: "src/assets/bg/03.jpg", alt: "Charity event" },
-  // ← Add more: { src: "/about/photo7.jpg", alt: "Your description" }
+  { src: bg1, alt: "Volunteers with children" },
+  { src: bg2, alt: "Volunteer mentoring a child" },
+  { src: bg3, alt: "Community outreach" },
+  { src: bg01, alt: "Children learning" },
 ];
 
 function AboutImageCarousel() {
