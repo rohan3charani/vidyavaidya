@@ -8,12 +8,12 @@ export default function Contact() {
 
   const details = [
     { icon: "📧", label: "Email", value: "contact@vidyavaidya.org" },
-    { icon: "📞", label: "Phone", value: "+91 98765 43210" },
-    { icon: "📍", label: "Address", value: "1A, Mission Road, Bengaluru, Karnataka 560001" }
+    { icon: "📞", label: "Phone", value: "+91 996655#### " },
+    { icon: "📍", label: "Address", value: "Nellore, Andhra Pradesh 524002" }
   ];
 
   return (
-    <div className="page-wrapper">
+    <div className="page-wrapper contact-page">
       <Navbar />
 
       <section className="page-hero">

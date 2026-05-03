@@ -115,7 +115,7 @@ export default function Footer() {
           Copyright © 2026 <strong>VIDYA-VAIDYA FOUNDATION</strong>. All Rights Reserved.
         </p>
         <p className="footer-design">
-          Designed & Developed by <span className="design-brand"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" style={{marginRight: 4, verticalAlign: 'middle', color: '#0dcaf0'}}><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></svg>Charani</span>
+          Designed & Developed by <span className="design-brand"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" style={{marginRight: 4, verticalAlign: 'middle', color: '#0dcaf0'}}><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></svg>RohanTech</span>
         </p>
       </div>
     </footer>
