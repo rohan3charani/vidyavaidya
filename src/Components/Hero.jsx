@@ -149,7 +149,7 @@ export default function Hero() {
 const SERVICES = [
   {
     id: "education", theme: "svc-pink", title: "Education",
-    desc: "Amet minim mollit no deserunt ulamco sit enim aliqua dolor sint Velit officia consequt duis enim velit exertation.",
+    desc: "Providing quality education and learning opportunities to empower the next generation.",
     icon: (
       <svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg" width="46" height="46">
         <circle cx="30" cy="16" r="7" stroke="#e05252" strokeWidth="2.4" />
@@ -163,7 +163,7 @@ const SERVICES = [
   },
   {
     id: "water", theme: "svc-green", title: "Safe Water",
-    desc: "Amet minim mollit no deserunt ulamco sit enim aliqua dolor sint Velit officia consequt duis enim velit exertation.",
+    desc: "Ensuring access to clean and safe drinking water for communities in need.",
     icon: (
       <svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg" width="46" height="46">
         <path d="M30 8 C22 20 14 27 14 36 a16 16 0 0 0 32 0 C46 27 38 20 30 8Z" stroke="#ffffff" strokeWidth="2.4" strokeLinejoin="round" />
@@ -173,7 +173,7 @@ const SERVICES = [
   },
   {
     id: "food", theme: "svc-yellow", title: "Healthy Food",
-    desc: "Amet minim mollit no deserunt ulamco sit enim aliqua dolor sint Velit officia consequt duis enim velit exertation.",
+    desc: "Distributing nutritious meals and supporting sustainable food programs.",
     icon: (
       <svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg" width="46" height="46">
         <circle cx="30" cy="30" r="16" stroke="#b87800" strokeWidth="2.4" />
@@ -189,7 +189,7 @@ const SERVICES = [
   },
   {
     id: "medical", theme: "svc-purple", title: "Medical Care",
-    desc: "Amet minim mollit no deserunt ulamco sit enim aliqua dolor sint Velit officia consequt duis enim velit exertation.",
+    desc: "Offering essential healthcare services and medical support to those who need it most.",
     icon: (
       <svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg" width="46" height="46">
         <path d="M30 30 C18 16 8 18 10 28 C12 38 22 36 30 30Z"  stroke="#8b5cf6" strokeWidth="2.2" strokeLinejoin="round" />
@@ -262,26 +262,26 @@ const TESTIMONIALS = [
   {
     img: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&q=80",
     name: "Marvin McKinney", role: "Manager", rating: 5, accent: "#34a853",
-    quote: "Mattis cras magna morb nulla punar aenean aliquet in. Risus a arcu eget mi hendrerit gravida elit scelerisque tempor.",
-    text: "Mattis cras magna morb nulla punar aenean aliquet in. Risus a arcu eget mi hendrerit gravida elit scelerisque tempor Pharetra fringilla tellus vivera eget sapien viverra faucibus facilisis sed facilisi dictum.",
+    quote: "The transparency and dedication of this team are truly inspiring. They make every donation count.",
+    text: "Working with Vidyavaidya has been a privilege. Their commitment to social change is evident in every project they undertake, ensuring that resources reach those who need them most.",
   },
   {
     img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&q=80",
     name: "Darlene Robertson", role: "Volunteer", rating: 5, accent: "#fbbc04",
     quote: "Every donation made here goes directly to children who need it most. Truly life-changing work.",
-    text: "Mattis cras magna morb nulla punar aenean aliquet in. Risus a arcu eget mi hendrerit gravida elit scelerisque tempor Pharetra fringilla tellus vivera eget sapien viverra faucibus facilisis sed facilisi dictum.",
+    text: "Being a volunteer here has opened my eyes to the incredible impact we can have. Seeing the smiles on the children's faces when they receive help is the greatest reward.",
   },
   {
     img: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&q=80",
     name: "Priya Singh", role: "Donor", rating: 4, accent: "#8b5cf6",
     quote: "I am proud to support an organization that truly cares about the community.",
-    text: "Mattis cras magna morb nulla punar aenean aliquet in. Risus a arcu eget mi hendrerit gravida elit scelerisque tempor Pharetra fringilla tellus vivera eget sapien viverra faucibus facilisis sed facilisi dictum.",
+    text: "Vidyavaidya's approach to community development is holistic and sustainable. I feel confident that my contributions are making a real difference in the lives of many.",
   },
   {
     img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&q=80",
     name: "Rajesh Kumar", role: "Community Member", rating: 5, accent: "#e05252",
     quote: "The impact Vidyavaidya has made in our village is immeasurable. Thank you!",
-    text: "Mattis cras magna morb nulla punar aenean aliquet in. Risus a arcu eget mi hendrerit gravida elit scelerisque tempor Pharetra fringilla tellus vivera eget sapien viverra faucibus facilisis sed facilisi dictum.",
+    text: "From education to healthcare, the initiatives led by this organization have transformed our village. We are grateful for the hope and opportunity they have brought to our families.",
   },
 ];
 
@@ -516,7 +516,7 @@ export function SimpleTestimonials() {
         <div className="st-left">
           <span className="st-tag">T E S T I M O N I A L S</span>
           <h2 className="st-heading">What They're Say About Us?</h2>
-          <p className="st-desc">Amet dui scelerisque vel habitant eget tincidunt facilisis pretium. Porttitor mi nisi, non vitae tempus.</p>
+          <p className="st-desc">Our impact is best described by the people we serve. Their stories of resilience and hope drive us to do more every day.</p>
           <div className="st-nav">
             <button className="st-nav-btn" disabled={current === 0} onClick={() => setCurrent((c) => c - 1)}>
               <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>

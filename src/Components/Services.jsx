@@ -6,7 +6,7 @@ const SERVICES = [
     id: "education",
     iconBg: "icon-circle--pink",
     title: "Education",
-    desc: "Amet minim mollit no deserunt ulamco sit enim aliqua dolor sint Velit officia consequt duis enim velit exertation.",
+    desc: "Providing quality education and learning opportunities to empower the next generation.",
     icon: (
       // Hands holding / cradling a person — outline style, red stroke
       <svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg" width="46" height="46">
@@ -26,7 +26,7 @@ const SERVICES = [
     id: "water",
     iconBg: "icon-circle--green",
     title: "Safe Water",
-    desc: "Amet minim mollit no deserunt ulamco sit enim aliqua dolor sint Velit officia consequt duis enim velit exertation.",
+    desc: "Ensuring access to clean and safe drinking water for communities in need.",
     icon: (
       // Water drop / bottle icon — white stroke on green
       <svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg" width="46" height="46">
@@ -44,7 +44,7 @@ const SERVICES = [
     id: "food",
     iconBg: "icon-circle--yellow",
     title: "Healthy Food",
-    desc: "Amet minim mollit no deserunt ulamco sit enim aliqua dolor sint Velit officia consequt duis enim velit exertation.",
+    desc: "Distributing nutritious meals and supporting sustainable food programs.",
     icon: (
       // Donut / healthy food icon — amber stroke
       <svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg" width="46" height="46">
@@ -67,7 +67,7 @@ const SERVICES = [
     id: "medical",
     iconBg: "icon-circle--purple",
     title: "Medical Care",
-    desc: "Amet minim mollit no deserunt ulamco sit enim aliqua dolor sint Velit officia consequt duis enim velit exertation.",
+    desc: "Offering essential healthcare services and medical support to those who need it most.",
     icon: (
       // Butterfly / medical butterfly icon — purple stroke
       <svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg" width="46" height="46">
