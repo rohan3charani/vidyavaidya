@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import shape2 from "../assets/hero/shape-2.png";
 import shape3 from "../assets/hero/shape-3.png";
 import shape  from "../assets/hero/shape.png";
@@ -15,7 +16,7 @@ import "./Hero.css";
 const HERO = {
   tagline    : "Non - Profit Charity",
   heading    : (<>Make Someone's <br />Life By Giving Of <br />Yours's.</>),
-  primaryBtn : { label: "Join With Us \u2197", href: "#contact" },
+  primaryBtn : { label: "Join With Us \u2197", href: "/donate" },
   videoBtn   : { href: "https://www.youtube.com/watch?v=Cn4G2lZ_g2I", label: "Video Playing Theme" },
 };
 
@@ -29,6 +30,7 @@ export default function Hero() {
   const [current, setCurrent] = useState(0);
   const [prev,    setPrev]    = useState(null);
   const [paused,  setPaused]  = useState(false);
+  const navigate = useNavigate();
   const total = BG_IMAGES.length;
 
   const goTo = useCallback((n) => {
@@ -85,9 +87,12 @@ export default function Hero() {
           <h1 className="hero-heading animate-slide-up delay-200">{HERO.heading}</h1>
 
           <div className="hero-actions animate-slide-up delay-300">
-            <a href={HERO.primaryBtn.href} className="hero-btn-primary">
+            <button 
+              onClick={() => navigate(HERO.primaryBtn.href)} 
+              className="hero-btn-primary"
+            >
               {HERO.primaryBtn.label}
-            </a>
+            </button>
             <span className="hero-video-wrap">
               <a
                 href={HERO.videoBtn.href}
