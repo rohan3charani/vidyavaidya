@@ -434,7 +434,7 @@ export function CTABanner() {
           </a>
         </div>
         <div className="cta-trust">
-          {[{ num: "120K+", label: "Volunteers" }, { num: "$4.2M", label: "Raised" }, { num: "80+", label: "Countries" }].map(({ num, label }) => (
+          {[{ num: "0k+", label: "Volunteers" }, { num: "$0M", label: "Raised" }, { num: "0+", label: "Countries" }].map(({ num, label }) => (
             <div className="cta-trust-item" key={label}><strong>{num}</strong><span>{label}</span></div>
           ))}
         </div>
