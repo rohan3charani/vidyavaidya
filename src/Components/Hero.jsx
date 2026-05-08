@@ -2,11 +2,11 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import shape2 from "../assets/hero/shape-2.png";
 import shape3 from "../assets/hero/shape-3.png";
-import shape  from "../assets/hero/shape.png";
-import Bg     from "../assets/bg/01.jpg";
-import Bg2    from "../assets/bg/1.jpg";
-import Bg3    from "../assets/bg/2.jpg";
-import Bg4    from "../assets/bg/3.jpg";  
+import shape from "../assets/hero/shape.png";
+import Bg from "../assets/bg/01.jpg";
+import Bg2 from "../assets/bg/1.jpg";
+import Bg3 from "../assets/bg/2.jpg";
+import Bg4 from "../assets/bg/3.jpg";
 
 import "./Hero.css";
 
@@ -14,10 +14,10 @@ import "./Hero.css";
    HERO CONFIG — edit text / links here only
 ───────────────────────────────────────────*/
 const HERO = {
-  tagline    : "Non - Profit Charity",
-  heading    : (<>Make Someone's <br />Life By Giving Of <br />Yours's.</>),
-  primaryBtn : { label: "Join With Us \u2197", href: "/donate" },
-  videoBtn   : { href: "https://www.youtube.com/watch?v=Cn4G2lZ_g2I", label: "Video Playing Theme" },
+  tagline: "Non - Profit Charity",
+  heading: (<>Make Someone's <br />Life By Giving Of <br />Yours's.</>),
+  primaryBtn: { label: "Join With Us \u2197", href: "/donate" },
+  videoBtn: { href: "https://www.youtube.com/watch?v=Cn4G2lZ_g2I", label: "Video Playing Theme" },
 };
 
 /* ─────────────────────────────────────────
@@ -28,8 +28,8 @@ const BG_IMAGES = [Bg, Bg2, Bg3, Bg4];
 /* ─── Main Hero Component ─── */
 export default function Hero() {
   const [current, setCurrent] = useState(0);
-  const [prev,    setPrev]    = useState(null);
-  const [paused,  setPaused]  = useState(false);
+  const [prev, setPrev] = useState(null);
+  const [paused, setPaused] = useState(false);
   const navigate = useNavigate();
   const total = BG_IMAGES.length;
 
@@ -87,8 +87,8 @@ export default function Hero() {
           <h1 className="hero-heading animate-slide-up delay-200">{HERO.heading}</h1>
 
           <div className="hero-actions animate-slide-up delay-300">
-            <button 
-              onClick={() => navigate(HERO.primaryBtn.href)} 
+            <button
+              onClick={() => navigate(HERO.primaryBtn.href)}
               className="hero-btn-primary"
             >
               {HERO.primaryBtn.label}
@@ -182,12 +182,12 @@ const SERVICES = [
     icon: (
       <svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg" width="46" height="46">
         <circle cx="30" cy="30" r="16" stroke="#b87800" strokeWidth="2.4" />
-        <circle cx="30" cy="30" r="7"  stroke="#b87800" strokeWidth="2.4" />
-        <circle cx="20" cy="24" r="2"  fill="#b87800" />
-        <circle cx="40" cy="24" r="2"  fill="#b87800" />
-        <circle cx="16" cy="34" r="2"  fill="#b87800" />
-        <circle cx="44" cy="34" r="2"  fill="#b87800" />
-        <circle cx="30" cy="46" r="2"  fill="#b87800" />
+        <circle cx="30" cy="30" r="7" stroke="#b87800" strokeWidth="2.4" />
+        <circle cx="20" cy="24" r="2" fill="#b87800" />
+        <circle cx="40" cy="24" r="2" fill="#b87800" />
+        <circle cx="16" cy="34" r="2" fill="#b87800" />
+        <circle cx="44" cy="34" r="2" fill="#b87800" />
+        <circle cx="30" cy="46" r="2" fill="#b87800" />
         <path d="M22 17 Q30 13 38 17" stroke="#b87800" strokeWidth="2" strokeLinecap="round" />
       </svg>
     ),
@@ -197,9 +197,9 @@ const SERVICES = [
     desc: "Offering essential healthcare services and medical support to those who need it most.",
     icon: (
       <svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg" width="46" height="46">
-        <path d="M30 30 C18 16 8 18 10 28 C12 38 22 36 30 30Z"  stroke="#8b5cf6" strokeWidth="2.2" strokeLinejoin="round" />
+        <path d="M30 30 C18 16 8 18 10 28 C12 38 22 36 30 30Z" stroke="#8b5cf6" strokeWidth="2.2" strokeLinejoin="round" />
         <path d="M30 30 C42 16 52 18 50 28 C48 38 38 36 30 30Z" stroke="#8b5cf6" strokeWidth="2.2" strokeLinejoin="round" />
-        <path d="M30 30 C18 44 8 42 10 34"  stroke="#8b5cf6" strokeWidth="2.2" strokeLinecap="round" />
+        <path d="M30 30 C18 44 8 42 10 34" stroke="#8b5cf6" strokeWidth="2.2" strokeLinecap="round" />
         <path d="M30 30 C42 44 52 42 50 34" stroke="#8b5cf6" strokeWidth="2.2" strokeLinecap="round" />
         <circle cx="30" cy="30" r="3" fill="#8b5cf6" />
         <path d="M28 27 Q24 20 20 18" stroke="#8b5cf6" strokeWidth="1.5" strokeLinecap="round" />
@@ -234,12 +234,12 @@ export function WhatWeDo() {
         {SERVICES.map((s, i) => (
           <article key={s.id} className="svc-card" style={{ transitionDelay: `${i * 0.11}s` }}>
             <div className={`svc-icon-wrap ${s.theme}`}>
-              <span className="svc-blob svc-blob--base"  aria-hidden="true" />
+              <span className="svc-blob svc-blob--base" aria-hidden="true" />
               <span className="svc-blob svc-blob--shine" aria-hidden="true" />
               <span className="svc-icon-svg">{s.icon}</span>
             </div>
             <h3 className="svc-card__title">{s.title}</h3>
-            <p  className="svc-card__desc">{s.desc}</p>
+            <p className="svc-card__desc">{s.desc}</p>
           </article>
         ))}
       </div>
@@ -292,7 +292,7 @@ const TESTIMONIALS = [
 
 const QuoteIcon = () => (
   <svg viewBox="0 0 48 48" width="40" height="40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-    <path d="M10 28c0-6.627 4.477-12 10-12v4c-3.314 0-6 2.686-6 8v8H6V28h4Zm22 0c0-6.627 4.477-12 10-12v4c-3.314 0-6 2.686-6 8v8H28V28h4Z" fill="currentColor" opacity="0.3"/>
+    <path d="M10 28c0-6.627 4.477-12 10-12v4c-3.314 0-6 2.686-6 8v8H6V28h4Zm22 0c0-6.627 4.477-12 10-12v4c-3.314 0-6 2.686-6 8v8H28V28h4Z" fill="currentColor" opacity="0.3" />
   </svg>
 );
 
@@ -417,7 +417,7 @@ export function CTABanner() {
       <div className="cta-inner">
         <div className="cta-icon-badge">
           <svg viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg" width="28" height="28" aria-hidden="true">
-            <path d="M22 38S6 28 6 16a10 10 0 0 1 16-8 10 10 0 0 1 16 8c0 12-16 22-16 22Z" fill="#f59e0b" stroke="#f59e0b" strokeWidth="1.5" strokeLinejoin="round"/>
+            <path d="M22 38S6 28 6 16a10 10 0 0 1 16-8 10 10 0 0 1 16 8c0 12-16 22-16 22Z" fill="#f59e0b" stroke="#f59e0b" strokeWidth="1.5" strokeLinejoin="round" />
           </svg>
         </div>
         <p className="cta-eyebrow"><span className="cta-eyebrow-line" aria-hidden="true" />Change The World<span className="cta-eyebrow-line" aria-hidden="true" /></p>
@@ -426,7 +426,7 @@ export function CTABanner() {
         <div className="cta-actions">
           <a href="/donate" className="cta-btn-primary">
             <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" width="17" height="17" aria-hidden="true" className="cta-btn-icon">
-              <path d="M10 2a2 2 0 0 0-2 2v6.5l-1.2-.6a1.5 1.5 0 0 0-2 2l2.5 1.3V16a2 2 0 0 0 2 2h3a2 2 0 0 0 2-2v-5.6l.5-.4a2 2 0 0 0 .5-1.4V4a2 2 0 0 0-2-2h-3Z" fill="white"/>
+              <path d="M10 2a2 2 0 0 0-2 2v6.5l-1.2-.6a1.5 1.5 0 0 0-2 2l2.5 1.3V16a2 2 0 0 0 2 2h3a2 2 0 0 0 2-2v-5.6l.5-.4a2 2 0 0 0 .5-1.4V4a2 2 0 0 0-2-2h-3Z" fill="white" />
             </svg>
             Become A Donor
             <span className="cta-btn-shine" aria-hidden="true" />
@@ -434,7 +434,7 @@ export function CTABanner() {
           <a href="/contact" className="cta-btn-outline">
             Become A Volunteer
             <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" width="16" height="16" aria-hidden="true">
-              <path d="M4 10h12M11 5l5 5-5 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M4 10h12M11 5l5 5-5 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </a>
         </div>
@@ -454,16 +454,16 @@ export function CTABanner() {
 }
 
 const TEAM = [
-  { id: "t1", name: "Sarah Johnson",  role: "Executive Director", img: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=300&q=80", socials: { twitter: "#", whatsapp: "#", instagram: "#", telegram: "#" } },
-  { id: "t2", name: "Daniel Carter",  role: "Community Lead",     img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&q=80", socials: { twitter: "#", whatsapp: "#", instagram: "#", telegram: "#" } },
-  { id: "t3", name: "Priya Mehta",    role: "Field Coordinator",  img: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=300&q=80", socials: { twitter: "#", whatsapp: "#", instagram: "#", telegram: "#" } },
-  { id: "t4", name: "Marcus Lee",     role: "Outreach Manager",   img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&q=80", socials: { twitter: "#", whatsapp: "#", instagram: "#", telegram: "#" } },
+  { id: "t1", name: "Sarah Johnson", role: "Executive Director", img: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=300&q=80", socials: { twitter: "#", whatsapp: "#", instagram: "#", telegram: "#" } },
+  { id: "t2", name: "Daniel Carter", role: "Community Lead", img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&q=80", socials: { twitter: "#", whatsapp: "#", instagram: "#", telegram: "#" } },
+  { id: "t3", name: "Priya Mehta", role: "Field Coordinator", img: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=300&q=80", socials: { twitter: "#", whatsapp: "#", instagram: "#", telegram: "#" } },
+  { id: "t4", name: "Marcus Lee", role: "Outreach Manager", img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&q=80", socials: { twitter: "#", whatsapp: "#", instagram: "#", telegram: "#" } },
 ];
 
-const TwitterIcon   = () => <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>;
-const WhatsAppIcon  = () => <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.559 4.122 1.533 5.854L.057 23.57a.5.5 0 0 0 .614.614l5.78-1.476A11.946 11.946 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.891 0-3.658-.523-5.166-1.431l-.369-.22-3.832.978.998-3.768-.24-.386A9.944 9.944 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>;
-const InstagramIcon = () => <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16" aria-hidden="true"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>;
-const TelegramIcon  = () => <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16" aria-hidden="true"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>;
+const TwitterIcon = () => <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>;
+const WhatsAppIcon = () => <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" /><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.559 4.122 1.533 5.854L.057 23.57a.5.5 0 0 0 .614.614l5.78-1.476A11.946 11.946 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.891 0-3.658-.523-5.166-1.431l-.369-.22-3.832.978.998-3.768-.24-.386A9.944 9.944 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z" /></svg>;
+const InstagramIcon = () => <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16" aria-hidden="true"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z" /></svg>;
+const TelegramIcon = () => <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16" aria-hidden="true"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" /></svg>;
 
 export function TeamMembers() {
   const sectionRef = useRef(null);
@@ -497,10 +497,10 @@ export function TeamMembers() {
               <p className="team-role">{member.role}</p>
               <span className="team-divider" aria-hidden="true" />
               <div className="team-socials">
-                <a href={member.socials.twitter}   className="team-social team-social--twitter"   aria-label="Twitter"   rel="noopener noreferrer"><TwitterIcon   /></a>
-                <a href={member.socials.whatsapp}  className="team-social team-social--whatsapp"  aria-label="WhatsApp"  rel="noopener noreferrer"><WhatsAppIcon  /></a>
+                <a href={member.socials.twitter} className="team-social team-social--twitter" aria-label="Twitter" rel="noopener noreferrer"><TwitterIcon /></a>
+                <a href={member.socials.whatsapp} className="team-social team-social--whatsapp" aria-label="WhatsApp" rel="noopener noreferrer"><WhatsAppIcon /></a>
                 <a href={member.socials.instagram} className="team-social team-social--instagram" aria-label="Instagram" rel="noopener noreferrer"><InstagramIcon /></a>
-                <a href={member.socials.telegram}  className="team-social team-social--telegram"  aria-label="Telegram"  rel="noopener noreferrer"><TelegramIcon  /></a>
+                <a href={member.socials.telegram} className="team-social team-social--telegram" aria-label="Telegram" rel="noopener noreferrer"><TelegramIcon /></a>
               </div>
             </div>
           </article>
@@ -522,36 +522,52 @@ export function SimpleTestimonials() {
           <span className="st-tag">T E S T I M O N I A L S</span>
           <h2 className="st-heading">What They're Say About Us?</h2>
           <p className="st-desc">Our impact is best described by the people we serve. Their stories of resilience and hope drive us to do more every day.</p>
-          <div className="st-nav">
-            <button className="st-nav-btn" disabled={current === 0} onClick={() => setCurrent((c) => c - 1)}>
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
-            </button>
-            <button className="st-nav-btn" disabled={current === pages - 1} onClick={() => setCurrent((c) => c + 1)}>
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
-            </button>
-          </div>
         </div>
-        <div className="st-right" style={{ overflow: "hidden" }}>
-          <div style={{
-            display: "grid",
-            gridTemplateColumns: `repeat(${TESTIMONIALS.length}, calc(50% - 12px))`,
-            gap: "24px",
-            transition: "transform 0.45s cubic-bezier(0.4, 0, 0.2, 1)",
-            transform: `translateX(calc(${current} * (-100% - 24px)))`,
-          }}>
-            {TESTIMONIALS.map((t, i) => (
-              <div className="st-card" key={i}>
-                <div className="st-avatar-wrap">
-                  <img src={t.img} alt={t.name} className="st-avatar" />
-                  <div className="st-quote-badge">99</div>
+        <div className="st-right-container">
+          <button
+            className="st-nav-btn st-nav-btn--prev"
+            disabled={current === 0}
+            onClick={() => setCurrent((c) => c - 1)}
+            aria-label="Previous testimonials"
+          >
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M15 18l-6-6 6-6" />
+            </svg>
+          </button>
+
+          <div className="st-right" style={{ overflow: "hidden" }}>
+            <div style={{
+              display: "grid",
+              gridTemplateColumns: `repeat(${TESTIMONIALS.length}, calc(50% - 12px))`,
+              gap: "24px",
+              transition: "transform 0.45s cubic-bezier(0.4, 0, 0.2, 1)",
+              transform: `translateX(calc(${current} * (-100% - 24px)))`,
+            }}>
+              {TESTIMONIALS.map((t, i) => (
+                <div className="st-card" key={i}>
+                  <div className="st-avatar-wrap">
+                    <img src={t.img} alt={t.name} className="st-avatar" />
+                    <div className="st-quote-badge">99</div>
+                  </div>
+                  <p className="st-text">"{t.text}"</p>
+                  <div className="st-stars"><StarRating count={5} color="#facc15" /></div>
+                  <h4 className="st-name">{t.name}</h4>
+                  <p className="st-role">{t.role}</p>
                 </div>
-                <p className="st-text">"{t.text}"</p>
-                <div className="st-stars"><StarRating count={5} color="#facc15" /></div>
-                <h4 className="st-name">{t.name}</h4>
-                <p className="st-role">{t.role}</p>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
+
+          <button
+            className="st-nav-btn st-nav-btn--next"
+            disabled={current === pages - 1}
+            onClick={() => setCurrent((c) => c + 1)}
+            aria-label="Next testimonials"
+          >
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 18l6-6-6-6" />
+            </svg>
+          </button>
         </div>
       </div>
     </section>

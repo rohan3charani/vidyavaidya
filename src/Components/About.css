@@ -19,17 +19,19 @@
   pointer-events: none;
   z-index: 0;
 }
+
 .about-bg-blob--1 {
   width: 500px;
   height: 500px;
-  background: radial-gradient(circle, rgba(220,38,38,0.06) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(220, 38, 38, 0.06) 0%, transparent 70%);
   top: -120px;
   left: -180px;
 }
+
 .about-bg-blob--2 {
   width: 380px;
   height: 380px;
-  background: radial-gradient(circle, rgba(244,180,0,0.08) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(244, 180, 0, 0.08) 0%, transparent 70%);
   bottom: -80px;
   right: -100px;
 }
@@ -55,6 +57,7 @@
   transform: translateY(50px);
   transition: opacity 0.9s ease-out, transform 0.9s ease-out;
 }
+
 .about-visible .about-left {
   opacity: 1;
   transform: translateY(0);
@@ -72,6 +75,7 @@
   position: relative;
   padding-left: 1.5rem;
 }
+
 .about-tag::before {
   content: '';
   position: absolute;
@@ -91,7 +95,10 @@
   color: #111827;
   margin-bottom: 1.25rem;
 }
-.about-heading--accent { color: #dc2626; }
+
+.about-heading--accent {
+  color: #dc2626;
+}
 
 .about-desc {
   color: #6b7280;
@@ -114,21 +121,23 @@
   gap: 1rem;
   align-items: flex-start;
   background: #ffffff;
-  border: 1px solid rgba(0,0,0,0.07);
+  border: 1px solid rgba(0, 0, 0, 0.07);
   border-radius: 20px;
   padding: 1.25rem;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.05);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
   transition: transform 0.3s ease, box-shadow 0.3s ease, opacity 0.7s ease;
   opacity: 0;
   transform: translateY(20px);
 }
+
 .about-visible .about-feature {
   opacity: 1;
   transform: translateY(0);
 }
+
 .about-feature:hover {
   transform: translateY(-4px);
-  box-shadow: 0 12px 28px rgba(0,0,0,0.10);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.10);
 }
 
 .about-feature__icon {
@@ -140,8 +149,14 @@
   place-items: center;
   font-size: 1.5rem;
 }
-.icon-bg--gold   { background: linear-gradient(135deg, #fef3c7, #fde68a); }
-.icon-bg--purple { background: linear-gradient(135deg, #ede9fe, #c4b5fd); }
+
+.icon-bg--gold {
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+}
+
+.icon-bg--purple {
+  background: linear-gradient(135deg, #ede9fe, #c4b5fd);
+}
 
 .about-feature__text h4 {
   margin: 0 0 4px;
@@ -149,6 +164,7 @@
   font-weight: 700;
   color: #111827;
 }
+
 .about-feature__text p {
   margin: 0;
   font-size: 0.82rem;
@@ -173,17 +189,20 @@
   border: none;
   cursor: pointer;
   transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
-  box-shadow: 0 8px 24px rgba(220,38,38,0.3);
+  box-shadow: 0 8px 24px rgba(220, 38, 38, 0.3);
 }
+
 .about-btn:hover {
   background: #b91c1c;
   transform: translateY(-2px);
-  box-shadow: 0 14px 30px rgba(220,38,38,0.4);
+  box-shadow: 0 14px 30px rgba(220, 38, 38, 0.4);
 }
+
 .about-btn__arrow {
   font-size: 1.1rem;
   transition: transform 0.3s ease;
 }
+
 .about-btn:hover .about-btn__arrow {
   transform: translateX(4px);
 }
@@ -204,6 +223,7 @@
   transform: translateX(60px);
   transition: opacity 1s ease-out, transform 1s ease-out;
 }
+
 .about-visible .about-right {
   opacity: 1;
   transform: translateX(0);
@@ -217,7 +237,7 @@
   right: 0;
   width: 110px;
   height: 110px;
-  background-image: radial-gradient(circle, rgba(220,38,38,0.35) 1.5px, transparent 1.5px);
+  background-image: radial-gradient(circle, rgba(220, 38, 38, 0.35) 1.5px, transparent 1.5px);
   background-size: 14px 14px;
   z-index: 0;
   border-radius: 8px;
@@ -236,10 +256,19 @@
   animation: about-ring-rotate 12s linear infinite;
   opacity: 0.85;
 }
+
 @keyframes about-ring-rotate {
-  from { transform: rotate(0deg) scale(1);    }
-  50%  { transform: rotate(180deg) scale(1.06); }
-  to   { transform: rotate(360deg) scale(1);   }
+  from {
+    transform: rotate(0deg) scale(1);
+  }
+
+  50% {
+    transform: rotate(180deg) scale(1.06);
+  }
+
+  to {
+    transform: rotate(360deg) scale(1);
+  }
 }
 
 /* ── HERO CIRCLE ── */
@@ -247,7 +276,7 @@
   border-radius: 50%;
   overflow: hidden;
   border: 7px solid #ffffff;
-  box-shadow: 0 24px 60px rgba(0,0,0,0.18);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.18);
   position: relative;
   z-index: 2;
 }
@@ -276,8 +305,16 @@
   border-radius: 50%;
   transition: opacity 0.9s ease;
 }
-.about-carousel__img--in  { opacity: 1;  z-index: 2; }
-.about-carousel__img--out { opacity: 0;  z-index: 1; }
+
+.about-carousel__img--in {
+  opacity: 1;
+  z-index: 2;
+}
+
+.about-carousel__img--out {
+  opacity: 0;
+  z-index: 1;
+}
 
 /* ── Nav dots (inside bottom of circle) ── */
 .about-carousel__dots {
@@ -289,22 +326,25 @@
   gap: 7px;
   z-index: 10;
 }
+
 .about-carousel__dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: rgba(255,255,255,0.5);
-  border: 2px solid rgba(255,255,255,0.7);
+  background: rgba(255, 255, 255, 0.5);
+  border: 2px solid rgba(255, 255, 255, 0.7);
   cursor: pointer;
   padding: 0;
   transition: background 0.3s ease, transform 0.3s ease;
 }
+
 .about-carousel__dot--active {
   background: #ffffff;
   transform: scale(1.4);
 }
+
 .about-carousel__dot:hover {
-  background: rgba(255,255,255,0.85);
+  background: rgba(255, 255, 255, 0.85);
 }
 
 /* ── Stats badge ── */
@@ -319,20 +359,28 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  box-shadow: 0 10px 28px rgba(0,0,0,0.25);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.25);
   z-index: 5;
   animation: badge-float 3s ease-in-out infinite alternate;
 }
+
 @keyframes badge-float {
-  from { transform: translateY(0);    }
-  to   { transform: translateY(-8px); }
+  from {
+    transform: translateY(0);
+  }
+
+  to {
+    transform: translateY(-8px);
+  }
 }
+
 .about-badge__number {
   font-size: 1.6rem;
   font-weight: 900;
   color: #f4b400;
   line-height: 1;
 }
+
 .about-badge__label {
   font-size: 0.72rem;
   text-transform: uppercase;
@@ -349,20 +397,24 @@
     flex-direction: column;
     gap: 3rem;
   }
+
   .about-right {
     width: 100%;
     min-height: 460px;
     transform: none;
     opacity: 0;
   }
+
   .about-visible .about-right {
     opacity: 1;
     transform: none;
   }
+
   .about-img--hero {
     width: 360px;
     height: 360px;
   }
+
   .about-ring {
     width: 140px;
     height: 140px;
@@ -373,13 +425,16 @@
   .about-section {
     padding: 5rem 6%;
   }
+
   .about-features {
     grid-template-columns: 1fr;
   }
+
   .about-img--hero {
     width: 280px;
     height: 280px;
   }
+
   .about-ring {
     width: 110px;
     height: 110px;
