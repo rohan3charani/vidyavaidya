@@ -9,7 +9,7 @@ export default function Footer() {
         {/* Column 1: Brand & Description */}
         <div className="footer-col col-brand">
           <div className="footer-logo-wrapper">
-            <img src={vidyaLogo} alt="VIDYA-VAIDYA FOUNDATION" className="footer-logo" style={{width: "80px", height: "80px", borderRadius: "50%"}}/>
+            <img src={vidyaLogo} alt="VIDYA-VAIDYA FOUNDATION" className="footer-logo" style={{ width: "80px", height: "80px", borderRadius: "50%" }} />
             <span className="footer-brand-text">VIDYA-VAIDYA FOUNDATION</span>
           </div>
           <p className="footer-desc">
@@ -58,7 +58,7 @@ export default function Footer() {
 
           <h4 className="footer-heading footer-heading-spaced">Office Address:</h4>
           <p className="footer-address">
-            Nellore,<br/>
+            Nellore,<br />
             Andhra Pradesh, India.
           </p>
           <a href="#" className="footer-map-btn">
@@ -115,7 +115,7 @@ export default function Footer() {
           Copyright © 2026 <strong>VIDYA-VAIDYA FOUNDATION</strong>. All Rights Reserved.
         </p>
         <p className="footer-design">
-          Designed & Developed by <span className="design-brand"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" style={{marginRight: 4, verticalAlign: 'middle', color: '#0dcaf0'}}><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></svg>RohanTech</span>
+          Designed & Developed by <span className="design-brand"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 4, verticalAlign: 'middle', color: '#0dcaf0' }}><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></svg>RohanTech</span>
         </p>
       </div>
     </footer>
