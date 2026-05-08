@@ -1,4 +1,4 @@
-import { Search, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { useState } from "react";
 import { useNavigate, NavLink, useLocation } from "react-router-dom";
 import "./Navbar.css";
@@ -96,9 +96,6 @@ export default function Navbar() {
 
         {/* Actions */}
         <div className="vv-actions">
-          <button className="vv-search-btn" aria-label="Search">
-            <Search size={18} />
-          </button>
 
           <button
             onClick={() => navigate("/donate")}
