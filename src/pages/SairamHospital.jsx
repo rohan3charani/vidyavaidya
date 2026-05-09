@@ -49,7 +49,7 @@ export default function SairamHospital() {
           </blockquote>
           <div className="flex flex-col items-center justify-center mt-10">
             <div className="w-16 h-1 bg-teal-500 rounded-full mb-4"></div>
-            <p className="text-xl font-bold text-slate-900">Dr. LALITHA & Dr. SATHISH</p>
+            <p className="text-xl font-bold text-slate-900">Dr. C. Satish Reddy & Dr. K. Lalitha Shirdisa </p>
             <p className="text-teal-600 font-semibold uppercase tracking-wider text-sm mt-1">Founders, SAIRAM HOSPITAL</p>
           </div>
         </div>

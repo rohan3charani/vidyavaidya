@@ -179,7 +179,7 @@
 }
 
 .mission-stat-box {
-  background: var(--navy);
+  background: linear-gradient(135deg, #10b981 0%, #1e40af 100%);
   color: white;
   padding: 36px 20px;
   border-radius: var(--radius);
@@ -194,7 +194,7 @@
 
 .mission-stat-label {
   font-size: 0.9rem;
-  opacity: 0.8;
+  opacity: 0.95;
   margin-top: 6px;
 }
 
@@ -552,7 +552,7 @@
 }
 
 .contact-info-box {
-  background: var(--navy);
+  background: linear-gradient(135deg, #10b981 0%, #1e40af 100%);
   border-radius: var(--radius);
   padding: 44px 36px;
   color: white;
@@ -565,7 +565,7 @@
 }
 
 .contact-info-box p {
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(255, 255, 255, 0.95);
   line-height: 1.7;
   margin: 0 0 36px;
   font-size: 0.97rem;
@@ -593,7 +593,7 @@
 
 .contact-detail-label {
   font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.55);
+  color: rgba(255, 255, 255, 0.85);
   letter-spacing: 0.5px;
   text-transform: uppercase;
   margin-bottom: 4px;
@@ -601,7 +601,7 @@
 
 .contact-detail-value {
   font-size: 0.97rem;
-  color: rgba(255, 255, 255, 0.9);
+  color: #ffffff;
   font-weight: 500;
 }
 

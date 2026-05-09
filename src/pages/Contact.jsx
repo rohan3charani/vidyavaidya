@@ -7,9 +7,24 @@ export default function Contact() {
   const [submitted, setSubmitted] = useState(false);
 
   const details = [
-    { icon: "📧", label: "Email", value: "contact@vidyavaidya.org" },
-    { icon: "📞", label: "Phone", value: "+91 996655#### " },
-    { icon: "📍", label: "Address", value: "Nellore, Andhra Pradesh 524002" }
+    { icon: "📧", label: "Email", value: "info@vidyavaidya.org" },
+    { icon: "📞", label: "Phone", value: "+91 9966557007 " },
+    { 
+      icon: "📍", 
+      label: "Address", 
+      value: (
+        <a 
+          href="https://www.google.com/maps/search/?api=1&query=CSR+Houses,+Near+YK+Achari+School,+Balaji+Nagar+Main+Road,+Nellore+-+524002" 
+          target="_blank" 
+          rel="noopener noreferrer" 
+          style={{ color: "inherit", textDecoration: "none" }}
+          onMouseOver={(e) => e.target.style.textDecoration = "underline"}
+          onMouseOut={(e) => e.target.style.textDecoration = "none"}
+        >
+          CSR Houses, Near YK Achari School, Balaji Nagar Main Road, Nellore - 524002
+        </a>
+      ) 
+    }
   ];
 
   return (

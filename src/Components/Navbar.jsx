@@ -47,7 +47,7 @@ export default function Navbar() {
             onMouseLeave={() => setEventsDropdown(false)}
           >
             <button className="vv-nav-link">
-              Eventss <span>▾</span>
+              Events <span>▾</span>
             </button>
             {eventsDropdown && (
               <div className="vv-dropdown-menu">
