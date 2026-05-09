@@ -29,7 +29,7 @@ export default function SairamHospital() {
               Official Medical Partner
             </span>
             <h1 className="text-4xl md:text-6xl font-bold mb-4 tracking-tight">SAIRAM HOSPITAL</h1>
-            <p className="text-xl text-teal-100 font-medium mb-6">Led by Dr. LALITHA & Dr. SATHISH</p>
+            <p className="text-xl text-teal-100 font-medium mb-6">Led by Dr. C. Satish Reddy & Dr. K. Lalitha Shirdisa</p>
             <p className="text-lg text-slate-200 leading-relaxed max-w-2xl mx-auto md:mx-0">
               A beacon of health and community care, Sairam Hospital stands as a proud partner of VidyaVaidya Trust, providing vital medical assistance and unwavering support to our mission of healing and empowerment.
             </p>
