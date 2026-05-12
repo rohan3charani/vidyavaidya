@@ -25,20 +25,18 @@ export default function Partners() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans flex flex-col">
+    <div className="page-wrapper">
       <Navbar />
 
       <main className="flex-grow">
-        <section className="relative pt-32 pb-24 px-6 lg:px-20 overflow-hidden bg-gradient-to-br from-green-600 via-teal-700 to-blue-900 text-white text-center">
-          <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
-            <div className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] rounded-full bg-emerald-400/20 blur-[120px]"></div>
-            <div className="absolute top-[40%] -right-[10%] w-[40%] h-[60%] rounded-full bg-cyan-400/20 blur-[120px]"></div>
-          </div>
-
+        <section className="page-hero">
           <div className="relative z-10">
-            <span className="inline-flex rounded-full bg-emerald-500/20 px-4 py-2 text-sm font-semibold uppercase tracking-[0.24em] text-emerald-200 mb-6">Collaborations</span>
-            <h1 className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl mb-6">Our Trusted Partners</h1>
-            <p className="mx-auto max-w-2xl text-base text-teal-50 sm:text-xl font-medium italic mt-4">Together with our partners, we amplify our impact and reach thousands of underserved individuals. We are deeply grateful for their continued support.</p>
+            <span className="page-hero-tag">Collaborations</span>
+            <h1>Our Trusted Partners</h1>
+            <p>
+              Together with our partners, we amplify our impact and reach thousands of underserved individuals. 
+              We are deeply grateful for their continued support.
+            </p>
           </div>
         </section>
 

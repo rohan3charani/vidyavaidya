@@ -39,21 +39,16 @@ const VOLUNTEERS = [
 
 export default function OurVolunteers() {
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
+    <div className="page-wrapper">
       <Navbar />
 
       <main className="flex-grow">
         {/* Header Section */}
-        <section className="relative pt-32 pb-24 px-6 lg:px-20 overflow-hidden bg-gradient-to-br from-emerald-600 via-teal-700 to-green-900 text-white text-center">
-          <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
-            <div className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] rounded-full bg-emerald-400/20 blur-[120px]"></div>
-            <div className="absolute top-[40%] -right-[10%] w-[40%] h-[60%] rounded-full bg-cyan-400/20 blur-[120px]"></div>
-          </div>
-          
+        <section className="page-hero">
           <div className="relative z-10">
-            <span className="inline-flex rounded-full bg-emerald-500/20 px-4 py-2 text-sm font-semibold uppercase tracking-[0.24em] text-emerald-100 mb-6">Our Heroes</span>
-            <h1 className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl mb-6">Meet Our Volunteers</h1>
-            <p className="mx-auto max-w-2xl text-base text-emerald-50 sm:text-xl font-medium italic">
+            <span className="page-hero-tag">Our Heroes</span>
+            <h1>Meet Our Volunteers</h1>
+            <p>
               "Volunteering is at the very core of being a human. No one has made it through life without someone else's help."
             </p>
           </div>

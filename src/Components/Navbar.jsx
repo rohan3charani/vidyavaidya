@@ -46,7 +46,7 @@ export default function Navbar() {
             onMouseEnter={() => setEventsDropdown(true)}
             onMouseLeave={() => setEventsDropdown(false)}
           >
-            <button className="vv-nav-link">
+            <button className={`vv-nav-link ${location.pathname === '/PhotoGallery' || location.pathname === '/VideoGallery' ? 'active' : ''}`}>
               Events <span>▾</span>
             </button>
             {eventsDropdown && (
@@ -63,7 +63,7 @@ export default function Navbar() {
             onMouseEnter={() => setStoriesDropdown(true)}
             onMouseLeave={() => setStoriesDropdown(false)}
           >
-            <button className="vv-nav-link">
+            <button className={`vv-nav-link ${location.pathname === '/news' ? 'active' : ''}`}>
               Stories <span>▾</span>
             </button>
             {storiesDropdown && (

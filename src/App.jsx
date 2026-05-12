@@ -19,6 +19,7 @@ import ProtectedRoute from "./routes/ProtectedRoute";
 import AdminRoute from "./routes/AdminRoute";
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import ScrollToTop from "./Components/ScrollToTop";
 
 import OurMission from "./pages/OurMission";
 import Partners from "./pages/Partners";
@@ -69,6 +70,8 @@ export default function App() {
       >
         <Loader />
       </div>
+      
+      <ScrollToTop />
       
       <Routes>
         <Route path="/" element={<LandingPage />} />
