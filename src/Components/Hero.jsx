@@ -463,7 +463,7 @@ const TEAM = [
     name: "Chairman & Managing Trustee", 
     role: "VidyaVaidya Foundation", 
     img: ChairmanImg,
-    bio: "A visionary leader with over 20 years of experience in social service and community development. He is the driving force behind VidyaVaidya's mission to provide quality education and healthcare to the underserved. Under his guidance, the foundation has impacted thousands of lives across the nation through sustainable interventions and unwavering dedication."
+    bio: "A visionary leader more than 15 years of experience in social service and community development. He is the driving force behind VidyaVaidya's mission to provide quality education and healthcare to the underserved. Under his guidance, the foundation has impacted thousands of lives across the nation through sustainable interventions and unwavering dedication."
   },
   { 
     id: "t2", 
@@ -547,7 +547,7 @@ export function TeamMembers() {
                 <div className="team-modal-divider"></div>
                 <p className="team-modal-bio">{selectedMember.bio}</p>
                 <div className="team-modal-footer">
-                  <p>Commitment to Excellence since 2026</p>
+                  <p>Commitment to Excellence since 2008</p>
                 </div>
               </div>
             </div>

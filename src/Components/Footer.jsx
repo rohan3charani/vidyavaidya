@@ -60,10 +60,10 @@ export default function Footer() {
           <p className="footer-address">
             CSR Houses, Near YK Achari School, Balaji Nagar Main Road, Nellore - 524002
           </p>
-          <a 
-            href="https://www.google.com/maps/search/?api=1&query=CSR+Houses,+Near+YK+Achari+School,+Balaji+Nagar+Main+Road,+Nellore+-+524002" 
-            target="_blank" 
-            rel="noopener noreferrer" 
+          <a
+            href="https://www.google.com/maps/search/?api=1&query=CSR+Houses,+Near+YK+Achari+School,+Balaji+Nagar+Main+Road,+Nellore+-+524002"
+            target="_blank"
+            rel="noopener noreferrer"
             className="footer-map-btn"
           >
             <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
