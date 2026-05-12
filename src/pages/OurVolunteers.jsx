@@ -20,21 +20,21 @@ import Vol14 from '../assets/Volunteers/Sk.Khajamohiddin.jpeg';
 import Vol15 from '../assets/Volunteers/K.Venkat Kishor.jpeg';
 
 const VOLUNTEERS = [
-  { name: "Sk. Raffi", img: Vol1 },
-  { name: "B. Janaki RamiReddy", img: Vol2 },
-  { name: "T. Hazarathaiah", img: Vol3 },
-  { name: "T. Kumar", img: Vol4 },
-  { name: "T. Rajeswara Rao", img: Vol5 },
-  { name: "M. Sanjeev Reddy", img: Vol6 },
-  { name: "B. Venkatesh Chowdary", img: Vol7 },
-  { name: "Sk. Taju Tarak", img: Vol8 },
-  { name: "V. Anil", img: Vol9 },
   { name: "P. Srinivasulu Reddy", img: Vol10 },
-  { name: "P. Ravi Chandra Sekhar", img: Vol11 },
+  { name: "B. Venkatesh Chowdary", img: Vol7 },
+  { name: "V. Anil", img: Vol9 },
+  { name: "Sk. Taju Tarak", img: Vol8 },
+  { name: "T. Rajeswara Rao", img: Vol5 },
   { name: "M. Venu", img: Vol12 },
   { name: "Sk. Hydarshaa", img: Vol13 },
-  { name: "Sk. Khajamohiddin", img: Vol14 },
+  { name: "M. Sanjeev Reddy", img: Vol6 },
+  { name: "Sk. Raffi", img: Vol1 },
+  { name: "B. Janaki RamiReddy", img: Vol2 },
+  { name: "P. Ravi Chandra Sekhar", img: Vol11 },
+  { name: "T. Kumar", img: Vol4 },
   { name: "K. Venkat Kishor", img: Vol15 },
+  { name: "Sk. Khajamohiddin", img: Vol14 },
+  { name: "T. Hazarathaiah", img: Vol3 },
 ];
 
 export default function OurVolunteers() {
