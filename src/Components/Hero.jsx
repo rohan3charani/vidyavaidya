@@ -8,6 +8,10 @@ import Bg2 from "../assets/bg/1.jpg";
 import Bg3 from "../assets/bg/2.jpg";
 import Bg4 from "../assets/bg/3.jpg";
 
+import ChairmanImg from "../assets/3members/Chairman & Managing Trustee.jpeg";
+import SecretaryImg from "../assets/3members/Secretary.jpeg";
+import TreasurerImg from "../assets/3members/Treasurer.jpeg";
+
 import "./Hero.css";
 
 /* ─────────────────────────────────────────
@@ -454,20 +458,34 @@ export function CTABanner() {
 }
 
 const TEAM = [
-  { id: "t1", name: "Sarah Johnson", role: "Executive Director", img: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=300&q=80", socials: { twitter: "#", whatsapp: "#", instagram: "#", telegram: "#" } },
-  { id: "t2", name: "Daniel Carter", role: "Community Lead", img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&q=80", socials: { twitter: "#", whatsapp: "#", instagram: "#", telegram: "#" } },
-  { id: "t3", name: "Priya Mehta", role: "Field Coordinator", img: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=300&q=80", socials: { twitter: "#", whatsapp: "#", instagram: "#", telegram: "#" } },
-  { id: "t4", name: "Marcus Lee", role: "Outreach Manager", img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&q=80", socials: { twitter: "#", whatsapp: "#", instagram: "#", telegram: "#" } },
+  { 
+    id: "t1", 
+    name: "Chairman & Managing Trustee", 
+    role: "VidyaVaidya Foundation", 
+    img: ChairmanImg,
+    bio: "A visionary leader with over 20 years of experience in social service and community development. He is the driving force behind VidyaVaidya's mission to provide quality education and healthcare to the underserved. Under his guidance, the foundation has impacted thousands of lives across the nation through sustainable interventions and unwavering dedication."
+  },
+  { 
+    id: "t2", 
+    name: "Secretary", 
+    role: "VidyaVaidya Foundation", 
+    img: SecretaryImg,
+    bio: "A dedicated administrator and strategist who ensures the smooth operation of all foundation activities. With a background in management and a heart for service, she focuses on building sustainable partnerships and implementing innovative programs that empower youth and children to achieve their full potential."
+  },
+  { 
+    id: "t3", 
+    name: "Treasurer", 
+    role: "VidyaVaidya Foundation", 
+    img: TreasurerImg,
+    bio: "A financial expert with a passion for transparency and accountability. He manages the foundation's resources with precision, ensuring that every donation is utilized effectively to maximize social impact. His commitment to fiscal responsibility has earned VidyaVaidya the trust and support of global donors."
+  },
 ];
 
-const TwitterIcon = () => <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>;
-const WhatsAppIcon = () => <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" /><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.559 4.122 1.533 5.854L.057 23.57a.5.5 0 0 0 .614.614l5.78-1.476A11.946 11.946 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.891 0-3.658-.523-5.166-1.431l-.369-.22-3.832.978.998-3.768-.24-.386A9.944 9.944 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z" /></svg>;
-const InstagramIcon = () => <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16" aria-hidden="true"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z" /></svg>;
-const TelegramIcon = () => <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16" aria-hidden="true"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" /></svg>;
 
 export function TeamMembers() {
   const sectionRef = useRef(null);
   const [visible, setVisible] = useState(false);
+  const [selectedMember, setSelectedMember] = useState(null);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -478,34 +496,64 @@ export function TeamMembers() {
     return () => observer.disconnect();
   }, []);
 
+  useEffect(() => {
+    if (selectedMember) {
+      document.body.style.overflowY = 'hidden';
+    } else {
+      document.body.style.overflowY = 'auto';
+    }
+    return () => { document.body.style.overflowY = 'auto'; };
+  }, [selectedMember]);
+
   return (
     <section className={`team-section ${visible ? "team-visible" : ""}`} ref={sectionRef} id="team">
       <div className="team-header">
-        <div className="team-badge"><span className="team-badge-dot" aria-hidden="true" />TEAM MEMBERS</div>
-        <h2 className="team-heading">Meet the optimistic <span className="team-heading-accent">volunteer</span></h2>
-        <p className="team-subtext">Passionate individuals working every day to bring hope, dignity, and opportunity to communities around the world.</p>
+        <div className="team-badge"><span className="team-badge-dot" aria-hidden="true" />OUR LEADERSHIP</div>
+        <h2 className="team-heading">Meet the visionaries behind <span className="team-heading-accent">VidyaVaidya</span></h2>
+        <p className="team-subtext">Dedicated leaders working every day to bring hope, dignity, and opportunity to communities across the nation.</p>
       </div>
       <div className="team-grid">
         {TEAM.map((member, i) => (
-          <article key={member.id} className="team-card" style={{ transitionDelay: `${i * 0.1}s` }}>
-            <div className="team-avatar-wrap">
-              <img src={member.img} alt={member.name} className="team-avatar" loading="lazy" />
-              <span className="team-avatar-ring" aria-hidden="true" />
+          <article 
+            key={member.id} 
+            className="team-card" 
+            style={{ transitionDelay: `${i * 0.1}s`, cursor: 'pointer' }}
+            onClick={() => setSelectedMember(member)}
+          >
+            <div className="team-image-wrap">
+              <img src={member.img} alt={member.name} className="team-member-img" loading="lazy" />
             </div>
             <div className="team-card-body">
               <h3 className="team-name">{member.name}</h3>
               <p className="team-role">{member.role}</p>
-              <span className="team-divider" aria-hidden="true" />
-              <div className="team-socials">
-                <a href={member.socials.twitter} className="team-social team-social--twitter" aria-label="Twitter" rel="noopener noreferrer"><TwitterIcon /></a>
-                <a href={member.socials.whatsapp} className="team-social team-social--whatsapp" aria-label="WhatsApp" rel="noopener noreferrer"><WhatsAppIcon /></a>
-                <a href={member.socials.instagram} className="team-social team-social--instagram" aria-label="Instagram" rel="noopener noreferrer"><InstagramIcon /></a>
-                <a href={member.socials.telegram} className="team-social team-social--telegram" aria-label="Telegram" rel="noopener noreferrer"><TelegramIcon /></a>
-              </div>
             </div>
           </article>
         ))}
       </div>
+
+      {/* Leadership Modal */}
+      {selectedMember && (
+        <div className="team-modal-overlay" onClick={() => setSelectedMember(null)}>
+          <div className="team-modal-content" onClick={e => e.stopPropagation()}>
+            <button className="team-modal-close" onClick={() => setSelectedMember(null)} aria-label="Close modal">&times;</button>
+            <div className="team-modal-grid">
+              <div className="team-modal-image">
+                <img src={selectedMember.img} alt={selectedMember.name} />
+              </div>
+              <div className="team-modal-info">
+                <span className="team-modal-badge">Leadership Profile</span>
+                <h3 className="team-modal-name">{selectedMember.name}</h3>
+                <p className="team-modal-role">{selectedMember.role}</p>
+                <div className="team-modal-divider"></div>
+                <p className="team-modal-bio">{selectedMember.bio}</p>
+                <div className="team-modal-footer">
+                  <p>Commitment to Excellence since 2026</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

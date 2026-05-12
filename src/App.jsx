@@ -31,6 +31,7 @@ import VideoGallery from "./pages/VideoGallery";
 import News from "./pages/News";
 import Publishings from "./pages/Publishings";
 import Contact from "./pages/Contact";
+import OurVolunteers from "./pages/OurVolunteers";
 import Home from "./Components/Hero";
 
 function LandingPage() {
@@ -88,6 +89,7 @@ export default function App() {
         <Route path="/news" element={<News />} />
         <Route path="/publishings" element={<Publishings />} />
         <Route path="/contact" element={<Contact />} />
+        <Route path="/Ourvolunteers" element={<OurVolunteers />} />
         <Route path="/Hero" element={<Home />} />
 
         {/* ── Admin Routes ── */}
