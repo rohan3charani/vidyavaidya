@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { CircleCheckBig, Mail } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
+import vidyaLogo from "../assets/Vidya1.png";
 import "./OtpPage.css";
 
 export default function OtpPage() {
@@ -20,15 +21,14 @@ export default function OtpPage() {
   return (
     <section className="otp-layout">
       <div className="otp-left-pane">
-        <div className="otp-left-content">
-          <h1>Empowering Lives Through Healthcare and Education</h1>
-          <p>
-            Vidyavaidya Trust is dedicated to supporting underprivileged children by providing
-            access to quality education and healthcare. Together, we can build a healthier and
-            brighter future.
-          </p>
-          <p className="otp-quote">"Helping a child today creates a better tomorrow."</p>
-          <p>We support poor children with education and healthcare.</p>
+        <div className="al-bg-effects">
+          <div className="al-orb al-orb-1" />
+          <div className="al-orb al-orb-2" />
+        </div>
+        
+        <div className="al-logo-container">
+          <div className="al-logo-glow" />
+          <img src={vidyaLogo} alt="VidyaVaidya Logo" />
         </div>
       </div>
 
@@ -73,6 +73,26 @@ export default function OtpPage() {
             className="otp-primary-btn"
             onClick={() => {
               localStorage.setItem("vv_auth", "1");
+
+              // Dynamically populate default user profile details if none exists in localStorage
+              const existingProfile = localStorage.getItem("vv_user_profile");
+              if (!existingProfile) {
+                const calculatedName = email.split("@")[0].toUpperCase().replace(/[._-]/g, " ");
+                localStorage.setItem("vv_user_profile", JSON.stringify({
+                  fullName: calculatedName || "GUEST USER",
+                  email: email,
+                  mobile: "+91 9999999999",
+                  isAlumni: true,
+                  alumniId: "VV-2026-042",
+                  gradYear: "2022",
+                  address: "Nellore, Andhra Pradesh",
+                  city: "Nellore",
+                  state: "Andhra Pradesh",
+                  country: "India",
+                  pincode: "524001"
+                }));
+              }
+
               const redirect = localStorage.getItem("vv_redirect");
               if (redirect) {
                 localStorage.removeItem("vv_redirect");

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Mail, User, Phone, KeyRound, ArrowRight } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
+import vidyaLogo from "../assets/Vidya1.png";
 import "./AuthPage.css";
 
 const LEFT_CONTENT = {
@@ -65,6 +66,22 @@ export default function AuthPage() {
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
 
+    // Persist registration details dynamically into localStorage
+    const userProfile = {
+      fullName: fullName.trim(),
+      email: signupEmail.trim(),
+      mobile: "+91 " + phone.trim(),
+      isAlumni: true,
+      alumniId: "VV-2026-001",
+      gradYear: "2022",
+      address: "Nellore, Andhra Pradesh",
+      city: "Nellore",
+      state: "Andhra Pradesh",
+      country: "India",
+      pincode: "524001"
+    };
+    localStorage.setItem("vv_user_profile", JSON.stringify(userProfile));
+
     setShowSuccessPopup(true);
 
     setTimeout(() => {
@@ -90,11 +107,14 @@ export default function AuthPage() {
   return (
     <section className="auth-layout">
         <div className="auth-left-pane">
-          <div className="auth-left-content">
-            <h1>{LEFT_CONTENT.heading}</h1>
-            <p className="auth-left-description">{LEFT_CONTENT.description}</p>
-            <p className="auth-left-quote">{LEFT_CONTENT.quote}</p>
-            <p className="auth-left-extra">{LEFT_CONTENT.extra}</p>
+          <div className="al-bg-effects">
+            <div className="al-orb al-orb-1" />
+            <div className="al-orb al-orb-2" />
+          </div>
+          
+          <div className="al-logo-container">
+            <div className="al-logo-glow" />
+            <img src={vidyaLogo} alt="VidyaVaidya Logo" />
           </div>
         </div>
 
