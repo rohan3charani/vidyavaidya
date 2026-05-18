@@ -2,15 +2,16 @@ import { useState } from "react";
 import Navbar from "../Components/Navbar";
 import Footer from "../Components/Footer";
 import "./Pages.css";
+import { Mail, Phone, MapPin } from "lucide-react";
 
 export default function Contact() {
   const [submitted, setSubmitted] = useState(false);
 
   const details = [
-    { icon: "📧", label: "Email", value: "info@vidyavaidya.org" },
-    { icon: "📞", label: "Phone", value: "+91 9966557007 " },
+    { icon: Mail, label: "Email", value: "info@vidyavaidya.org" },
+    { icon: Phone, label: "Phone", value: "+91 9966557007 " },
     { 
-      icon: "📍", 
+      icon: MapPin, 
       label: "Address", 
       value: (
         <a 
@@ -45,15 +46,29 @@ export default function Contact() {
             <div className="contact-info-box">
               <h2>Let's Make an Impact Together</h2>
               <p>Whether you're looking to volunteer, donate, or start a partnership — every conversation matters.</p>
-              {details.map(d => (
-                <div key={d.label} className="contact-detail-item">
-                  <div className="contact-detail-icon">{d.icon}</div>
-                  <div>
-                    <p className="contact-detail-label">{d.label}</p>
-                    <p className="contact-detail-value">{d.value}</p>
-                  </div>
-                </div>
-              ))}
+              <div className="space-y-10 mt-8">
+                {details.map((d, index) => {
+                  const IconComponent = d.icon;
+                  const isLast = index === details.length - 1;
+                  return (
+                    <div 
+                      key={d.label} 
+                      className={`flex items-start gap-5 ${!isLast ? "border-b border-white/20 pb-8" : ""}`}
+                    >
+                      <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-md shrink-0 transition-transform duration-300 hover:scale-105 cursor-pointer">
+                        <IconComponent 
+                          className="w-5.5 h-5.5 text-[#123B7A]" 
+                          strokeWidth={2}
+                        />
+                      </div>
+                      <div className="flex flex-col justify-center space-y-1">
+                        <div className="text-white/70 tracking-wide font-semibold text-[0.8rem] uppercase m-0 leading-none">{d.label}</div>
+                        <div className="text-white text-[0.95rem] font-medium leading-normal m-0">{d.value}</div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
 
             {/* Form Side */}
