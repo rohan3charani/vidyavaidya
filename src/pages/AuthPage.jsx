@@ -22,6 +22,7 @@ export default function AuthPage() {
   const [phone, setPhone] = useState("");
   const [errors, setErrors] = useState({});
   const [signupNotice, setSignupNotice] = useState(() => location.state?.notice || "");
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
 
   const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
   const isValidPhone = (value) => /^\d{10}$/.test(value);
@@ -60,14 +61,26 @@ export default function AuthPage() {
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
 
-    setSignupNotice("Account created successfully. Please login to continue.");
-    navigate("/auth", {
-      state: {
-        tab: "login",
-        email: signupEmail.trim(),
-        notice: "Account created successfully. Please login to continue.",
-      },
-    });
+    setShowSuccessPopup(true);
+
+    setTimeout(() => {
+      setActiveTab("login");
+      setLoginEmail(signupEmail.trim());
+      setSignupNotice("Account created successfully. Please login to continue.");
+      setSignupEmail("");
+      setFullName("");
+      setPhone("");
+      setShowSuccessPopup(false);
+
+      navigate("/auth", {
+        replace: true,
+        state: {
+          tab: "login",
+          email: signupEmail.trim(),
+          notice: "Account created successfully. Please login to continue.",
+        },
+      });
+    }, 2000);
   };
 
   return (
@@ -83,6 +96,23 @@ export default function AuthPage() {
 
         <div className="auth-right-pane">
           <div className="auth-card">
+            {showSuccessPopup && (
+              <div className="success-popup-overlay">
+                <div className="success-popup-content">
+                  <svg className="checkmark-svg" viewBox="0 0 52 52">
+                    <circle className="checkmark-circle-bg" cx="26" cy="26" r="25" fill="none"/>
+                    <path className="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+                  </svg>
+                  <h3 className="success-popup-title">Account Created!</h3>
+                  <p className="success-popup-msg">
+                    Welcome to the Vidya Vaidya family. Redirecting to login...
+                  </p>
+                  <div className="redirect-countdown-bar">
+                    <div className="redirect-progress-fill"></div>
+                  </div>
+                </div>
+              </div>
+            )}
             <h2>{activeTab === "login" ? "Welcome Back!" : "Create an account"}</h2>
             <p className="auth-subtitle">
               {activeTab === "login"
