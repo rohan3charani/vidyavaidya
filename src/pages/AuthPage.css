@@ -6,41 +6,14 @@
 }
 
 .auth-left-pane {
-  background: linear-gradient(145deg, #0b3c5d 0%, #1abc9c 100%);
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
+  background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%);
+  overflow: hidden;
   padding: 48px;
-}
-
-.auth-left-content {
-  max-width: 520px;
-  color: #ffffff;
-  text-align: center;
-}
-
-.auth-left-content h1 {
-  font-size: clamp(2rem, 3vw, 3.1rem);
-  line-height: 1.2;
-  margin-bottom: 20px;
-}
-
-.auth-left-description {
-  font-size: 1rem;
-  line-height: 1.7;
-  margin-bottom: 22px;
-  opacity: 0.95;
-}
-
-.auth-left-quote {
-  font-size: 1.05rem;
-  font-weight: 600;
-  margin-bottom: 10px;
-}
-
-.auth-left-extra {
-  font-size: 0.95rem;
-  opacity: 0.92;
 }
 
 .auth-right-pane {
@@ -377,5 +350,90 @@
   }
   to {
     transform: scaleX(0);
+  }
+}
+
+/* Animated Left Pane Visual Effects */
+.al-bg-effects {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.al-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.25;
+}
+
+.al-orb-1 {
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, #1abc9c, transparent);
+  top: -20%; left: -20%;
+  animation: orb-pulse 8s ease-in-out infinite alternate;
+}
+
+.al-orb-2 {
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, #fff, transparent);
+  bottom: -10%; right: -10%;
+  animation: orb-pulse 6s ease-in-out infinite alternate-reverse;
+}
+
+.al-logo-container {
+  position: relative;
+  z-index: 10;
+  animation: float-logo 6s ease-in-out infinite;
+}
+
+.al-logo-glow {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 800px; height: 800px;
+  background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 60%);
+  border-radius: 50%;
+  z-index: -1;
+  animation: glow-pulse 4s ease-in-out infinite alternate;
+}
+
+.al-logo-container img {
+  max-width: 600px;
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 20px 40px rgba(0,0,0,0.35));
+}
+
+@keyframes float-logo {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-25px); }
+}
+
+@keyframes glow-pulse {
+  0% { transform: translate(-50%, -50%) scale(0.9); opacity: 0.6; }
+  100% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+}
+
+@keyframes orb-pulse {
+  0% { transform: scale(1); opacity: 0.15; }
+  100% { transform: scale(1.2); opacity: 0.35; }
+}
+
+/* Collapsible Layout for Narrow Screens */
+@media (max-width: 860px) {
+  .auth-layout {
+    grid-template-columns: 1fr;
+  }
+  .auth-left-pane {
+    max-height: 250px;
+    padding: 30px;
+  }
+  .al-logo-container img {
+    max-width: 180px;
+  }
+  .auth-right-pane {
+    padding: 20px;
   }
 }

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import vidyaLogo from "../assets/Vidya1.png";
 import "./Donate.css";
 
 /* ── DATA ───────────────────────────────────────────────── */
@@ -9,9 +10,9 @@ const ONETIME_CATEGORIES = [
         icon: "",
         label: "Education Support",
         options: [
-            { amount: 1000, tag: "Books" },
-            { amount: 5000, tag: "Fees" },
-            { amount: 10000, tag: "Semester" },
+            { amount: 1000, tag: "Student Scholarship" },
+            { amount: 5000, tag: "Books & Learning Materials" },
+            { amount: 10000, tag: "Digital Education Support" },
         ],
     },
     {
@@ -19,9 +20,9 @@ const ONETIME_CATEGORIES = [
         icon: "",
         label: "Healthcare Support",
         options: [
-            { amount: 2000, tag: "Treatment" },
-            { amount: 7000, tag: "Surgery" },
-            { amount: 15000, tag: "Emergency" },
+            { amount: 2000, tag: "Child Treatment" },
+            { amount: 7000, tag: "Emergency Care" },
+            { amount: 15000, tag: "Life-Saving Surgeries" },
         ],
     },
     {
@@ -79,7 +80,7 @@ export default function Donate() {
 
     /* Common form */
     const [form, setForm] = useState({
-        fullName: "", email: "", mobile: "", pan: "", isAlumni: false,
+        fullName: "", email: "", mobile: "", isAlumni: false,
         alumniId: "", yearOfGrad: "",
         address: "", city: "", state: "", country: "India", pincode: "",
     });
@@ -123,7 +124,6 @@ export default function Donate() {
         else if (!isValidEmail(form.email)) e.email = "Enter a valid email";
         if (!form.mobile.trim()) e.mobile = "Mobile number is required";
         else if (!isValidPhone(form.mobile)) e.mobile = "Enter a valid 10-digit mobile number";
-        if (form.pan && !isValidPAN(form.pan)) e.pan = "PAN format: ABCDE1234F";
         if (form.isAlumni && !form.alumniId.trim()) e.alumniId = "Alumni ID is required";
         if (form.isAlumni && !form.yearOfGrad) e.yearOfGrad = "Select your graduation year";
         if (!form.address.trim()) e.address = "Address is required";
@@ -186,17 +186,19 @@ export default function Donate() {
                 />
                 <div className="donate-left-content">
                     <div className="donate-left-inner">
-                        <h1 className="donate-brand">VidyaVaidya</h1>
-                        <p className="donate-tagline">Educate. Heal. Empower.</p>
+                        <div className="donate-logo-title-row">
+                            <img src={vidyaLogo} alt="VidyaVaidya Logo" className="donate-left-logo" />
+                            <h1 className="donate-brand">VidyaVaidya</h1>
+                        </div>
                         <p className="donate-desc">
                             VidyaVaidya is committed to uplifting underprivileged communities through
                             education and healthcare. Every donation creates real impact in someone's life.
                         </p>
                         <div className="donate-stats">
                             {[
-                                { num: "15K+", label: "Lives Impacted" },
-                                { num: "5K+", label: "Students Educated" },
-                                { num: "2K+", label: "Medical Cases Supported" },
+                                { num: "8K+", label: "Lives Impacted" },
+                                { num: "3K+", label: "Students Educated" },
+                                { num: "1K+", label: "Medical Cases Supported" },
                             ].map(({ num, label }) => (
                                 <div className="donate-stat" key={label}>
                                     <span className="donate-stat-num">{num}</span>
@@ -498,14 +500,6 @@ function CommonForm({ form, errors, setField }) {
                             placeholder="10-digit mobile"
                         />
                     </div>
-                </FormField>
-                <FormField label="PAN Card" error={errors.pan}>
-                    <input
-                        className={`df-input ${errors.pan ? "err" : ""}`}
-                        value={form.pan}
-                        onChange={(e) => setField("pan", e.target.value.toUpperCase().slice(0, 10))}
-                        placeholder="ABCDE1234F"
-                    />
                 </FormField>
             </div>
 
