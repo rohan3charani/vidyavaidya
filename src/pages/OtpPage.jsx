@@ -1,6 +1,7 @@
-import { useMemo, useState } from "react";
-import { CircleCheckBig, Mail } from "lucide-react";
+import { useMemo, useState, useEffect } from "react";
+import { CircleCheckBig, Mail, AlertCircle, Loader2 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
+import api from "../services/api";
 import "./OtpPage.css";
 
 export default function OtpPage() {
@@ -9,12 +10,78 @@ export default function OtpPage() {
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
 
   const email = useMemo(() => state?.email || "your email", [state?.email]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [countdown, setCountdown] = useState(60);
+  const [resendStatus, setResendStatus] = useState("OTP Sent! Check your inbox.");
+
+  useEffect(() => {
+    let timer;
+    if (countdown > 0) {
+      timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+    }
+    return () => clearTimeout(timer);
+  }, [countdown]);
 
   const handleOtpChange = (index, value) => {
     if (!/^\d?$/.test(value)) return;
     const updated = [...otp];
     updated[index] = value;
     setOtp(updated);
+    setError(null);
+  };
+
+  const handlePaste = (e) => {
+    e.preventDefault();
+    const pasteData = e.clipboardData.getData("text").trim().slice(0, 6);
+    if (/^\d+$/.test(pasteData)) {
+      const newOtp = [...otp];
+      for (let i = 0; i < pasteData.length; i++) {
+        newOtp[i] = pasteData[i];
+      }
+      setOtp(newOtp);
+      setError(null);
+    }
+  };
+
+  const handleResend = async () => {
+    if (countdown > 0) return;
+    try {
+      setResendStatus("Sending...");
+      await api.auth.sendOtp(email);
+      setCountdown(60);
+      setResendStatus("New OTP Sent! Check your inbox.");
+      setError(null);
+    } catch (err) {
+      setResendStatus("");
+      setError(err.message || "Failed to resend OTP");
+    }
+  };
+
+  const handleVerify = async () => {
+    const otpCode = otp.join("");
+    if (otpCode.length !== 6) {
+      setError("Please enter the complete 6-digit OTP.");
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      await api.auth.verifyOtp(email, otpCode);
+      const redirect = localStorage.getItem("vv_redirect");
+      if (redirect) {
+        localStorage.removeItem("vv_redirect");
+        navigate(redirect);
+      } else {
+        navigate("/dashboard");
+      }
+    } catch (err) {
+      setError(err.message || "Invalid OTP code.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -52,7 +119,7 @@ export default function OtpPage() {
           </div>
 
           <p className="otp-title">Enter 6-Digit Code</p>
-          <div className="otp-container">
+          <div className="otp-container" onPaste={handlePaste}>
             {otp.map((digit, idx) => (
               <input
                 key={idx}
@@ -65,24 +132,31 @@ export default function OtpPage() {
             ))}
           </div>
 
+          {error && (
+            <div className="otp-error" style={{ color: '#ef4444', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'center', marginTop: '10px' }}>
+              <AlertCircle size={14} />
+              {error}
+            </div>
+          )}
+
           <p className="otp-help-text">Paste allowed (Ctrl+V)</p>
-          <p className="otp-resend">Didn't receive the code? Resend in 29s</p>
+          <p className="otp-resend">
+            Didn't receive the code?{" "}
+            <span 
+              style={{ cursor: countdown === 0 ? 'pointer' : 'default', color: countdown === 0 ? '#1abc9c' : '#999', fontWeight: countdown === 0 ? '600' : 'normal' }}
+              onClick={handleResend}
+            >
+              {countdown > 0 ? `Resend in ${countdown}s` : "Resend Now"}
+            </span>
+          </p>
 
           <button
             type="button"
             className="otp-primary-btn"
-            onClick={() => {
-              localStorage.setItem("vv_auth", "1");
-              const redirect = localStorage.getItem("vv_redirect");
-              if (redirect) {
-                localStorage.removeItem("vv_redirect");
-                navigate(redirect);
-              } else {
-                navigate("/dashboard");
-              }
-            }}
+            onClick={handleVerify}
+            disabled={loading}
           >
-            Verify &amp; Login
+            {loading ? <Loader2 size={20} className="animate-spin mx-auto" /> : "Verify & Login"}
           </button>
 
           <p className="otp-info">
@@ -90,10 +164,12 @@ export default function OtpPage() {
             need.
           </p>
 
-          <div className="otp-success">
-            <CircleCheckBig size={16} />
-            OTP Sent! Check your inbox.
-          </div>
+          {resendStatus && !error && (
+            <div className="otp-success">
+              <CircleCheckBig size={16} />
+              {resendStatus}
+            </div>
+          )}
         </div>
       </div>
     </section>

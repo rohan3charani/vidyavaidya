@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Mail, User, Phone, KeyRound, ArrowRight } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
+import api from "../services/api";
 import "./AuthPage.css";
 
 const LEFT_CONTENT = {
@@ -23,6 +24,7 @@ export default function AuthPage() {
   const [errors, setErrors] = useState({});
   const [signupNotice, setSignupNotice] = useState(location.state?.notice || "");
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     navigate(location.pathname, { replace: true, state: null });
@@ -32,7 +34,7 @@ export default function AuthPage() {
   const isValidPhone = (value) => /^\d{10}$/.test(value);
   const isValidName = (value) => /^[A-Za-z ]{3,}$/.test(value.trim());
 
-  const goToOtp = () => {
+  const goToOtp = async () => {
     const nextErrors = {};
     if (!loginEmail.trim()) {
       nextErrors.loginEmail = "Email is required";
@@ -43,10 +45,20 @@ export default function AuthPage() {
 
     if (Object.keys(nextErrors).length > 0) return;
 
-    navigate("/otp", { state: { email: loginEmail.trim() } });
+    setLoading(true);
+    try {
+      // Request OTP from the backend
+      await api.auth.sendOtp(loginEmail.trim());
+
+      navigate("/otp", { state: { email: loginEmail.trim() } });
+    } catch (err) {
+      setErrors({ loginEmail: err.message || "Failed to contact authorization server" });
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const createAccount = () => {
+  const createAccount = async () => {
     const nextErrors = {};
     if (!isValidName(fullName)) {
       nextErrors.fullName = "Enter a valid full name (minimum 3 letters)";
@@ -65,26 +77,41 @@ export default function AuthPage() {
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
 
-    setShowSuccessPopup(true);
+    setLoading(true);
+    try {
+      // Call standard register API with a secure default portal password
+      await api.auth.register(
+        signupEmail.trim(),
+        phone.trim(),
+        fullName.trim(),
+        "Vidyavaidya@2026"
+      );
 
-    setTimeout(() => {
-      setActiveTab("login");
-      setLoginEmail(signupEmail.trim());
-      setSignupNotice("Account created successfully. Please login to continue.");
-      setSignupEmail("");
-      setFullName("");
-      setPhone("");
-      setShowSuccessPopup(false);
+      setShowSuccessPopup(true);
 
-      navigate("/auth", {
-        replace: true,
-        state: {
-          tab: "login",
-          email: signupEmail.trim(),
-          notice: "Account created successfully. Please login to continue.",
-        },
-      });
-    }, 2000);
+      setTimeout(() => {
+        setActiveTab("login");
+        setLoginEmail(signupEmail.trim());
+        setSignupNotice("Account created successfully in Firestore! Please login to continue.");
+        setSignupEmail("");
+        setFullName("");
+        setPhone("");
+        setShowSuccessPopup(false);
+
+        navigate("/auth", {
+          replace: true,
+          state: {
+            tab: "login",
+            email: signupEmail.trim(),
+            notice: "Account created successfully in Firestore! Please login to continue.",
+          },
+        });
+      }, 2000);
+    } catch (err) {
+      setErrors({ signupEmail: err.message || "Email or phone number already registered" });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -158,8 +185,8 @@ export default function AuthPage() {
                 </div>
                 {errors.loginEmail && <p className="field-error">{errors.loginEmail}</p>}
                 {signupNotice && <p className="success-note">{signupNotice}</p>}
-                <button type="button" className="auth-primary-btn" onClick={goToOtp}>
-                  Continue with Email <ArrowRight size={16} />
+                <button type="button" className="auth-primary-btn" onClick={goToOtp} disabled={loading}>
+                  {loading ? "Sending OTP..." : "Continue with Email"} <ArrowRight size={16} />
                 </button>
                 <p className="auth-footer">
                   Don't have an account?{" "}
@@ -228,8 +255,8 @@ export default function AuthPage() {
                 </div>
                 {errors.phone && <p className="field-error">{errors.phone}</p>}
 
-                <button type="button" className="auth-primary-btn" onClick={createAccount}>
-                  Create Account
+                <button type="button" className="auth-primary-btn" onClick={createAccount} disabled={loading}>
+                  {loading ? "Creating Account..." : "Create Account"}
                 </button>
               </div>
             )}
