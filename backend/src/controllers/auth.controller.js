@@ -6,7 +6,10 @@ const { v4: uuidv4 } = require('uuid');
 const jwt = require('jsonwebtoken');
 const otpService = require('../services/otp.service');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'vidyavaidya-super-secret-key-2026';
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  throw new Error('FATAL: JWT_SECRET environment variable is missing.');
+}
 const JWT_EXPIRES_IN = '7d';
 
 // Helper to generate a signed JWT for a Firestore user document
@@ -36,14 +39,26 @@ const authController = {
       const normalizedEmail = email.trim().toLowerCase();
 
       // 1. Check for duplicate email in Firestore first (fast, reliable)
-      const existingSnap = await db.collection('users')
+      const existingEmailSnap = await db.collection('users')
         .where('email', '==', normalizedEmail)
         .limit(1)
         .get();
 
-      if (!existingSnap.empty) {
+      if (!existingEmailSnap.empty) {
         return res.status(409).json({
           error: 'An account with this email address already exists. Please login instead.'
+        });
+      }
+
+      // Check for duplicate phone number in Firestore
+      const existingPhoneSnap = await db.collection('users')
+        .where('phone', '==', normalizedPhone)
+        .limit(1)
+        .get();
+
+      if (!existingPhoneSnap.empty) {
+        return res.status(409).json({
+          error: 'An account with this phone number already exists. Please login instead.'
         });
       }
 
@@ -122,56 +137,39 @@ const authController = {
 
       // 1. Verify token with Firebase Admin
       const decodedToken = await auth.verifyIdToken(idToken);
-      const uid = decodedToken.uid;
+      const email = (decodedToken.email || '').trim().toLowerCase();
 
-      // 2. Get user document from Firestore
-      const userRef = db.collection('users').doc(uid);
-      const userDoc = await userRef.get();
+      if (!email) {
+        return res.status(400).json({ error: 'Email address not provided in token.' });
+      }
 
-      if (!userDoc.exists) {
-        // If they logged in through social but didn't have a Firestore profile yet, upsert one
-        const timestamp = admin.firestore.Timestamp.fromDate(new Date());
-        const newProfile = {
-          uid,
-          email: decodedToken.email || '',
-          phone: decodedToken.phone_number || '',
-          fullName: decodedToken.name || 'Friend',
-          role: 'donor',
-          isAlumni: false,
-          profileComplete: false,
-          address: { line: '', city: '', state: '', country: 'India', pincode: '' },
-          pan: '',
-          totalDonated: 0,
-          donationCount: 0,
-          lastLoginAt: timestamp,
-          createdAt: timestamp,
-          updatedAt: timestamp,
-          isActive: true
-        };
-        await userRef.set(newProfile);
-        
-        return res.status(200).json({
-          success: true,
-          uid,
-          email: newProfile.email,
-          role: newProfile.role,
-          profileComplete: false
+      // 2. Search user by email in Firestore
+      const userSnap = await db.collection('users')
+        .where('email', '==', email)
+        .limit(1)
+        .get();
+
+      if (userSnap.empty) {
+        return res.status(401).json({
+          error: 'This account is not registered. Please sign up first!'
         });
       }
 
-      const userData = userDoc.data();
+      const userData = userSnap.docs[0].data();
 
       if (userData.isActive === false) {
-        return res.status(403).json({ error: 'Account has been disabled' });
+        return res.status(403).json({ error: 'Account has been disabled.' });
       }
 
       // 3. Update last login timestamp
       const timestamp = admin.firestore.Timestamp.fromDate(new Date());
-      await userRef.update({ lastLoginAt: timestamp });
+      await db.collection('users').doc(userData.uid).update({ lastLoginAt: timestamp });
 
+      const token = generateJWT(userData);
       return res.status(200).json({
         success: true,
-        uid,
+        token,
+        uid: userData.uid,
         email: userData.email,
         role: userData.role || 'donor',
         profileComplete: userData.profileComplete || false
@@ -193,6 +191,18 @@ const authController = {
       }
 
       const normalizedEmail = email.trim().toLowerCase();
+
+      // Check if user exists in Firestore
+      const userSnap = await db.collection('users')
+        .where('email', '==', normalizedEmail)
+        .limit(1)
+        .get();
+
+      if (userSnap.empty) {
+        return res.status(404).json({
+          error: 'This email address is not registered. Please register first.'
+        });
+      }
 
       // Rate-limit: allow resend only after 60 seconds
       const existing = await db.collection('otps').doc(normalizedEmail).get();
@@ -234,47 +244,26 @@ const authController = {
       // Verify the OTP (throws on failure)
       await otpService.verifyOtp(normalizedEmail, otp);
 
-      // Find or create the Firestore user document
+      // Find the Firestore user document
       const timestamp = admin.firestore.Timestamp.fromDate(new Date());
       let userSnap = await db.collection('users')
         .where('email', '==', normalizedEmail)
         .limit(1)
         .get();
 
-      let userData;
-      let isNewUser = false;
-
       if (userSnap.empty) {
-        // First-time login via OTP — create a minimal profile
-        isNewUser = true;
-        const newUid = `local-${uuidv4()}`;
-        userData = {
-          uid: newUid,
-          email: normalizedEmail,
-          phone: '',
-          fullName: normalizedEmail.split('@')[0],
-          role: 'donor',
-          isAlumni: false,
-          profileComplete: false,
-          address: { line: '', city: '', state: '', country: 'India', pincode: '' },
-          pan: '',
-          totalDonated: 0,
-          donationCount: 0,
-          lastLoginAt: timestamp,
-          createdAt: timestamp,
-          updatedAt: timestamp,
-          isActive: true
-        };
-        await db.collection('users').doc(newUid).set(userData);
-        console.log(`✅ New user profile auto-created: ${newUid}`);
-      } else {
-        userData = userSnap.docs[0].data();
-        if (userData.isActive === false) {
-          return res.status(403).json({ error: 'Your account has been disabled. Contact support.' });
-        }
-        // Update last login
-        await db.collection('users').doc(userData.uid).update({ lastLoginAt: timestamp });
+        return res.status(401).json({
+          error: 'This email address is not registered. Please sign up first.'
+        });
       }
+
+      const userData = userSnap.docs[0].data();
+      if (userData.isActive === false) {
+        return res.status(403).json({ error: 'Your account has been disabled. Contact support.' });
+      }
+
+      // Update last login
+      await db.collection('users').doc(userData.uid).update({ lastLoginAt: timestamp });
 
       // Generate a signed JWT
       const token = generateJWT(userData);
@@ -288,12 +277,12 @@ const authController = {
         email: userData.email,
         fullName: userData.fullName,
         role: userData.role,
-        isNewUser,
+        isNewUser: false,
         profileComplete: userData.profileComplete || false
       });
     } catch (error) {
       // OTP verification failures are user errors (400), not server errors
-      if (error.message.includes('OTP') || error.message.includes('expired') || error.message.includes('attempts')) {
+      if (error.message && (error.message.includes('OTP') || error.message.includes('expired') || error.message.includes('attempts'))) {
         return res.status(400).json({ error: error.message });
       }
       next(error);
@@ -305,7 +294,9 @@ const authController = {
   async logout(req, res, next) {
     try {
       const uid = req.user.uid;
-      await auth.revokeRefreshTokens(uid);
+      if (uid && !uid.startsWith('local-')) {
+        await auth.revokeRefreshTokens(uid);
+      }
       return res.status(200).json({ success: true, message: 'Logged out and session revoked successfully' });
     } catch (error) {
       next(error);

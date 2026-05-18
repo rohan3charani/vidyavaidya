@@ -1,7 +1,10 @@
 const { auth, db } = require('../config/firebase');
 const jwt = require('jsonwebtoken');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'vidyavaidya-super-secret-key-2026';
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  throw new Error('FATAL: JWT_SECRET environment variable is missing.');
+}
 
 const authMiddleware = async (req, res, next) => {
   try {

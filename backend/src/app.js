@@ -2,7 +2,6 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
-const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 const path = require('path');
 
@@ -68,8 +67,7 @@ app.use('/api/webhook', express.raw({
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 
-// 6. Security Sanitizations (NoSQL Injection & XSS)
-app.use(mongoSanitize());
+// 6. Security Sanitizations (XSS)
 app.use(xss());
 
 // 7. General API Route Rate Limiting

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ShieldCheck, Eye, EyeOff, Lock, User } from "lucide-react";
+import api from "../../services/api";
 import vidyaLogo from "../../assets/Vidya1.png";
 import "./AdminLogin.css";
 
@@ -18,25 +19,27 @@ export default function AdminLogin() {
   const [loading, setLoading] = useState(false);
   const [shake, setShake] = useState(false);
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
     setLoading(true);
 
-    setTimeout(() => {
-      if (
-        username.trim() === ADMIN_CREDENTIALS.username &&
-        password === ADMIN_CREDENTIALS.password
-      ) {
-        localStorage.setItem("vv_admin_auth", JSON.stringify({ loggedIn: true, time: Date.now() }));
+    try {
+      const data = await api.auth.adminLogin(username.trim(), password);
+      if (data.success) {
         navigate("/admin/dashboard");
       } else {
         setError("Invalid credentials. Please try again.");
         setShake(true);
         setTimeout(() => setShake(false), 600);
       }
+    } catch (err) {
+      setError(err.message || "Failed to sign in. Please try again.");
+      setShake(true);
+      setTimeout(() => setShake(false), 600);
+    } finally {
       setLoading(false);
-    }, 800);
+    }
   };
 
   return (

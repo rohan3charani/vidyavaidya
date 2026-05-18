@@ -9,7 +9,7 @@ const communityController = {
   async apply(req, res, next) {
     try {
       const uid = req.user.uid;
-      const { type, volunteerDetails, corporateDetails, hospitalDetails } = req.body;
+      const { type, volunteerDetails, corporateDetails, hospitalDetails, donorDetails } = req.body;
 
       // 1. Double check: check if user already has a pending application for this category
       const existingSnap = await db.collection('community_applications')
@@ -45,6 +45,7 @@ const communityController = {
         volunteerDetails: type === 'volunteer' ? volunteerDetails : null,
         corporateDetails: type === 'corporate' ? corporateDetails : null,
         hospitalDetails: type === 'hospital' ? hospitalDetails : null,
+        donorDetails: type === 'donor' ? donorDetails : null,
         adminNotes: '',
         reviewedBy: '',
         reviewedAt: null,

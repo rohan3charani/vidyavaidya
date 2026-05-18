@@ -3,7 +3,7 @@
  * Bridges React components directly to the Node.js + Firebase Express backend.
  */
 
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = '/api';
 
 /**
  * Helper to standardise API requests and parse standard response shapes
@@ -55,9 +55,9 @@ const api = {
         body: JSON.stringify({ idToken })
       });
       // Store tokens on successful authentication
-      if (data.success && idToken) {
-        localStorage.setItem('vv_token', idToken);
-        localStorage.setItem('vv_auth', '1');
+      if (data.success && data.token) {
+        localStorage.setItem('vv_token', data.token);
+        localStorage.setItem('vv_auth', 'true');
       }
       return data;
     },
@@ -78,7 +78,7 @@ const api = {
       // Store JWT token on successful verification
       if (data.success && data.token) {
         localStorage.setItem('vv_token', data.token);
-        localStorage.setItem('vv_auth', '1');
+        localStorage.setItem('vv_auth', 'true');
       }
       return data;
     },
@@ -91,7 +91,7 @@ const api = {
       if (data.success) {
         // Cache static demo token or session
         localStorage.setItem('vv_token', data.token);
-        localStorage.setItem('vv_auth', '1');
+        localStorage.setItem('vv_auth', 'true');
         localStorage.setItem('vv_admin_auth', JSON.stringify({ loggedIn: true, time: Date.now() }));
       }
       return data;
@@ -169,10 +169,10 @@ const api = {
    * 4. Payment & Checkout Gateways (Razorpay)
    */
   payment: {
-    async createOrder(amount, category, subcategory, donorDetails) {
+    async createOrder(amount, category, subcategory, donorDetails, donationType = 'one-time') {
       return apiRequest('/payment/create-order', {
         method: 'POST',
-        body: JSON.stringify({ amount, category, subcategory, donorDetails })
+        body: JSON.stringify({ amount, category, subcategory, donorDetails, donationType })
       });
     },
 
@@ -261,6 +261,7 @@ const api = {
       if (type === 'volunteer') body.volunteerDetails = details;
       if (type === 'corporate') body.corporateDetails = details;
       if (type === 'hospital') body.hospitalDetails = details;
+      if (type === 'donor') body.donorDetails = details;
 
       return apiRequest('/community/apply', {
         method: 'POST',

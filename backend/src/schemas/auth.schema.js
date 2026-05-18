@@ -45,9 +45,8 @@ const verifyOtpSchema = Joi.object({
 });
 
 const adminLoginSchema = Joi.object({
-  email: Joi.string().email().required().messages({
-    'string.email': 'Please enter a valid email address',
-    'any.required': 'Admin email is required'
+  email: Joi.string().required().messages({
+    'any.required': 'Admin email or username is required'
   }),
   password: Joi.string().required().messages({
     'any.required': 'Password is required'

@@ -75,11 +75,32 @@ export default function App() {
       
       <Routes>
         <Route path="/" element={<LandingPage />} />
-        <Route path="/donate" element={<Donate />} />
+        <Route
+          path="/donate"
+          element={
+            <ProtectedRoute>
+              <Donate />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/auth" element={<AuthPage />} />
         <Route path="/otp" element={<OtpPage />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/payment" element={<Payment />} />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/payment"
+          element={
+            <ProtectedRoute>
+              <Payment />
+            </ProtectedRoute>
+          }
+        />
         
         <Route path="/mission" element={<OurMission />} />
         <Route path="/partners" element={<Partners />} />
@@ -93,7 +114,6 @@ export default function App() {
         <Route path="/publishings" element={<Publishings />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/Ourvolunteers" element={<OurVolunteers />} />
-        <Route path="/Hero" element={<Home />} />
 
         {/* ── Admin Routes ── */}
         <Route path="/admin" element={<AdminLogin />} />

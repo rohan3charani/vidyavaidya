@@ -10,7 +10,7 @@ export default function ProtectedRoute({ children }) {
   const navigate = useNavigate();
 
   // Replace this with your real auth check
-  const isAuthenticated = sessionStorage.getItem("vv_auth") === "true";
+  const isAuthenticated = localStorage.getItem("vv_auth") === "true";
 
   useEffect(() => {
     if (!isAuthenticated) {
