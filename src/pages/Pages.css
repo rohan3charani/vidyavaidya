@@ -142,19 +142,18 @@
   border-radius: var(--radius);
   box-shadow: var(--shadow-md);
   border-top: 4px solid var(--green);
-  transition: transform var(--transition), box-shadow var(--transition);
+  transition: all 0.3s ease;
   text-align: center;
 }
 
 .mission-pillar-card:hover {
-  transform: translateY(-8px);
-  box-shadow: var(--shadow-lg);
+  transform: translateY(-4px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
 .mission-pillar-icon {
-  font-size: 3.5rem;
-  margin-bottom: 22px;
   display: block;
+  margin: 0 auto 22px;
 }
 
 .mission-pillar-title {
@@ -572,37 +571,23 @@
 }
 
 .contact-detail-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 16px;
-  margin-bottom: 24px;
+  margin: 0;
 }
 
 .contact-detail-icon {
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  background: var(--green-light);
-  border: 1px solid var(--green-mid);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+.contact-detail-icon:hover {
+  transform: scale(1.05);
 }
 
 .contact-detail-label {
-  font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.85);
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  margin-bottom: 4px;
+  margin: 0;
 }
 
 .contact-detail-value {
-  font-size: 0.97rem;
-  color: #ffffff;
-  font-weight: 500;
+  margin: 0;
 }
 
 .contact-form-box {
