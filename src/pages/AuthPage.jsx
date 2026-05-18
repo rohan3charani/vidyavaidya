@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { Mail, User, Phone, KeyRound, ArrowRight } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { Mail, User, Phone, KeyRound, ArrowRight } from "lucide-react";
 import api from "../services/api";
+import vidyaLogo from "../assets/Vidya1.png";
 import "./AuthPage.css";
 
 const LEFT_CONTENT = {
@@ -24,6 +25,8 @@ export default function AuthPage() {
   const [errors, setErrors] = useState({});
   const [signupNotice, setSignupNotice] = useState(location.state?.notice || "");
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+  const [showErrorPopup, setShowErrorPopup] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -52,6 +55,8 @@ export default function AuthPage() {
 
       navigate("/otp", { state: { email: loginEmail.trim() } });
     } catch (err) {
+      setErrorMessage(err.message || "This email is not registered. Please register first.");
+      setShowErrorPopup(true);
       setErrors({ loginEmail: err.message || "Failed to contact authorization server" });
     } finally {
       setLoading(false);
@@ -76,7 +81,6 @@ export default function AuthPage() {
 
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
-
     setLoading(true);
     try {
       // Call standard register API with a secure default portal password
@@ -108,6 +112,8 @@ export default function AuthPage() {
         });
       }, 2000);
     } catch (err) {
+      setErrorMessage(err.message || "An account with this email or phone number already exists.");
+      setShowErrorPopup(true);
       setErrors({ signupEmail: err.message || "Email or phone number already registered" });
     } finally {
       setLoading(false);
@@ -117,11 +123,14 @@ export default function AuthPage() {
   return (
     <section className="auth-layout">
         <div className="auth-left-pane">
-          <div className="auth-left-content">
-            <h1>{LEFT_CONTENT.heading}</h1>
-            <p className="auth-left-description">{LEFT_CONTENT.description}</p>
-            <p className="auth-left-quote">{LEFT_CONTENT.quote}</p>
-            <p className="auth-left-extra">{LEFT_CONTENT.extra}</p>
+          <div className="al-bg-effects">
+            <div className="al-orb al-orb-1" />
+            <div className="al-orb al-orb-2" />
+          </div>
+          
+          <div className="al-logo-container">
+            <div className="al-logo-glow" />
+            <img src={vidyaLogo} alt="VidyaVaidya Logo" />
           </div>
         </div>
 
@@ -141,6 +150,18 @@ export default function AuthPage() {
                   <div className="redirect-countdown-bar">
                     <div className="redirect-progress-fill"></div>
                   </div>
+                </div>
+              </div>
+            )}
+            {showErrorPopup && (
+              <div className="error-popup-overlay">
+                <div className="error-popup-content">
+                  <div className="error-popup-icon">⚠️</div>
+                  <h3 className="error-popup-title">Authentication Alert</h3>
+                  <p className="error-popup-msg">{errorMessage}</p>
+                  <button type="button" className="error-popup-close-btn" onClick={() => setShowErrorPopup(false)}>
+                    Understood
+                  </button>
                 </div>
               </div>
             )}

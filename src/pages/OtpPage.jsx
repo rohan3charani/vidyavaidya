@@ -2,6 +2,7 @@ import { useMemo, useState, useEffect } from "react";
 import { CircleCheckBig, Mail, AlertCircle, Loader2 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import api from "../services/api";
+import vidyaLogo from "../assets/Vidya1.png";
 import "./OtpPage.css";
 
 export default function OtpPage() {
@@ -87,15 +88,14 @@ export default function OtpPage() {
   return (
     <section className="otp-layout">
       <div className="otp-left-pane">
-        <div className="otp-left-content">
-          <h1>Empowering Lives Through Healthcare and Education</h1>
-          <p>
-            Vidyavaidya Trust is dedicated to supporting underprivileged children by providing
-            access to quality education and healthcare. Together, we can build a healthier and
-            brighter future.
-          </p>
-          <p className="otp-quote">"Helping a child today creates a better tomorrow."</p>
-          <p>We support poor children with education and healthcare.</p>
+        <div className="al-bg-effects">
+          <div className="al-orb al-orb-1" />
+          <div className="al-orb al-orb-2" />
+        </div>
+        
+        <div className="al-logo-container">
+          <div className="al-logo-glow" />
+          <img src={vidyaLogo} alt="VidyaVaidya Logo" />
         </div>
       </div>
 
@@ -128,6 +128,11 @@ export default function OtpPage() {
                 value={digit}
                 onChange={(e) => handleOtpChange(idx, e.target.value)}
                 inputMode="numeric"
+                type="text"
+                autoComplete="one-time-code"
+                data-lpignore="true"
+                data-1pignore="true"
+                name={`otp-field-${idx}`}
               />
             ))}
           </div>

@@ -24,6 +24,12 @@
     height: 100%;
     object-fit: cover;
     object-position: center;
+    animation: kenBurnsBg 24s ease-in-out infinite alternate;
+}
+
+@keyframes kenBurnsBg {
+    0% { transform: scale(1) translate(0, 0); }
+    100% { transform: scale(1.1) translate(-1%, -1%); }
 }
 
 .donate-left-overlay {
@@ -58,20 +64,48 @@
 }
 
 .donate-brand {
-    font-size: clamp(2rem, 3vw, 3rem);
+    font-size: clamp(2.2rem, 3.5vw, 3.4rem);
     font-weight: 900;
     color: #fff;
-    letter-spacing: -1px;
-    margin-bottom: 8px;
+    letter-spacing: -1.5px;
+    margin: 0;
+    text-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    background: linear-gradient(135deg, #ffffff 0%, #e0f2fe 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
-.donate-tagline {
-    font-size: 1.05rem;
-    font-weight: 600;
-    color: rgba(255, 255, 255, 0.88);
-    letter-spacing: 1px;
-    margin-bottom: 18px;
-    text-transform: uppercase;
+.donate-logo-title-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.donate-left-logo {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+    filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
+    animation: zoomInOut 4s ease-in-out infinite;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.donate-left-logo:hover {
+    transform: scale(1.2) rotate(8deg);
+    filter: drop-shadow(0 0 20px rgba(20, 184, 166, 0.75)) brightness(1.1);
+    animation-play-state: paused;
+}
+
+@keyframes zoomInOut {
+    0%, 100% {
+        transform: scale(1);
+        filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
+    }
+    50% {
+        transform: scale(1.08);
+        filter: drop-shadow(0 0 16px rgba(20, 184, 166, 0.55));
+    }
 }
 
 .donate-desc {
@@ -86,44 +120,61 @@
 .donate-stats {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 16px;
+    margin-top: 30px;
 }
 
 .donate-stat {
     display: flex;
     align-items: center;
-    gap: 12px;
-    background: rgba(255, 255, 255, 0.12);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(8px);
-    border-radius: 12px;
-    padding: 12px 18px;
-    animation: dl-fade-up 0.8s ease both;
+    gap: 16px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-radius: 16px;
+    padding: 16px 24px;
     cursor: default;
-    transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.03);
 }
 
 .donate-stat:hover {
-    transform: translateY(-4px);
-    border-color: #14B8A6;
-    box-shadow: 0 8px 24px rgba(20, 184, 166, 0.35);
+    transform: translateY(-4px) scale(1.02);
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(20, 184, 166, 0.6);
+    box-shadow: 0 12px 30px rgba(20, 184, 166, 0.25);
 }
 
-.donate-stat:nth-child(1) { animation-delay: 0.15s; }
-.donate-stat:nth-child(2) { animation-delay: 0.28s; }
-.donate-stat:nth-child(3) { animation-delay: 0.41s; }
+.donate-stat:nth-child(1) { animation: statSlideUp 0.6s cubic-bezier(0.165, 0.84, 0.44, 1) 0.1s both; }
+.donate-stat:nth-child(2) { animation: statSlideUp 0.6s cubic-bezier(0.165, 0.84, 0.44, 1) 0.25s both; }
+.donate-stat:nth-child(3) { animation: statSlideUp 0.6s cubic-bezier(0.165, 0.84, 0.44, 1) 0.4s both; }
+
+@keyframes statSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
 
 .donate-stat-num {
-    font-size: 1.4rem;
+    font-size: 1.6rem;
     font-weight: 800;
     color: #fff;
-    min-width: 60px;
+    min-width: 70px;
+    letter-spacing: -0.5px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
 .donate-stat-label {
-    font-size: 0.82rem;
-    color: rgba(255, 255, 255, 0.85);
-    font-weight: 500;
+    font-size: 0.88rem;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 600;
+    letter-spacing: 0.2px;
 }
 
 /* ══ RIGHT PANEL ═══════════════════════════════════════════ */
