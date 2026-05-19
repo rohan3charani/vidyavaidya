@@ -21,30 +21,30 @@ const storiesController = {
     try {
       const { page = 1, limit = 10, type, featured, tag } = req.query;
 
-      // Fetch all and filter in memory to avoid composite index requirement
-      const snap = await db.collection('stories').get();
-      let list = [];
+      let queryRef = db.collection('stories').where('isPublished', '==', true);
+
+      if (type) queryRef = queryRef.where('type', '==', type);
+      if (featured === 'true') queryRef = queryRef.where('isFeatured', '==', true);
+      if (tag) queryRef = queryRef.where('tags', 'array-contains', tag);
+
+      const snap = await queryRef.get();
+      const list = [];
       snap.forEach(doc => {
         list.push({ id: doc.id, ...doc.data() });
       });
 
-      // Filter in memory
-      list = list.filter(s => s.isPublished === true);
-      if (type) list = list.filter(s => s.type === type);
-      if (featured === 'true') list = list.filter(s => s.isFeatured === true);
-      if (tag) list = list.filter(s => Array.isArray(s.tags) && s.tags.includes(tag));
-
-      // Sort by publishedAt desc
+      // Sort in-memory to prevent composite index requirements
       list.sort((a, b) => {
-        const aTime = a.publishedAt?._seconds || (a.publishedAt ? new Date(a.publishedAt).getTime() / 1000 : 0);
-        const bTime = b.publishedAt?._seconds || (b.publishedAt ? new Date(b.publishedAt).getTime() / 1000 : 0);
-        return bTime - aTime;
+        const dateA = a.publishedAt ? (a.publishedAt._seconds ? a.publishedAt._seconds * 1000 : new Date(a.publishedAt).getTime()) : 0;
+        const dateB = b.publishedAt ? (b.publishedAt._seconds ? b.publishedAt._seconds * 1000 : new Date(b.publishedAt).getTime()) : 0;
+        return dateB - dateA;
       });
 
       const total = list.length;
       const pageVal = parseInt(page);
       const limitVal = parseInt(limit);
       const offset = (pageVal - 1) * limitVal;
+
       const paginatedList = list.slice(offset, offset + limitVal);
 
       return res.status(200).json({
@@ -211,7 +211,11 @@ const storiesController = {
    */
   async listPhotoGallery(req, res, next) {
     try {
-      const snap = await db.collection('stories').get();
+      const snap = await db.collection('stories')
+        .where('type', '==', 'gallery_photo')
+        .where('isPublished', '==', true)
+        .get();
+
       const photos = [];
       snap.forEach(doc => {
         const d = doc.data();
@@ -224,6 +228,14 @@ const storiesController = {
         const bTime = b.publishedAt?._seconds || 0;
         return bTime - aTime;
       });
+
+      // Sort in-memory to prevent composite index requirement
+      photos.sort((a, b) => {
+        const dateA = a.publishedAt ? (a.publishedAt._seconds ? a.publishedAt._seconds * 1000 : new Date(a.publishedAt).getTime()) : 0;
+        const dateB = b.publishedAt ? (b.publishedAt._seconds ? b.publishedAt._seconds * 1000 : new Date(b.publishedAt).getTime()) : 0;
+        return dateB - dateA;
+      });
+
       return res.status(200).json({ success: true, photos });
     } catch (error) {
       next(error);
@@ -235,7 +247,11 @@ const storiesController = {
    */
   async listVideoGallery(req, res, next) {
     try {
-      const snap = await db.collection('stories').get();
+      const snap = await db.collection('stories')
+        .where('type', '==', 'gallery_video')
+        .where('isPublished', '==', true)
+        .get();
+
       const videos = [];
       snap.forEach(doc => {
         const d = doc.data();
@@ -248,6 +264,14 @@ const storiesController = {
         const bTime = b.publishedAt?._seconds || 0;
         return bTime - aTime;
       });
+
+      // Sort in-memory to prevent composite index requirement
+      videos.sort((a, b) => {
+        const dateA = a.publishedAt ? (a.publishedAt._seconds ? a.publishedAt._seconds * 1000 : new Date(a.publishedAt).getTime()) : 0;
+        const dateB = b.publishedAt ? (b.publishedAt._seconds ? b.publishedAt._seconds * 1000 : new Date(b.publishedAt).getTime()) : 0;
+        return dateB - dateA;
+      });
+
       return res.status(200).json({ success: true, videos });
     } catch (error) {
       next(error);

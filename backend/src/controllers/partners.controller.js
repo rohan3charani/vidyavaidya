@@ -21,20 +21,23 @@ const partnersController = {
     try {
       const { type, featured } = req.query;
 
-      // Fetch all partners and filter in memory to avoid composite index requirement
-      const snap = await db.collection('partners').get();
-      let partners = [];
+      let queryRef = db.collection('partners').where('isActive', '==', true);
+
+      if (type) queryRef = queryRef.where('type', '==', type);
+      if (featured === 'true') queryRef = queryRef.where('isFeatured', '==', true);
+
+      const snap = await queryRef.get();
+      const partners = [];
       snap.forEach(doc => {
         partners.push({ id: doc.id, ...doc.data() });
       });
 
-      // Filter in memory
-      partners = partners.filter(p => p.isActive !== false);
-      if (type) partners = partners.filter(p => p.type === type);
-      if (featured === 'true') partners = partners.filter(p => p.isFeatured === true);
-
-      // Sort by displayOrder ascending
-      partners.sort((a, b) => (a.displayOrder ?? 10) - (b.displayOrder ?? 10));
+      // Sort in-memory to avoid requiring composite indexes
+      partners.sort((a, b) => {
+        const orderA = a.displayOrder !== undefined ? Number(a.displayOrder) : 10;
+        const orderB = b.displayOrder !== undefined ? Number(b.displayOrder) : 10;
+        return orderA - orderB;
+      });
 
       return res.status(200).json({
         success: true,

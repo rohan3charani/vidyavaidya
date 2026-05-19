@@ -29,22 +29,24 @@ const eventsController = {
         events.push({ id: doc.id, ...doc.data() });
       });
 
-      // Filter in memory
-      if (category) events = events.filter(e => e.category === category);
-      if (status) events = events.filter(e => e.status === status);
-      if (featured === 'true') events = events.filter(e => e.isFeatured === true);
+      const snap = await queryRef.get();
+      const events = [];
+      snap.forEach(doc => {
+        events.push({ id: doc.id, ...doc.data() });
+      });
 
-      // Sort by startDate ascending
+      // Sort in-memory to prevent composite index requirements
       events.sort((a, b) => {
-        const aTime = a.startDate?._seconds || (a.startDate ? new Date(a.startDate).getTime() / 1000 : 0);
-        const bTime = b.startDate?._seconds || (b.startDate ? new Date(b.startDate).getTime() / 1000 : 0);
-        return aTime - bTime;
+        const dateA = a.startDate ? (a.startDate._seconds ? a.startDate._seconds * 1000 : new Date(a.startDate).getTime()) : 0;
+        const dateB = b.startDate ? (b.startDate._seconds ? b.startDate._seconds * 1000 : new Date(b.startDate).getTime()) : 0;
+        return dateA - dateB;
       });
 
       const total = events.length;
       const pageVal = parseInt(page);
       const limitVal = parseInt(limit);
       const offset = (pageVal - 1) * limitVal;
+
       const paginatedEvents = events.slice(offset, offset + limitVal);
 
       return res.status(200).json({
