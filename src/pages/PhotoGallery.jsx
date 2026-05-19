@@ -54,29 +54,31 @@ export default function PhotoGallery() {
   useEffect(() => {
     const fetchPhotos = async () => {
       try {
-        const data = await api.stories.list();
-        const photos = (data || []).filter(
-          (s) => s.isPublished && s.type === "gallery_photo"
+        const res = await api.events.list();
+        const data = res?.events || (Array.isArray(res) ? res : []);
+        const photos = data.filter(
+          (e) => e.eventType === "photo" || (e.galleryUrls && e.galleryUrls.length > 0)
         );
         const list = [];
-        photos.forEach((s) => {
-          if (s.galleryImages && Array.isArray(s.galleryImages)) {
-            s.galleryImages.forEach((imgUrl, imgIdx) => {
-              // Categorize using first tag or default
+        photos.forEach((e) => {
+          const gallery = e.galleryUrls || e.galleryImages || [];
+          if (Array.isArray(gallery)) {
+            gallery.forEach((imgUrl, imgIdx) => {
+              // Categorize using event category or default
               let cat = "Community Trust";
-              if (s.tags && s.tags[0]) {
+              if (e.category) {
                 const found = categories.find(
-                  (c) => c.toLowerCase() === s.tags[0].toLowerCase()
+                  (c) => c.toLowerCase() === e.category.toLowerCase()
                 );
                 if (found) cat = found;
               }
               list.push({
-                id: `${s.id}-${imgIdx}`,
+                id: `${e.id || e.eventId}-${imgIdx}`,
                 category: cat,
-                title: s.title,
-                description: s.excerpt || s.content || "VidyaVaidya Trust Outreach",
+                title: e.title,
+                description: e.shortDescription || e.description || "VidyaVaidya Trust Outreach",
                 image: imgUrl,
-                alt: s.title
+                alt: e.title
               });
             });
           }

@@ -48,18 +48,21 @@ export const fmtDate = (dStr) => {
 
 export const handleFileUpload = async (file, onUrlChange) => {
   try {
-    const response = await api.stories.getUploadUrl(file.name, file.type);
-    const { uploadUrl, publicUrl } = response;
-    
-    await fetch(uploadUrl, {
-      method: 'PUT',
-      body: file,
-      headers: {
-        'Content-Type': file.type
-      }
+    const reader = new FileReader();
+    const base64Promise = new Promise((resolve, reject) => {
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = (error) => reject(error);
+      reader.readAsDataURL(file);
     });
 
-    onUrlChange(publicUrl);
+    const base64Data = await base64Promise;
+    const response = await api.stories.uploadBase64(base64Data, file.name, file.type);
+    
+    if (response && response.success && response.publicUrl) {
+      onUrlChange(response.publicUrl);
+    } else {
+      throw new Error("Invalid response from upload server");
+    }
   } catch (error) {
     console.error("File upload failed:", error);
     throw error;
@@ -278,64 +281,98 @@ export function MultiImageInput({ value = [], onChange, showToast }) {
   const [input, setInput] = useState("");
   const [uploading, setUploading] = useState(false);
 
-  const handleAdd = () => {
+  const imgList = Array.isArray(value) ? value : [];
+
+  const handleAdd = (e) => {
+    e?.preventDefault();
     const url = input.trim();
-    if (url && !value.includes(url)) {
-      onChange([...value, url]);
+    if (url) {
+      if (!imgList.includes(url)) {
+        onChange([...imgList, url]);
+      }
+      setInput("");
     }
-    setInput("");
   };
 
   const handleFileChange = async (e) => {
+    e.preventDefault();
     const file = e.target.files[0];
     if (!file) return;
     setUploading(true);
     try {
       await handleFileUpload(file, (url) => {
-        onChange([...value, url]);
+        onChange([...imgList, url]);
       });
+      if (showToast) showToast("Image uploaded successfully!", "success");
     } catch (err) {
-      showToast(err.message || "Upload failed", "error");
+      if (showToast) showToast(err.message || "Upload failed", "error");
     } finally {
       setUploading(false);
     }
   };
 
-  const handleRemove = (urlToRemove) => {
-    onChange(value.filter((url) => url !== urlToRemove));
+  const handleRemove = (urlToRemove, e) => {
+    e?.preventDefault();
+    onChange(imgList.filter((url) => url !== urlToRemove));
   };
 
   return (
-    <div className="adm-form-group">
-      <label>Gallery Images</label>
-      <div style={{ display: 'flex', gap: '8px' }}>
+    <div className="flex flex-col gap-2 w-full">
+      <label className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">Gallery Images</label>
+      
+      <div className="flex gap-2 items-center">
         <input
           type="text"
           placeholder="Paste URL or select file..."
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          style={{ flex: 1 }}
+          className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-xs font-semibold text-slate-700 focus:outline-none focus:border-teal-500 focus:bg-white transition-all duration-200"
         />
-        <button type="button" className="adm-btn adm-btn-primary" style={{ height: '42px' }} onClick={handleAdd}>Add</button>
-        <label className="adm-btn adm-btn-ghost" style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', height: '42px' }}>
-          {uploading ? "..." : "Upload"}
-          <input type="file" accept="image/*" onChange={handleFileChange} style={{ display: 'none' }} disabled={uploading} />
+        <button 
+          type="button" 
+          onClick={handleAdd}
+          className="h-[38px] px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-all shadow-md shadow-emerald-600/10 active:scale-95"
+        >
+          Add
+        </button>
+        <label className="h-[38px] px-4 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 font-bold text-xs transition-all flex items-center justify-center cursor-pointer select-none active:scale-95">
+          {uploading ? (
+            <span className="flex items-center gap-1">
+              <span className="w-3 h-3 border-2 border-slate-400 border-t-transparent rounded-full animate-spin"></span>
+              Uploading
+            </span>
+          ) : (
+            "Upload"
+          )}
+          <input 
+            type="file" 
+            accept="image/*" 
+            onChange={handleFileChange} 
+            className="hidden" 
+            disabled={uploading} 
+          />
         </label>
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '10px', marginTop: '10px' }}>
-        {value.map((url, i) => (
-          <div key={i} style={{ position: 'relative', width: '80px', height: '80px', border: '1px dashed var(--ad-border-color)', borderRadius: '8px', overflow: 'hidden' }}>
-            <img src={url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Gallery preview" />
-            <button
-              type="button"
-              onClick={() => handleRemove(url)}
-              style={{ position: 'absolute', top: '2px', right: '2px', background: 'rgba(231,76,60,0.9)', border: 'none', color: '#fff', borderRadius: '50%', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', cursor: 'pointer', fontWeight: 'bold' }}
-            >
-              ×
-            </button>
-          </div>
-        ))}
-      </div>
+
+      {imgList.length > 0 && (
+        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-3 mt-2">
+          {imgList.map((url, i) => (
+            <div key={i} className="group relative aspect-square rounded-xl border border-slate-200 bg-slate-50 overflow-hidden shadow-sm hover:shadow-md transition-all duration-300">
+              <img src={url} className="w-full h-full object-cover" alt={`Gallery item ${i + 1}`} />
+              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                <button
+                  type="button"
+                  onClick={(e) => handleRemove(url, e)}
+                  className="p-1.5 rounded-full bg-rose-600 hover:bg-rose-700 text-white shadow-lg transform scale-90 group-hover:scale-100 transition-all duration-300"
+                  title="Remove Image"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -367,7 +404,10 @@ const partnerSchema = z.object({
   linkedinUrl:         optStr(),
   twitterUrl:          optStr(),
   facebookUrl:         optStr(),
-  instagramUrl:        optStr()
+  instagramUrl:        optStr(),
+  supportQuote:        optStr(),
+  supportQuoteAuthor:  optStr(),
+  galleryImages:       z.array(z.string()).optional().default([])
 });
 
 export function PartnersSection({ showToast }) {
@@ -398,7 +438,7 @@ export function PartnersSection({ showToast }) {
     };
   }, [drawerOpen, viewDrawerOpen, deleteModalOpen]);
 
-  const { register, handleSubmit, reset, setValue, watch, trigger, formState: { errors } } = useForm({
+  const { register, handleSubmit, reset, setValue, watch, trigger, control, formState: { errors } } = useForm({
     resolver: zodResolver(partnerSchema),
     defaultValues: {
       name: "",
@@ -421,9 +461,15 @@ export function PartnersSection({ showToast }) {
       linkedinUrl: "",
       twitterUrl: "",
       facebookUrl: "",
-      instagramUrl: ""
+      instagramUrl: "",
+      supportQuote: "",
+      supportQuoteAuthor: "",
+      galleryImages: []
     }
   });
+
+  const watchedGalleryImages = watch("galleryImages") || [];
+
   const fetchPartners = async () => {
     setLoading(true);
     try {
@@ -523,7 +569,10 @@ export function PartnersSection({ showToast }) {
       linkedinUrl: "",
       twitterUrl: "",
       facebookUrl: "",
-      instagramUrl: ""
+      instagramUrl: "",
+      supportQuote: "",
+      supportQuoteAuthor: "",
+      galleryImages: []
     });
     setDrawerOpen(true);
   };
@@ -553,7 +602,10 @@ export function PartnersSection({ showToast }) {
       linkedinUrl: partner.linkedinUrl || "",
       twitterUrl: partner.twitterUrl || "",
       facebookUrl: partner.facebookUrl || "",
-      instagramUrl: partner.instagramUrl || ""
+      instagramUrl: partner.instagramUrl || "",
+      supportQuote: partner.supportQuote || "",
+      supportQuoteAuthor: partner.supportQuoteAuthor || "",
+      galleryImages: partner.galleryImages || partner.galleryUrls || []
     });
     setDrawerOpen(true);
   };
@@ -936,7 +988,8 @@ export function PartnersSection({ showToast }) {
                 {[
                   { name: "1. Basic Info", fields: ["name", "type", "shortBio", "description"] },
                   { name: "2. Contact & Location", fields: ["city", "state", "websiteUrl", "contactEmail", "contactPhone", "address", "country"] },
-                  { name: "3. Partnership & Socials", fields: ["partnershipStartDate", "displayOrder", "linkedinUrl", "twitterUrl", "facebookUrl", "instagramUrl"] }
+                  { name: "3. Partnership & Socials", fields: ["partnershipStartDate", "displayOrder", "linkedinUrl", "twitterUrl", "facebookUrl", "instagramUrl"] },
+                  { name: "4. Message & Highlights", fields: ["supportQuote", "supportQuoteAuthor", "galleryImages"] }
                 ].map((t, idx) => {
                   const hasErrors = t.fields.some(f => !!errors[f]);
                   return (
@@ -1262,6 +1315,52 @@ export function PartnersSection({ showToast }) {
                       </div>
                     </div>
                   )}
+
+                  {activeFormTab === 3 && (
+                    <div className="space-y-4">
+                      {/* Support Quote Card */}
+                      <div className="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-sm space-y-3">
+                        <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+                          <MessageSquareQuote className="w-4.5 h-4.5 text-teal-600" />
+                          <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">A Message of Support</h4>
+                        </div>
+                        
+                        <div className="flex flex-col gap-1">
+                          <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Quote / Message of Support</label>
+                          <textarea
+                            {...register("supportQuote")}
+                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-medium"
+                            placeholder="e.g. 'VidyaVaidya Trust has been doing phenomenal work...'"
+                            rows={3}
+                          />
+                        </div>
+
+                        <div className="flex flex-col gap-1">
+                          <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Founders / Speaker Byline</label>
+                          <input
+                            type="text"
+                            {...register("supportQuoteAuthor")}
+                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-semibold"
+                            placeholder="e.g. Dr. C. Satish Reddy & Dr. K. Lalitha Shirdisa"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Partner Highlights Gallery Card */}
+                      <div className="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-sm space-y-3">
+                        <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+                          <Images className="w-4.5 h-4.5 text-teal-600" />
+                          <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Partner Highlights Gallery</h4>
+                        </div>
+
+                        <MultiImageInput
+                          value={watchedGalleryImages}
+                          onChange={(newList) => setValue("galleryImages", newList, { shouldValidate: true, shouldDirty: true })}
+                          showToast={showToast}
+                        />
+                      </div>
+                    </div>
+                  )}
                 </form>
               </div>
 
@@ -1272,7 +1371,7 @@ export function PartnersSection({ showToast }) {
                     <AlertCircle className="w-4 h-4 animate-bounce" /> Please fix validation errors.
                   </div>
                 ) : (
-                  <span className="text-xs text-slate-400 font-semibold">Step {activeFormTab + 1} of 3</span>
+                  <span className="text-xs text-slate-400 font-semibold">Step {activeFormTab + 1} of 4</span>
                 )}
                 <div className="flex gap-2">
                   <button
@@ -1291,7 +1390,7 @@ export function PartnersSection({ showToast }) {
                       Previous
                     </button>
                   )}
-                  {activeFormTab < 2 ? (
+                  {activeFormTab < 3 ? (
                     <button
                       type="button"
                       className="px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs transition-colors"

@@ -347,6 +347,13 @@ const api = {
         method: 'POST',
         body: JSON.stringify({ fileName, contentType })
       });
+    },
+
+    async uploadBase64(base64Data, fileName, contentType) {
+      return apiRequest('/stories/gallery/upload-base64', {
+        method: 'POST',
+        body: JSON.stringify({ base64Data, fileName, contentType })
+      });
     }
   },
 

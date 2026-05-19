@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import Navbar from "../Components/Navbar";
 import Footer from "../Components/Footer";
 import api from "../services/api";
+import { Link } from "react-router-dom";
 
 export default function GlobalHealthCare() {
   const [hospitals, setHospitals] = useState([]);
@@ -55,7 +56,7 @@ export default function GlobalHealthCare() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {hospitals.map(p => (
-                <div key={p.id} className="group flex flex-col items-center p-8 bg-white rounded-3xl shadow-sm border border-slate-100 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 relative overflow-hidden">
+                <Link to={`/partners/${p.slug}`} key={p.id} className="group flex flex-col items-center p-8 bg-white rounded-3xl shadow-sm border border-slate-100 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 relative overflow-hidden">
                   <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
                   
                   {p.logoUrl ? (
@@ -74,15 +75,11 @@ export default function GlobalHealthCare() {
                   
                   <div className="mt-auto pt-4 flex items-center justify-between w-full border-t border-slate-100">
                     <span className="text-xs font-bold uppercase tracking-widest text-teal-600 bg-teal-50 px-4 py-1.5 rounded-full">Hospital</span>
-                    {p.websiteUrl ? (
-                      <a href={p.websiteUrl} target="_blank" rel="noopener noreferrer" className="text-emerald-500 font-bold hover:translate-x-1 transition-transform duration-300 flex items-center gap-1">
-                        Website <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
-                      </a>
-                    ) : (
-                      <span className="text-slate-400 font-semibold text-xs">Official Partner</span>
-                    )}
+                    <span className="text-emerald-500 font-bold group-hover:translate-x-1 transition-transform duration-300 flex items-center gap-1">
+                      View Profile <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                    </span>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           )}

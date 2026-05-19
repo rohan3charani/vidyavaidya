@@ -27,6 +27,7 @@ import GlobalHealthCare from "./pages/GlobalHealthCare";
 import SairamHospital from "./pages/SairamHospital";
 import TechForGood from "./pages/TechForGood";
 import CharaniInfotech from "./pages/CharaniInfotech";
+import PartnerDetail from "./pages/PartnerDetail";
 import PhotoGallery from "./pages/PhotoGallery";
 import VideoGallery from "./pages/VideoGallery";
 import News from "./pages/News";
@@ -101,9 +102,10 @@ export default function App() {
         <Route path="/mission" element={<OurMission />} />
         <Route path="/partners" element={<Partners />} />
         <Route path="/partners/global-health-care" element={<GlobalHealthCare />} />
-        <Route path="/partners/sairam-hospital" element={<SairamHospital />} />
+        <Route path="/partners/sairam-hospital" element={<PartnerDetail />} />
         <Route path="/partners/tech-for-good" element={<TechForGood />} />
-        <Route path="/partners/charani-infotech" element={<CharaniInfotech />} />
+        <Route path="/partners/charani-infotech" element={<PartnerDetail />} />
+        <Route path="/partners/:slug" element={<PartnerDetail />} />
         <Route path="/PhotoGallery" element={<PhotoGallery />} />
         <Route path="/VideoGallery" element={<VideoGallery />} />
         <Route path="/news" element={<News />} />
