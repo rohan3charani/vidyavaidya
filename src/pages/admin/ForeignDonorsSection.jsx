@@ -872,7 +872,7 @@ export default function ForeignDonorsSection({ showToast: parentShowToast }) {
                               disabled={!hasResponseText}
                               className={`flex-1 flex items-center justify-center gap-2 h-10 rounded-xl text-xs font-black transition-all duration-300 ${
                                 hasResponseText
-                                  ? "bg-gradient-to-r from-emerald-600 to-teal-650 hover:from-emerald-700 hover:to-teal-700 text-white shadow-md shadow-emerald-500/20 hover:shadow-emerald-500/30 hover:-translate-y-0.5 cursor-pointer opacity-100"
+                                  ? "bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-md shadow-emerald-500/20 hover:shadow-emerald-500/30 hover:-translate-y-0.5 cursor-pointer opacity-100"
                                   : "bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed opacity-50"
                               }`}
                             >
