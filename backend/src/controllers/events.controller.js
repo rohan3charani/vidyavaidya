@@ -28,12 +28,10 @@ const eventsController = {
       snap.forEach(doc => {
         events.push({ id: doc.id, ...doc.data() });
       });
-
-      const snap = await queryRef.get();
-      const events = [];
-      snap.forEach(doc => {
-        events.push({ id: doc.id, ...doc.data() });
-      });
+      // Filter in memory
+      if (category) events = events.filter(e => e.category === category);
+      if (status) events = events.filter(e => e.status === status);
+      if (featured === 'true') events = events.filter(e => e.isFeatured === true);
 
       // Sort in-memory to prevent composite index requirements
       events.sort((a, b) => {

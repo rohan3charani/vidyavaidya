@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import api from "../../services/api";
 import { PartnersSection, StoriesSection, EventsSection, TestimonialsSection, SharedToast } from "./CmsComponents";
+import ForeignDonorsSection from "./ForeignDonorsSection";
 import "./AdminDashboard.css";
 
 const fmt = (n) => `₹${Number(n).toLocaleString("en-IN")}`;
@@ -969,6 +970,7 @@ export default function AdminDashboard() {
     donations:       <AllDonations />,
     users:           <UserLogins />,
     "user-donations": <UserDonations />,
+    "foreign-donors": <ForeignDonorsSection showToast={showToast} />,
     analytics:       <Analytics />,
     partners:        <PartnersSection showToast={showToast} />,
     stories:         <StoriesSection showToast={showToast} />,
@@ -981,6 +983,7 @@ export default function AdminDashboard() {
     { id: "donations",      label: "All Donations",   icon: Heart },
     { id: "users",          label: "User Logins",     icon: Users },
     { id: "user-donations", label: "User Donations",  icon: Wallet },
+    { id: "foreign-donors", label: "Foreign Donors",  icon: Globe },
     { id: "analytics",      label: "Analytics",       icon: BarChart3 },
     { id: "partners",       label: "Partners",        icon: Handshake },
     { id: "stories",        label: "Stories",         icon: FileText },
@@ -1008,7 +1011,7 @@ export default function AdminDashboard() {
             return (
               <button
                 key={item.id}
-                className={`adm-nav-btn ${activeSection === item.id ? "adm-nav-active" : ""}`}
+                className={`adm-nav-btn ${activeSection === item.id ? (item.id === "foreign-donors" ? "adm-nav-foreign-active" : "adm-nav-active") : ""}`}
                 onClick={() => setActiveSection(item.id)}
                 title={!sidebarOpen ? item.label : ""}
               >

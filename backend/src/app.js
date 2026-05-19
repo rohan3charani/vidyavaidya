@@ -18,6 +18,7 @@ const testimonialsRoutes = require('./routes/testimonials.routes');
 const adminRoutes = require('./routes/admin.routes');
 const communityRoutes = require('./routes/community.routes');
 const webhookRoutes = require('./routes/webhook.routes');
+const foreignDonorsRoutes = require('./routes/foreign-donors.routes');
 
 // Middleware Imports
 const errorHandler = require('./middleware/errorHandler');
@@ -87,6 +88,7 @@ app.use('/api/partners', partnersRoutes);
 app.use('/api/testimonials', testimonialsRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/community', communityRoutes);
+app.use('/api/foreign-donors', foreignDonorsRoutes);
 
 // Base Check Route
 app.get('/', (req, res) => {

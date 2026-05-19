@@ -283,16 +283,17 @@ export default function Donate() {
         if (Object.keys(e).length === 0) {
             try {
                 const payload = {
-                    name: `${foreignForm.firstName} ${foreignForm.lastName}`,
+                    firstName: foreignForm.firstName,
+                    lastName: foreignForm.lastName,
                     email: foreignForm.email,
                     phone: foreignForm.phone,
-                    queryType: foreignForm.queryType === "Tax Benefits (FCRA)" ? "Tax Benefits (FCRA)" : "Other",
+                    queryType: foreignForm.queryType,
                     message: foreignForm.message,
                     country: foreignForm.country,
                     donationIntent: foreignForm.donationIntent,
-                    organizationName: foreignForm.organizationName || ""
+                    organization: foreignForm.organizationName || ""
                 };
-                await api.contact.submitForeign(payload);
+                await api.foreignDonors.submit(payload);
                 setForeignSubmitted(true);
             } catch (err) {
                 setForeignErrors({ submit: err.message || "Failed to submit inquiry." });
