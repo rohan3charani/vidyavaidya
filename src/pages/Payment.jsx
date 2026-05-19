@@ -13,7 +13,10 @@ export default function Payment() {
     const donorDetails = state?.donorDetails;
 
     const handleClose = () => {
-        navigate("/donate");
+        // By using navigate(-1), we pop '/payment' off the history stack.
+        // This drops the user back onto the exact '/donate' history entry.
+        // If they click the browser back button from there, they will correctly go Home!
+        navigate(-1);
     };
 
     return (

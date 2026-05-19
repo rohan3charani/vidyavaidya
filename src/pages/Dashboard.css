@@ -1022,3 +1022,155 @@
   color: #34485a;
 }
 
+/* ================= TRANS & CHARTS ENHANCEMENTS ================= */
+.table-row {
+  padding: 12px 14px;
+  display: grid;
+  grid-template-columns: 1fr 1.3fr 1fr 1fr 1fr 1fr;
+  align-items: center;
+  border-bottom: 1px solid #edf2f7;
+  font-size: 0.88rem;
+  color: #2d3748;
+  background: #ffffff;
+  transition: background-color 0.2s ease;
+}
+
+.table-row:hover {
+  background-color: #f8fafc;
+}
+
+.table-row:last-child {
+  border-bottom: 0;
+}
+
+.table-row span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: capitalize;
+  width: fit-content;
+}
+
+.status-badge.successful {
+  background-color: #e6fffa;
+  color: #0f8f76;
+}
+
+.status-badge.pending {
+  background-color: #fef3c7;
+  color: #d97706;
+}
+
+.status-badge.failed {
+  background-color: #fee2e2;
+  color: #dc2626;
+}
+
+/* Month Wise Contributions Chart Styles */
+.monthly-chart-container {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.monthly-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.monthly-bar-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #4a5568;
+  width: 60px;
+  text-align: right;
+}
+
+.monthly-bar-track {
+  flex: 1;
+  background-color: #edf2f7;
+  height: 24px;
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+}
+
+.monthly-bar-fill {
+  background: linear-gradient(90deg, #1abc9c 0%, #0b3c5d 100%);
+  height: 100%;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 8px;
+  transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  min-width: 32px;
+}
+
+.monthly-bar-val {
+  color: #ffffff;
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+/* Payment Frequency Chart Styles */
+.frequency-chart-container {
+  margin-top: 24px;
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-end;
+  height: 140px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.frequency-bar-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+}
+
+.frequency-bar-value {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #0b3c5d;
+}
+
+.frequency-bar-track {
+  background-color: #edf2f7;
+  width: 16px;
+  height: 80px;
+  border-radius: 4px;
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+}
+
+.frequency-bar-fill {
+  background-color: #1abc9c;
+  width: 100%;
+  border-radius: 4px;
+  transition: height 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.frequency-bar-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #718096;
+  margin-top: 4px;
+}
+

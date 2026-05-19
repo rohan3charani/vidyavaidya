@@ -1054,6 +1054,49 @@
   .adm-ud-total-box { margin-left: 0; text-align: left; }
 }
 
+/* Spinner & Loading states */
+.adm-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 350px;
+  gap: 16px;
+  color: var(--ad-text-muted);
+  font-weight: 500;
+}
+
+.adm-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3.5px solid var(--ad-border-color);
+  border-top-color: var(--ad-primary);
+  border-radius: 50%;
+  animation: adm-spin 0.85s linear infinite;
+}
+
+@keyframes adm-spin {
+  to { transform: rotate(360deg); }
+}
+
+.adm-error {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+}
+
+.adm-error-alert {
+  background-color: rgba(231,76,60,0.08);
+  border: 1px solid rgba(231,76,60,0.2);
+  color: var(--ad-danger);
+  padding: 16px 24px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  max-width: 500px;
+  text-align: center;
+}
+
 /* ══════════════════════════════════════════════
    NEW CMS PANEL & DRAWER STYLES
    ══════════════════════════════════════════════ */
@@ -1562,4 +1605,3 @@ input:checked + .adm-slider:before {
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
-

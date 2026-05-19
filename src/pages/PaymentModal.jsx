@@ -104,13 +104,6 @@ export default function PaymentModal({ amount, isMonthly, duration, donationType
         setError("");
         setProcessing(true);
 
-        const sdkLoaded = await loadRazorpayScript();
-        if (!sdkLoaded) {
-            // Graceful fallback to sandbox mock mode if script fails to load
-            handleMockPayment("Razorpay SDK failed to load. Initiating sandbox demo flow.");
-            return;
-        }
-
         try {
             let res;
             if (isMonthly) {
@@ -121,33 +114,53 @@ export default function PaymentModal({ amount, isMonthly, duration, donationType
                 res = await api.payment.createOrder(amount, category, "", donorDetails, donationType);
             }
 
-            if (!res || (!res.order && !res.subscription)) {
+            if (!res || (!res.orderId && !res.subscriptionId && !res.order && !res.subscription)) {
                 throw new Error("Failed to create order on backend.");
             }
 
-            const isSubscription = !!res.subscription;
+            const sdkLoaded = await loadRazorpayScript();
+            if (!sdkLoaded) {
+                // Graceful fallback to sandbox mock mode if script fails to load
+                handleMockPayment("Razorpay SDK failed to load. Initiating sandbox demo flow.", res);
+                return;
+            }
+
+            const isSubscription = !!(res.subscriptionId || res.subscription);
             const keyId = res.keyId || "rzp_test_stubkeyid";
 
             // If the key is a stub or invalid, prompt sandbox confirmation gracefully
             if (keyId === "rzp_test_stubkeyid" || keyId.includes("stub")) {
-                handleMockPayment("Payment system is in Sandbox/Demo mode.");
+                handleMockPayment("Payment system is in Sandbox/Demo mode.", res);
                 return;
             }
 
             const options = {
                 key: keyId,
-                amount: isSubscription ? res.subscription.amount : res.order.amount,
+                amount: isSubscription ? (res.subscriptionAmount || res.subscription?.amount) : (res.amountInPaise || res.order?.amount),
                 currency: "INR",
                 name: "VidyaVaidya NGO",
                 description: isSubscription ? "Monthly Subscription Support" : "One-Time Donation",
-                order_id: isSubscription ? undefined : res.order.id,
-                subscription_id: isSubscription ? res.subscription.id : undefined,
+                order_id: isSubscription ? undefined : (res.orderId || res.order?.id),
+                subscription_id: isSubscription ? (res.subscriptionId || res.subscription?.id) : undefined,
                 handler: async function (response) {
                     setProcessing(true);
                     try {
+                        let activeDonorDetails = donorDetails;
+                        if (!activeDonorDetails) {
+                            try {
+                                const localDetails = localStorage.getItem("pending_donor_details");
+                                if (localDetails) {
+                                    activeDonorDetails = JSON.parse(localDetails);
+                                }
+                            } catch (e) {
+                                console.error("Error reading pending_donor_details from localStorage:", e);
+                            }
+                        }
+
                         const payload = {
                             razorpay_payment_id: response.razorpay_payment_id,
-                            razorpay_signature: response.razorpay_signature
+                            razorpay_signature: response.razorpay_signature,
+                            donorDetails: activeDonorDetails
                         };
                         if (isSubscription) {
                             payload.razorpay_subscription_id = response.razorpay_subscription_id;
@@ -158,6 +171,8 @@ export default function PaymentModal({ amount, isMonthly, duration, donationType
                         const verifyRes = await api.payment.verifyPayment(payload);
                         if (verifyRes.success) {
                             setSuccess(true);
+                            localStorage.removeItem("pending_donor_details");
+                            sessionStorage.setItem("donation_just_completed", "true");
                         } else {
                             throw new Error("Payment verification failed.");
                         }
@@ -187,16 +202,51 @@ export default function PaymentModal({ amount, isMonthly, duration, donationType
         } catch (err) {
             console.error("Razorpay initiation error:", err);
             // If the key is invalid or backend order creation fails on stubs, fallback gracefully
-            handleMockPayment(`Gateway sandbox bypass: ${err.message}`);
+            handleMockPayment(`Gateway sandbox bypass: ${err.message}`, res);
         }
     };
 
-    const handleMockPayment = (notice) => {
+    const handleMockPayment = async (notice, orderRes) => {
         console.log(notice);
-        setTimeout(() => {
+        setProcessing(true);
+        try {
+            const isSubscription = !!(orderRes && (orderRes.subscriptionId || orderRes.subscription));
+            const orderId = isSubscription ? undefined : (orderRes?.orderId || orderRes?.order?.id);
+            let activeDonorDetails = donorDetails;
+            if (!activeDonorDetails) {
+                try {
+                    const localDetails = localStorage.getItem("pending_donor_details");
+                    if (localDetails) {
+                        activeDonorDetails = JSON.parse(localDetails);
+                    }
+                } catch (e) {
+                    console.error("Error reading pending_donor_details from localStorage:", e);
+                }
+            }
+
+            const payload = {
+                razorpay_payment_id: "mock_payment_" + Date.now(),
+                razorpay_signature: "mock_signature",
+                orderId: orderId,
+                donorDetails: activeDonorDetails
+            };
+            if (isSubscription && orderRes) {
+                payload.razorpay_subscription_id = orderRes.subscriptionId || orderRes.subscription?.id;
+            }
+
+            const verifyRes = await api.payment.verifyPayment(payload);
+            if (verifyRes.success) {
+                setSuccess(true);
+                localStorage.removeItem("pending_donor_details");
+                sessionStorage.setItem("donation_just_completed", "true");
+            } else {
+                throw new Error("Payment verification failed.");
+            }
+        } catch (err) {
+            setError(err.message || "Verification failed. Please contact support.");
+        } finally {
             setProcessing(false);
-            setSuccess(true);
-        }, 1500);
+        }
     };
 
     const handleBackdrop = (e) => {

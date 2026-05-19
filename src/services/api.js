@@ -177,30 +177,126 @@ const api = {
   },
 
   /**
+   * 4.5. Partners Handlers
+   */
+  partners: {
+    async list(filters = {}) {
+      const params = new URLSearchParams(filters).toString();
+      return apiRequest(`/partners?${params}`);
+    },
+    async getBySlug(slug) {
+      return apiRequest(`/partners/${slug}`);
+    },
+    async create(data) {
+      return apiRequest('/partners', {
+        method: 'POST',
+        body: JSON.stringify(data)
+      });
+    },
+    async update(id, data) {
+      return apiRequest(`/partners/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data)
+      });
+    },
+    async delete(id) {
+      return apiRequest(`/partners/${id}`, {
+        method: 'DELETE'
+      });
+    }
+  },
+
+  /**
    * 5. Events Handlers
    */
   events: {
-    list: (filters = {}) => apiRequest(`/events?${new URLSearchParams(filters)}`),
-    getBySlug: (slug) => apiRequest(`/events/${slug}`),
-    create: (data) => apiRequest('/events', { method: 'POST', body: JSON.stringify(data) }),
-    update: (id, data) => apiRequest(`/events/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
-    delete: (id) => apiRequest(`/events/${id}`, { method: 'DELETE' }),
-    register: (eventId) => apiRequest(`/events/${eventId}/register`, { method: 'POST' }),
-    getRegistrations: (eventId) => apiRequest(`/events/${eventId}/registrations`)
+    async list(filters = {}) {
+      const params = new URLSearchParams(filters).toString();
+      return apiRequest(`/events?${params}`);
+    },
+
+    async getBySlug(slug) {
+      return apiRequest(`/events/${slug}`);
+    },
+
+    async register(eventId) {
+      return apiRequest(`/events/${eventId}/register`, {
+        method: 'POST'
+      });
+    },
+
+    async create(data) {
+      return apiRequest('/events', {
+        method: 'POST',
+        body: JSON.stringify(data)
+      });
+    },
+
+    async update(id, data) {
+      return apiRequest(`/events/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data)
+      });
+    },
+
+    async delete(id) {
+      return apiRequest(`/events/${id}`, {
+        method: 'DELETE'
+      });
+    },
+
+    async getRegistrations(eventId) {
+      return apiRequest(`/events/${eventId}/registrations`);
+    }
   },
 
   /**
    * 6. Stories, Blogs & Gallery Handlers
    */
   stories: {
-    list: (filters = {}) => apiRequest(`/stories?${new URLSearchParams(filters)}`),
-    getBySlug: (slug) => apiRequest(`/stories/${slug}`),
-    create: (data) => apiRequest('/stories', { method: 'POST', body: JSON.stringify(data) }),
-    update: (id, data) => apiRequest(`/stories/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
-    delete: (id) => apiRequest(`/stories/${id}`, { method: 'DELETE' }),
-    getUploadUrl: (fileName, contentType) => apiRequest('/stories/gallery/upload-url', { method: 'POST', body: JSON.stringify({ fileName, contentType }) }),
-    getPhotos: () => apiRequest('/stories/gallery/photos'),
-    getVideos: () => apiRequest('/stories/gallery/videos')
+    async list(filters = {}) {
+      const params = new URLSearchParams(filters).toString();
+      return apiRequest(`/stories?${params}`);
+    },
+
+    async getBySlug(slug) {
+      return apiRequest(`/stories/${slug}`);
+    },
+
+    async getPhotos() {
+      return apiRequest('/stories/gallery/photos');
+    },
+
+    async getVideos() {
+      return apiRequest('/stories/gallery/videos');
+    },
+
+    async create(data) {
+      return apiRequest('/stories', {
+        method: 'POST',
+        body: JSON.stringify(data)
+      });
+    },
+
+    async update(id, data) {
+      return apiRequest(`/stories/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data)
+      });
+    },
+
+    async delete(id) {
+      return apiRequest(`/stories/${id}`, {
+        method: 'DELETE'
+      });
+    },
+
+    async getUploadUrl(fileName, contentType) {
+      return apiRequest('/stories/gallery/upload-url', {
+        method: 'POST',
+        body: JSON.stringify({ fileName, contentType })
+      });
+    }
   },
 
   /**
@@ -303,17 +399,6 @@ const api = {
       const params = new URLSearchParams({ ...filters, token }).toString();
       return `${API_BASE_URL}/admin/export/donations?${params}`;
     }
-  },
-
-  /**
-   * 10. Partners API
-   */
-  partners: {
-    list: (filters = {}) => apiRequest(`/partners?${new URLSearchParams(filters)}`),
-    getBySlug: (slug) => apiRequest(`/partners/${slug}`),
-    create: (data) => apiRequest('/partners', { method: 'POST', body: JSON.stringify(data) }),
-    update: (id, data) => apiRequest(`/partners/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
-    delete: (id) => apiRequest(`/partners/${id}`, { method: 'DELETE' }),
   }
 };
 

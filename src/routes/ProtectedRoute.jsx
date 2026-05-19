@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 /**
  * ProtectedRoute — wraps pages that require authentication.
@@ -8,15 +8,17 @@ import { useNavigate } from "react-router-dom";
  */
 export default function ProtectedRoute({ children }) {
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Replace this with your real auth check
   const isAuthenticated = localStorage.getItem("vv_auth") === "true";
 
   useEffect(() => {
     if (!isAuthenticated) {
+      localStorage.setItem("vv_redirect", location.pathname);
       navigate("/auth", { replace: true, state: { notice: "Please login to access this page." } });
     }
-  }, [navigate, isAuthenticated]);
+  }, [navigate, isAuthenticated, location.pathname]);
 
   if (!isAuthenticated) {
     return (

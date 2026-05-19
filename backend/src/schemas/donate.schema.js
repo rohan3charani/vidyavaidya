@@ -24,9 +24,7 @@ const createOrderSchema = Joi.object({
     fullName: Joi.string().required().messages({ 'any.required': 'Full name is required' }),
     email: Joi.string().email().required().messages({ 'string.email': 'Invalid email', 'any.required': 'Email is required' }),
     phone: Joi.string().pattern(/^\+?[1-9]\d{1,14}$/).required().messages({ 'string.pattern.base': 'Valid E.164 phone number required' }),
-    pan: Joi.string().pattern(/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/).allow('', null).optional().messages({
-      'string.pattern.base': 'PAN card must be a valid 10-digit alphanumeric (e.g. ABCDE1234F)'
-    }),
+    pan: Joi.string().allow('', null).optional(),
     isAlumni: Joi.boolean().default(false),
     alumniId: Joi.string().when('isAlumni', {
       is: true,

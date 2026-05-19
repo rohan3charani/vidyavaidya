@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import vidyaLogo from "../assets/Vidya1.png";
@@ -82,10 +82,72 @@ export default function Donate() {
     /* Common form */
     const [form, setForm] = useState({
         fullName: "", email: "", mobile: "", isAlumni: false,
-        alumniId: "", yearOfGrad: "", pan: "",
+        alumniId: "", yearOfGrad: "",
         address: "", city: "", state: "", country: "India", pincode: "",
     });
     const [errors, setErrors] = useState({});
+
+    useEffect(() => {
+        const justCompleted = sessionStorage.getItem("donation_just_completed");
+        if (justCompleted) {
+            sessionStorage.removeItem("donation_just_completed");
+            setForm({
+                fullName: "", email: "", mobile: "", isAlumni: false,
+                alumniId: "", yearOfGrad: "",
+                address: "", city: "", state: "", country: "India", pincode: "",
+            });
+            setSelectedAmounts([]);
+            setCustomAmount("");
+            setMonthlyAmount(0);
+            return;
+        }
+
+        const draftDetails = sessionStorage.getItem("draft_donor_details");
+        const pendingDetails = localStorage.getItem("pending_donor_details");
+        
+        // Priority 1: Restore mid-page refresh state from active session draft
+        if (draftDetails) {
+            try {
+                const profile = JSON.parse(draftDetails);
+                setForm(prev => ({
+                    ...prev,
+                    ...profile
+                }));
+                return;
+            } catch (e) {
+                console.error("Failed to parse draft details:", e);
+            }
+        }
+
+        // Priority 2: Restore from a pending transaction that was canceled or navigated back from
+        if (pendingDetails) {
+            try {
+                const profile = JSON.parse(pendingDetails);
+                setForm(prev => ({
+                    ...prev,
+                    fullName: profile.fullName || "",
+                    email: profile.email || "",
+                    mobile: (profile.phone && profile.phone.replace(/^\+91/, '')) || profile.mobile || "",
+                    isAlumni: profile.isAlumni || false,
+                    alumniId: profile.alumniId || "",
+                    yearOfGrad: profile.yearOfGrad || "",
+                    address: profile.address?.line || "",
+                    city: profile.address?.city || "",
+                    state: profile.address?.state || "",
+                    country: profile.address?.country || "India",
+                    pincode: profile.address?.pincode || ""
+                }));
+                return;
+            } catch (e) {
+                console.error("Failed to parse pending donor details:", e);
+            }
+        }
+    }, []);
+
+    // Dynamically auto-save form state so it survives mid-page refreshes natively
+    useEffect(() => {
+        sessionStorage.setItem("draft_donor_details", JSON.stringify(form));
+    }, [form]);
 
     /* Foreign donor form */
     const [foreignForm, setForeignForm] = useState({
@@ -128,9 +190,6 @@ export default function Donate() {
         else if (!isValidPhone(form.mobile)) e.mobile = "Enter a valid 10-digit mobile number";
         if (form.isAlumni && !form.alumniId.trim()) e.alumniId = "Alumni ID is required";
         if (form.isAlumni && !form.yearOfGrad) e.yearOfGrad = "Select your graduation year";
-        if (form.pan.trim() && !/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(form.pan.toUpperCase())) {
-            e.pan = "Enter a valid 10-digit PAN (e.g. ABCDE1234F)";
-        }
         if (!form.address.trim()) e.address = "Address is required";
         if (!form.city.trim()) e.city = "City is required";
         if (!form.state) e.state = "State is required";
@@ -174,7 +233,6 @@ export default function Donate() {
                 fullName: form.fullName,
                 email: form.email,
                 phone: `+91${form.mobile}`,
-                pan: form.pan || "",
                 isAlumni: form.isAlumni,
                 alumniId: form.isAlumni ? form.alumniId : "",
                 address: {
@@ -185,6 +243,9 @@ export default function Donate() {
                     pincode: form.pincode
                 }
             };
+
+            // Save to localStorage so it is preserved until successful payment
+            localStorage.setItem("pending_donor_details", JSON.stringify(donorDetails));
 
             navigate("/payment", {
                 state: {
@@ -585,14 +646,6 @@ function CommonForm({ form, errors, setField }) {
                             placeholder="10-digit mobile"
                         />
                     </div>
-                </FormField>
-                <FormField label="PAN Card (Optional, for 80G Tax Exemption)" error={errors.pan}>
-                    <input
-                        className={`df-input ${errors.pan ? "err" : ""}`}
-                        value={form.pan || ""}
-                        onChange={(e) => setField("pan", e.target.value.toUpperCase().slice(0, 10))}
-                        placeholder="ABCDE1234F"
-                    />
                 </FormField>
             </div>
 

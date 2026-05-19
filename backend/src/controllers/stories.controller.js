@@ -21,27 +21,30 @@ const storiesController = {
     try {
       const { page = 1, limit = 10, type, featured, tag } = req.query;
 
-      let queryRef = db.collection('stories').where('isPublished', '==', true);
-
-      if (type) queryRef = queryRef.where('type', '==', type);
-      if (featured === 'true') queryRef = queryRef.where('isFeatured', '==', true);
-      if (tag) queryRef = queryRef.where('tags', 'array-contains', tag);
-
-      queryRef = queryRef.orderBy('publishedAt', 'desc');
-
-      const fullSnap = await queryRef.get();
-      const total = fullSnap.size;
-
-      const pageVal = parseInt(page);
-      const limitVal = parseInt(limit);
-      const offset = (pageVal - 1) * limitVal;
-
-      const itemsSnap = await queryRef.limit(offset + limitVal).get();
-      const list = [];
-      itemsSnap.forEach(doc => {
+      // Fetch all and filter in memory to avoid composite index requirement
+      const snap = await db.collection('stories').get();
+      let list = [];
+      snap.forEach(doc => {
         list.push({ id: doc.id, ...doc.data() });
       });
 
+      // Filter in memory
+      list = list.filter(s => s.isPublished === true);
+      if (type) list = list.filter(s => s.type === type);
+      if (featured === 'true') list = list.filter(s => s.isFeatured === true);
+      if (tag) list = list.filter(s => Array.isArray(s.tags) && s.tags.includes(tag));
+
+      // Sort by publishedAt desc
+      list.sort((a, b) => {
+        const aTime = a.publishedAt?._seconds || (a.publishedAt ? new Date(a.publishedAt).getTime() / 1000 : 0);
+        const bTime = b.publishedAt?._seconds || (b.publishedAt ? new Date(b.publishedAt).getTime() / 1000 : 0);
+        return bTime - aTime;
+      });
+
+      const total = list.length;
+      const pageVal = parseInt(page);
+      const limitVal = parseInt(limit);
+      const offset = (pageVal - 1) * limitVal;
       const paginatedList = list.slice(offset, offset + limitVal);
 
       return res.status(200).json({
@@ -208,17 +211,19 @@ const storiesController = {
    */
   async listPhotoGallery(req, res, next) {
     try {
-      const snap = await db.collection('stories')
-        .where('type', '==', 'gallery_photo')
-        .where('isPublished', '==', true)
-        .orderBy('publishedAt', 'desc')
-        .get();
-
+      const snap = await db.collection('stories').get();
       const photos = [];
       snap.forEach(doc => {
-        photos.push({ id: doc.id, ...doc.data() });
+        const d = doc.data();
+        if (d.type === 'gallery_photo' && d.isPublished === true) {
+          photos.push({ id: doc.id, ...d });
+        }
       });
-
+      photos.sort((a, b) => {
+        const aTime = a.publishedAt?._seconds || 0;
+        const bTime = b.publishedAt?._seconds || 0;
+        return bTime - aTime;
+      });
       return res.status(200).json({ success: true, photos });
     } catch (error) {
       next(error);
@@ -230,17 +235,19 @@ const storiesController = {
    */
   async listVideoGallery(req, res, next) {
     try {
-      const snap = await db.collection('stories')
-        .where('type', '==', 'gallery_video')
-        .where('isPublished', '==', true)
-        .orderBy('publishedAt', 'desc')
-        .get();
-
+      const snap = await db.collection('stories').get();
       const videos = [];
       snap.forEach(doc => {
-        videos.push({ id: doc.id, ...doc.data() });
+        const d = doc.data();
+        if (d.type === 'gallery_video' && d.isPublished === true) {
+          videos.push({ id: doc.id, ...d });
+        }
       });
-
+      videos.sort((a, b) => {
+        const aTime = a.publishedAt?._seconds || 0;
+        const bTime = b.publishedAt?._seconds || 0;
+        return bTime - aTime;
+      });
       return res.status(200).json({ success: true, videos });
     } catch (error) {
       next(error);

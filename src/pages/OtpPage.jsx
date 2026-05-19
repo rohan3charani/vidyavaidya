@@ -30,6 +30,20 @@ export default function OtpPage() {
     updated[index] = value;
     setOtp(updated);
     setError(null);
+
+    // Auto-advance to next input box
+    if (value && index < 5) {
+      const nextInput = document.getElementById(`otp-input-${index + 1}`);
+      if (nextInput) nextInput.focus();
+    }
+  };
+
+  const handleKeyDown = (index, e) => {
+    // Shift focus to previous input box on Backspace if current box is already empty
+    if (e.key === "Backspace" && !otp[index] && index > 0) {
+      const prevInput = document.getElementById(`otp-input-${index - 1}`);
+      if (prevInput) prevInput.focus();
+    }
   };
 
   const handlePaste = (e) => {
@@ -42,6 +56,10 @@ export default function OtpPage() {
       }
       setOtp(newOtp);
       setError(null);
+      // Focus the last filled input
+      const focusIndex = Math.min(pasteData.length, 5);
+      const inputToFocus = document.getElementById(`otp-input-${focusIndex === 6 ? 5 : focusIndex}`);
+      if (inputToFocus) inputToFocus.focus();
     }
   };
 
@@ -123,10 +141,12 @@ export default function OtpPage() {
             {otp.map((digit, idx) => (
               <input
                 key={idx}
+                id={`otp-input-${idx}`}
                 className="otp-input"
                 maxLength={1}
                 value={digit}
                 onChange={(e) => handleOtpChange(idx, e.target.value)}
+                onKeyDown={(e) => handleKeyDown(idx, e)}
                 inputMode="numeric"
                 type="text"
                 autoComplete="one-time-code"

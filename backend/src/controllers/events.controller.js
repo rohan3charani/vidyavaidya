@@ -22,28 +22,29 @@ const eventsController = {
     try {
       const { page = 1, limit = 10, category, status, featured } = req.query;
 
-      let queryRef = db.collection('events');
-
-      if (category) queryRef = queryRef.where('category', '==', category);
-      if (status) queryRef = queryRef.where('status', '==', status);
-      if (featured === 'true') queryRef = queryRef.where('isFeatured', '==', true);
-
-      // Order by start date
-      queryRef = queryRef.orderBy('startDate', 'asc');
-
-      const fullSnap = await queryRef.get();
-      const total = fullSnap.size;
-
-      const pageVal = parseInt(page);
-      const limitVal = parseInt(limit);
-      const offset = (pageVal - 1) * limitVal;
-
-      const itemsSnap = await queryRef.limit(offset + limitVal).get();
-      const events = [];
-      itemsSnap.forEach(doc => {
+      // Fetch all and filter in memory to avoid composite index requirement
+      const snap = await db.collection('events').get();
+      let events = [];
+      snap.forEach(doc => {
         events.push({ id: doc.id, ...doc.data() });
       });
 
+      // Filter in memory
+      if (category) events = events.filter(e => e.category === category);
+      if (status) events = events.filter(e => e.status === status);
+      if (featured === 'true') events = events.filter(e => e.isFeatured === true);
+
+      // Sort by startDate ascending
+      events.sort((a, b) => {
+        const aTime = a.startDate?._seconds || (a.startDate ? new Date(a.startDate).getTime() / 1000 : 0);
+        const bTime = b.startDate?._seconds || (b.startDate ? new Date(b.startDate).getTime() / 1000 : 0);
+        return aTime - bTime;
+      });
+
+      const total = events.length;
+      const pageVal = parseInt(page);
+      const limitVal = parseInt(limit);
+      const offset = (pageVal - 1) * limitVal;
       const paginatedEvents = events.slice(offset, offset + limitVal);
 
       return res.status(200).json({
