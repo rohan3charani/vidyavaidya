@@ -38,6 +38,28 @@ async function apiRequest(endpoint, options = {}) {
 }
 
 const api = {
+  // Generic REST methods used by modules
+  async get(endpoint, options = {}) {
+    return apiRequest(endpoint, { method: 'GET', ...options });
+  },
+  async post(endpoint, data, options = {}) {
+    return apiRequest(endpoint, {
+      method: 'POST',
+      body: JSON.stringify(data),
+      ...options
+    });
+  },
+  async put(endpoint, data, options = {}) {
+    return apiRequest(endpoint, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+      ...options
+    });
+  },
+  async delete(endpoint, options = {}) {
+    return apiRequest(endpoint, { method: 'DELETE', ...options });
+  },
+
   /**
    * 1. Authentication Handlers
    */
@@ -197,7 +219,8 @@ const api = {
   partners: {
     async list(filters = {}) {
       const params = new URLSearchParams(filters).toString();
-      return apiRequest(`/partners?${params}`);
+      const res = await apiRequest(`/partners?${params}`);
+      return res.partners || [];
     },
     async getBySlug(slug) {
       return apiRequest(`/partners/${slug}`);
@@ -216,6 +239,33 @@ const api = {
     },
     async delete(id) {
       return apiRequest(`/partners/${id}`, {
+        method: 'DELETE'
+      });
+    }
+  },
+
+  /**
+   * 4.7. Testimonials Handlers
+   */
+  testimonials: {
+    async list(filters = {}) {
+      const params = new URLSearchParams(filters).toString();
+      return apiRequest(`/testimonials?${params}`);
+    },
+    async create(data) {
+      return apiRequest('/testimonials', {
+        method: 'POST',
+        body: JSON.stringify(data)
+      });
+    },
+    async update(id, data) {
+      return apiRequest(`/testimonials/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data)
+      });
+    },
+    async delete(id) {
+      return apiRequest(`/testimonials/${id}`, {
         method: 'DELETE'
       });
     }
@@ -271,7 +321,8 @@ const api = {
   stories: {
     async list(filters = {}) {
       const params = new URLSearchParams(filters).toString();
-      return apiRequest(`/stories?${params}`);
+      const res = await apiRequest(`/stories?${params}`);
+      return res.stories || [];
     },
 
     async getBySlug(slug) {

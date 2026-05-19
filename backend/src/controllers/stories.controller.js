@@ -27,20 +27,23 @@ const storiesController = {
       if (featured === 'true') queryRef = queryRef.where('isFeatured', '==', true);
       if (tag) queryRef = queryRef.where('tags', 'array-contains', tag);
 
-      queryRef = queryRef.orderBy('publishedAt', 'desc');
+      const snap = await queryRef.get();
+      const list = [];
+      snap.forEach(doc => {
+        list.push({ id: doc.id, ...doc.data() });
+      });
 
-      const fullSnap = await queryRef.get();
-      const total = fullSnap.size;
+      // Sort in-memory to prevent composite index requirements
+      list.sort((a, b) => {
+        const dateA = a.publishedAt ? (a.publishedAt._seconds ? a.publishedAt._seconds * 1000 : new Date(a.publishedAt).getTime()) : 0;
+        const dateB = b.publishedAt ? (b.publishedAt._seconds ? b.publishedAt._seconds * 1000 : new Date(b.publishedAt).getTime()) : 0;
+        return dateB - dateA;
+      });
 
+      const total = list.length;
       const pageVal = parseInt(page);
       const limitVal = parseInt(limit);
       const offset = (pageVal - 1) * limitVal;
-
-      const itemsSnap = await queryRef.limit(offset + limitVal).get();
-      const list = [];
-      itemsSnap.forEach(doc => {
-        list.push({ id: doc.id, ...doc.data() });
-      });
 
       const paginatedList = list.slice(offset, offset + limitVal);
 
@@ -211,12 +214,18 @@ const storiesController = {
       const snap = await db.collection('stories')
         .where('type', '==', 'gallery_photo')
         .where('isPublished', '==', true)
-        .orderBy('publishedAt', 'desc')
         .get();
 
       const photos = [];
       snap.forEach(doc => {
         photos.push({ id: doc.id, ...doc.data() });
+      });
+
+      // Sort in-memory to prevent composite index requirement
+      photos.sort((a, b) => {
+        const dateA = a.publishedAt ? (a.publishedAt._seconds ? a.publishedAt._seconds * 1000 : new Date(a.publishedAt).getTime()) : 0;
+        const dateB = b.publishedAt ? (b.publishedAt._seconds ? b.publishedAt._seconds * 1000 : new Date(b.publishedAt).getTime()) : 0;
+        return dateB - dateA;
       });
 
       return res.status(200).json({ success: true, photos });
@@ -233,12 +242,18 @@ const storiesController = {
       const snap = await db.collection('stories')
         .where('type', '==', 'gallery_video')
         .where('isPublished', '==', true)
-        .orderBy('publishedAt', 'desc')
         .get();
 
       const videos = [];
       snap.forEach(doc => {
         videos.push({ id: doc.id, ...doc.data() });
+      });
+
+      // Sort in-memory to prevent composite index requirement
+      videos.sort((a, b) => {
+        const dateA = a.publishedAt ? (a.publishedAt._seconds ? a.publishedAt._seconds * 1000 : new Date(a.publishedAt).getTime()) : 0;
+        const dateB = b.publishedAt ? (b.publishedAt._seconds ? b.publishedAt._seconds * 1000 : new Date(b.publishedAt).getTime()) : 0;
+        return dateB - dateA;
       });
 
       return res.status(200).json({ success: true, videos });

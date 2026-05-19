@@ -7,10 +7,10 @@ import {
   ArrowUpRight, ArrowDownRight, CheckCircle2, XCircle,
   Clock, ShieldCheck, Menu, X, Bell, BarChart3,
   UserCheck, Wallet, Calendar, Handshake, Plus, Pencil,
-  Trash2, ToggleLeft, ToggleRight
+  Trash2, ToggleLeft, ToggleRight, MessageSquareQuote
 } from "lucide-react";
 import api from "../../services/api";
-import { PartnersSection, StoriesSection, EventsSection, SharedToast } from "./CmsComponents";
+import { PartnersSection, StoriesSection, EventsSection, TestimonialsSection, SharedToast } from "./CmsComponents";
 import "./AdminDashboard.css";
 
 const fmt = (n) => `₹${Number(n).toLocaleString("en-IN")}`;
@@ -973,6 +973,7 @@ export default function AdminDashboard() {
     partners:        <PartnersSection showToast={showToast} />,
     stories:         <StoriesSection showToast={showToast} />,
     events:          <EventsSection showToast={showToast} />,
+    testimonials:    <TestimonialsSection showToast={showToast} />,
   };
 
   const NAV_ITEMS = [
@@ -984,6 +985,7 @@ export default function AdminDashboard() {
     { id: "partners",       label: "Partners",        icon: Handshake },
     { id: "stories",        label: "Stories",         icon: FileText },
     { id: "events",         label: "Events",          icon: Calendar },
+    { id: "testimonials",   label: "Testimonials",    icon: MessageSquareQuote },
   ];
 
   return (

@@ -162,53 +162,7 @@ async function runSeed(db) {
     }
   ];
 
-  // ─── 4. EVENTS ────────────────────────────────────────────────────────────
-  const events = [
-    {
-      id: 'seed-event-001',
-      slug: 'annual-health-camp-2026',
-      title: 'Annual Free Health Camp 2026',
-      description: 'Free health consultations, medicines, and health awareness for underprivileged families across Hyderabad.',
-      category: 'Healthcare',
-      location: 'Vidyavaidya Foundation Hall, Banjara Hills, Hyderabad',
-      organizer: 'Vidyavaidya Foundation',
-      imageUrl: '',
-      startDate: admin.firestore.Timestamp.fromDate(new Date(Date.now() + 7 * 24 * 3600 * 1000)),
-      endDate: admin.firestore.Timestamp.fromDate(new Date(Date.now() + 7 * 24 * 3600 * 1000 + 8 * 3600 * 1000)),
-      registrationDeadline: admin.firestore.Timestamp.fromDate(new Date(Date.now() + 5 * 24 * 3600 * 1000)),
-      capacity: 200,
-      registeredCount: 0,
-      isFree: true,
-      registrationFee: 0,
-      isPublished: true,
-      tags: ['health', 'free', 'children'],
-      registrations: [],
-      createdAt: ts,
-      updatedAt: ts
-    },
-    {
-      id: 'seed-event-002',
-      slug: 'scholarship-distribution-2026',
-      title: 'Scholarship Distribution Ceremony 2026',
-      description: 'Annual ceremony awarding educational grants to deserving students from low-income families across Telangana.',
-      category: 'Education',
-      location: 'Ravindra Bharathi, Hyderabad',
-      organizer: 'Vidyavaidya Foundation',
-      imageUrl: '',
-      startDate: admin.firestore.Timestamp.fromDate(new Date(Date.now() + 14 * 24 * 3600 * 1000)),
-      endDate: admin.firestore.Timestamp.fromDate(new Date(Date.now() + 14 * 24 * 3600 * 1000 + 4 * 3600 * 1000)),
-      registrationDeadline: admin.firestore.Timestamp.fromDate(new Date(Date.now() + 12 * 24 * 3600 * 1000)),
-      capacity: 500,
-      registeredCount: 0,
-      isFree: true,
-      registrationFee: 0,
-      isPublished: true,
-      tags: ['education', 'scholarship', 'students'],
-      registrations: [],
-      createdAt: ts,
-      updatedAt: ts
-    }
-  ];
+  const events = [];
 
   // ─── 5. STORIES ───────────────────────────────────────────────────────────
   const stories = [

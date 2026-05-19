@@ -14,6 +14,7 @@ const eventsRoutes = require('./routes/events.routes');
 const storiesRoutes = require('./routes/stories.routes');
 const contactRoutes = require('./routes/contact.routes');
 const partnersRoutes = require('./routes/partners.routes');
+const testimonialsRoutes = require('./routes/testimonials.routes');
 const adminRoutes = require('./routes/admin.routes');
 const communityRoutes = require('./routes/community.routes');
 const webhookRoutes = require('./routes/webhook.routes');
@@ -83,6 +84,7 @@ app.use('/api/events', eventsRoutes);
 app.use('/api/stories', storiesRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/partners', partnersRoutes);
+app.use('/api/testimonials', testimonialsRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/community', communityRoutes);
 

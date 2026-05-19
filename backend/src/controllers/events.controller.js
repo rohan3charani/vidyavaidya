@@ -28,21 +28,23 @@ const eventsController = {
       if (status) queryRef = queryRef.where('status', '==', status);
       if (featured === 'true') queryRef = queryRef.where('isFeatured', '==', true);
 
-      // Order by start date
-      queryRef = queryRef.orderBy('startDate', 'asc');
+      const snap = await queryRef.get();
+      const events = [];
+      snap.forEach(doc => {
+        events.push({ id: doc.id, ...doc.data() });
+      });
 
-      const fullSnap = await queryRef.get();
-      const total = fullSnap.size;
+      // Sort in-memory to prevent composite index requirements
+      events.sort((a, b) => {
+        const dateA = a.startDate ? (a.startDate._seconds ? a.startDate._seconds * 1000 : new Date(a.startDate).getTime()) : 0;
+        const dateB = b.startDate ? (b.startDate._seconds ? b.startDate._seconds * 1000 : new Date(b.startDate).getTime()) : 0;
+        return dateA - dateB;
+      });
 
+      const total = events.length;
       const pageVal = parseInt(page);
       const limitVal = parseInt(limit);
       const offset = (pageVal - 1) * limitVal;
-
-      const itemsSnap = await queryRef.limit(offset + limitVal).get();
-      const events = [];
-      itemsSnap.forEach(doc => {
-        events.push({ id: doc.id, ...doc.data() });
-      });
 
       const paginatedEvents = events.slice(offset, offset + limitVal);
 

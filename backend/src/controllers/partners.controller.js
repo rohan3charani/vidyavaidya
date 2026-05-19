@@ -26,12 +26,17 @@ const partnersController = {
       if (type) queryRef = queryRef.where('type', '==', type);
       if (featured === 'true') queryRef = queryRef.where('isFeatured', '==', true);
 
-      queryRef = queryRef.orderBy('displayOrder', 'asc');
-
       const snap = await queryRef.get();
       const partners = [];
       snap.forEach(doc => {
         partners.push({ id: doc.id, ...doc.data() });
+      });
+
+      // Sort in-memory to avoid requiring composite indexes
+      partners.sort((a, b) => {
+        const orderA = a.displayOrder !== undefined ? Number(a.displayOrder) : 10;
+        const orderB = b.displayOrder !== undefined ? Number(b.displayOrder) : 10;
+        return orderA - orderB;
       });
 
       return res.status(200).json({

@@ -208,54 +208,7 @@ const SUBSCRIPTIONS = [
   }
 ];
 
-const EVENTS = [
-  {
-    id: 'seed-event-001',
-    slug: 'annual-health-camp-2026',
-    title: 'Annual Free Health Camp 2026',
-    description:
-      'Vidyavaidya Foundation organizes a free health camp for underprivileged children and families across Hyderabad. Our doctors and volunteers will provide free consultations, medicines, and health awareness sessions.',
-    category: 'Healthcare',
-    location: 'Vidyavaidya Foundation Hall, Banjara Hills, Hyderabad',
-    organizer: 'Vidyavaidya Foundation',
-    imageUrl: '',
-    startDate: admin.firestore.Timestamp.fromDate(new Date(Date.now() + 7 * 24 * 3600 * 1000)),
-    endDate: admin.firestore.Timestamp.fromDate(new Date(Date.now() + 7 * 24 * 3600 * 1000 + 8 * 3600 * 1000)),
-    registrationDeadline: admin.firestore.Timestamp.fromDate(new Date(Date.now() + 5 * 24 * 3600 * 1000)),
-    capacity: 200,
-    registeredCount: 1,
-    isFree: true,
-    registrationFee: 0,
-    isPublished: true,
-    tags: ['health', 'free', 'children'],
-    registrations: ['seed-user-001'],
-    createdAt: ts,
-    updatedAt: ts
-  },
-  {
-    id: 'seed-event-002',
-    slug: 'scholarship-distribution-2026',
-    title: 'Scholarship Distribution Ceremony 2026',
-    description:
-      'Join us for the annual scholarship distribution ceremony where we award educational grants to deserving students from low-income families across Telangana.',
-    category: 'Education',
-    location: 'Ravindra Bharathi, Hyderabad',
-    organizer: 'Vidyavaidya Foundation',
-    imageUrl: '',
-    startDate: admin.firestore.Timestamp.fromDate(new Date(Date.now() + 14 * 24 * 3600 * 1000)),
-    endDate: admin.firestore.Timestamp.fromDate(new Date(Date.now() + 14 * 24 * 3600 * 1000 + 4 * 3600 * 1000)),
-    registrationDeadline: admin.firestore.Timestamp.fromDate(new Date(Date.now() + 12 * 24 * 3600 * 1000)),
-    capacity: 500,
-    registeredCount: 0,
-    isFree: true,
-    registrationFee: 0,
-    isPublished: true,
-    tags: ['education', 'scholarship', 'students'],
-    registrations: [],
-    createdAt: ts,
-    updatedAt: ts
-  }
-];
+const EVENTS = [];
 
 const STORIES = [
   {
