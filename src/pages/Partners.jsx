@@ -2,6 +2,7 @@ import React from "react";
 import Navbar from "../Components/Navbar";
 import Footer from "../Components/Footer";
 import { Link } from "react-router-dom";
+import { HeartPulse, LaptopMinimal, HandHeart, GraduationCap, Building2 } from "lucide-react";
 
 export default function Partners() {
   const partners = [
@@ -9,19 +10,19 @@ export default function Partners() {
       id: 1,
       name: "Global Health Care",
       type: "Hospital Network",
-      logo: "🏥",
+      logo: HeartPulse,
       link: "/partners/global-health-care"
     },
     {
       id: 2,
       name: "Tech For Good Inc.",
       type: "Corporate Network",
-      logo: "💻",
+      logo: LaptopMinimal,
       link: "/partners/tech-for-good"
     },
-    { id: 3, name: "Our Volunteers", type: "Volunteers", logo: "🤝", link: "/Ourvolunteers" },
-    { id: 5, name: "Education Support", type: "Corporate", logo: "🎓", link: "/EducationSupport" },
-    { id: 6, name: "NGO", type: "NGO", logo: "🏠", link: "/NGO" }
+    { id: 3, name: "Our Volunteers", type: "Volunteers", logo: HandHeart, link: "/Ourvolunteers" },
+    { id: 5, name: "Education Support", type: "Corporate", logo: GraduationCap, link: "/EducationSupport" },
+    { id: 6, name: "NGO", type: "NGO", logo: Building2, link: "/NGO" }
   ];
 
   return (
@@ -50,7 +51,15 @@ export default function Partners() {
                   {p.imgLogo ? (
                     <img src={p.imgLogo} alt={p.name} className="h-28 w-auto object-contain mb-8 group-hover:scale-110 transition-transform duration-500" />
                   ) : (
-                    <span className="text-7xl mb-8 group-hover:scale-110 transition-transform duration-500 block drop-shadow-sm">{p.logo}</span>
+                    (() => {
+                      const IconComponent = p.logo;
+                      return (
+                        <IconComponent 
+                          className="w-16 h-16 text-[#0F172A] group-hover:text-[#10B981] mb-8 transition-all duration-350 transform group-hover:scale-105" 
+                          strokeWidth={1.5}
+                        />
+                      );
+                    })()
                   )}
 
                   <h3 className="text-2xl font-bold text-slate-800 mb-3 text-center">{p.name}</h3>
@@ -74,7 +83,15 @@ export default function Partners() {
                 </Link>
               ) : (
                 <div key={p.id} className="flex flex-col items-center p-8 bg-white rounded-3xl shadow-sm border border-slate-100 hover:shadow-md transition-all duration-300">
-                  <span className="text-7xl mb-8 block drop-shadow-sm">{p.logo}</span>
+                  {(() => {
+                    const IconComponent = p.logo;
+                    return (
+                      <IconComponent 
+                        className="w-16 h-16 text-[#0F172A] hover:text-[#10B981] mb-8 transition-all duration-350 transform hover:scale-105" 
+                        strokeWidth={1.5}
+                      />
+                    );
+                  })()}
                   <h3 className="text-xl font-bold text-slate-800 mb-6 text-center">{p.name}</h3>
                   <div className="mt-auto pt-4 w-full flex justify-center border-t border-slate-100">
                     <span className="text-xs font-bold uppercase tracking-widest text-slate-500 bg-slate-50 px-4 py-1.5 rounded-full">{p.type}</span>

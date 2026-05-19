@@ -113,8 +113,8 @@
 }
 
 .otp-input:focus {
-  border-color: #1abc9c;
-  box-shadow: 0 0 0 3px rgba(26, 188, 156, 0.14);
+  border-color: #1565c0;
+  box-shadow: 0 0 0 3px rgba(21, 101, 192, 0.14);
 }
 
 .otp-help-text,
@@ -136,13 +136,13 @@
   font-weight: 700;
   cursor: pointer;
   padding: 12px;
-  background: linear-gradient(to right, #0b3c5d, #1abc9c);
+  background: linear-gradient(135deg, #1565c0 0%, #1abc9c 100%);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .otp-primary-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 10px 22px rgba(26, 188, 156, 0.35);
+  box-shadow: 0 10px 22px rgba(21, 101, 192, 0.35);
 }
 
 .otp-info {
