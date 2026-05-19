@@ -344,28 +344,30 @@ export function MultiImageInput({ value = [], onChange, showToast }) {
    PARTNERS SECTION
    ══════════════════════════════════════════════ */
 
+const optStr = () => z.string().optional().default("");
+
 const partnerSchema = z.object({
   name: z.string().min(2, { message: "Partner Name must be at least 2 characters" }),
   type: z.enum(["hospital", "ngo", "educational", "corporate", "government"]),
-  city: z.string().optional().or(z.literal("")),
-  state: z.string().optional().or(z.literal("")),
-  description: z.string().optional().or(z.literal("")),
-  shortBio: z.string().optional().or(z.literal("")),
-  logoUrl: z.string().optional().or(z.literal("")),
-  coverImageUrl: z.string().optional().or(z.literal("")),
-  websiteUrl: z.string().optional().or(z.literal("")),
-  contactEmail: z.string().optional().or(z.literal("")),
-  contactPhone: z.string().optional().or(z.literal("")),
-  partnershipStartDate: z.string().optional().or(z.literal("")),
-  displayOrder: z.preprocess((val) => val === "" || val === undefined ? 10 : Number(val), z.number().int()),
-  isFeatured: z.boolean().optional(),
-  isActive: z.boolean().optional(),
-  address: z.string().optional().or(z.literal("")),
-  country: z.string().optional().or(z.literal("India")),
-  linkedinUrl: z.string().optional().or(z.literal("")),
-  twitterUrl: z.string().optional().or(z.literal("")),
-  facebookUrl: z.string().optional().or(z.literal("")),
-  instagramUrl: z.string().optional().or(z.literal(""))
+  city:                optStr(),
+  state:               optStr(),
+  description:         optStr(),
+  shortBio:            optStr(),
+  logoUrl:             optStr(),
+  coverImageUrl:       optStr(),
+  websiteUrl:          optStr(),
+  contactEmail:        optStr(),
+  contactPhone:        optStr(),
+  partnershipStartDate: optStr(),
+  displayOrder:        z.coerce.number().int().optional().default(10),
+  isFeatured:          z.boolean().optional().default(false),
+  isActive:            z.boolean().optional().default(true),
+  address:             optStr(),
+  country:             optStr(),
+  linkedinUrl:         optStr(),
+  twitterUrl:          optStr(),
+  facebookUrl:         optStr(),
+  instagramUrl:        optStr()
 });
 
 export function PartnersSection({ showToast }) {
@@ -422,11 +424,11 @@ export function PartnersSection({ showToast }) {
       instagramUrl: ""
     }
   });
-      const fetchPartners = async () => {
+  const fetchPartners = async () => {
     setLoading(true);
     try {
       const data = await api.partners.list();
-      setPartners(data || []);
+      setPartners(data.partners || []);
     } catch (err) {
       showToast(err.message || "Failed to load partners", "error");
     } finally {
@@ -1458,7 +1460,7 @@ export function StoriesSection({ showToast }) {
     setLoading(true);
     try {
       const data = await api.stories.list();
-      setStories(data || []);
+      setStories(data.stories || []);
     } catch (err) {
       showToast(err.message || "Failed to load articles", "error");
     } finally {

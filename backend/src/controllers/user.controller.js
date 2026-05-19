@@ -15,13 +15,6 @@ const userController = {
         return res.status(404).json({ error: 'User profile not found' });
       }
       const profileData = doc.data();
-      if (profileData.pan) {
-        try {
-          profileData.pan = decrypt(profileData.pan);
-        } catch (decErr) {
-          console.warn('PAN decryption failed:', decErr.message);
-        }
-      }
       return res.status(200).json({ success: true, profile: profileData });
     } catch (error) {
       next(error);
@@ -46,8 +39,7 @@ const userController = {
         isAlumni, 
         alumniId, 
         yearOfGraduation, 
-        gradYear, 
-        pan 
+        gradYear
       } = req.body;
 
       const userRef = db.collection('users').doc(uid);
@@ -77,11 +69,6 @@ const userController = {
       
       const grad = yearOfGraduation || gradYear;
       if (grad) updates.yearOfGraduation = Number(grad);
-      
-      // Encrypt PAN card if provided
-      if (pan) {
-        updates.pan = encrypt(pan);
-      }
 
       // Reconstruct the address object if any address field is updated
       if (address !== undefined || city !== undefined || state !== undefined || country !== undefined || pincode !== undefined) {
@@ -104,13 +91,6 @@ const userController = {
 
       const finalDoc = await userRef.get();
       const profileData = finalDoc.data();
-      if (profileData.pan) {
-        try {
-          profileData.pan = decrypt(profileData.pan);
-        } catch (decErr) {
-          console.warn('PAN decryption failed during update profile:', decErr.message);
-        }
-      }
       return res.status(200).json({
         success: true,
         message: 'Profile updated successfully',

@@ -92,12 +92,9 @@ const adminController = {
       
       fullSnap.forEach(doc => {
         const data = doc.data();
-        // Decrypt PAN card cardholders before returning to administrator panel
-        const decryptedPan = data.pan ? decrypt(data.pan) : 'N/A';
         allDocs.push({
           id: doc.id,
-          ...data,
-          pan: decryptedPan
+          ...data
         });
       });
 
@@ -144,16 +141,13 @@ const adminController = {
       }
 
       const data = doc.data();
-      const decryptedPan = data.pan ? decrypt(data.pan) : '';
-
-      return res.status(200).json({
-        success: true,
-        donation: {
-          id: doc.id,
-          ...data,
-          pan: decryptedPan
-        }
-      });
+        return res.status(200).json({
+          success: true,
+          donation: {
+            id: doc.id,
+            ...data
+          }
+        });
     } catch (error) {
       next(error);
     }
@@ -421,7 +415,6 @@ const adminController = {
         'Donor Name',
         'Donor Email',
         'Phone Number',
-        'PAN Number',
         'Amount (INR)',
         'Cause Category',
         'Subcategory',
@@ -436,7 +429,6 @@ const adminController = {
 
       snap.forEach(doc => {
         const d = doc.data();
-        const plainPan = d.pan ? decrypt(d.pan) : 'N/A';
         const formattedDate = d.createdAt 
           ? new Date(d.createdAt._seconds ? d.createdAt._seconds * 1000 : d.createdAt).toISOString()
           : '';
@@ -448,7 +440,6 @@ const adminController = {
           d.donorName || '',
           d.donorEmail || '',
           d.donorPhone || '',
-          plainPan,
           d.amount || 0,
           d.category || '',
           d.subcategory || '',

@@ -76,10 +76,6 @@ const receiptService = {
         doc.text(`Email Address: ${donation.donorEmail || 'N/A'}`);
         doc.text(`Phone Number: ${donation.donorPhone || 'N/A'}`);
         
-        // Decrypt PAN for receipt if present
-        const plainPan = donation.pan ? decrypt(donation.pan) : 'N/A';
-        doc.text(`Permanent Account Number (PAN): ${plainPan}`);
-
         if (donation.address) {
           const addr = donation.address;
           doc.text(`Billing Address: ${addr.line || ''}, ${addr.city || ''}, ${addr.state || ''} - ${addr.pincode || ''}, ${addr.country || 'India'}`);

@@ -66,17 +66,36 @@ async function findOrCreateUser(donorDetails, isPanEncrypted = false) {
   // 3. Create a new user account (Firebase Auth + Firestore)
   let firebaseUid = null;
   try {
-    const userRecord = await auth.createUser({
-      email: emailNormalized,
-      password: 'Vidyavaidya@2026',
-      phoneNumber: phoneNormalized || undefined,
-      displayName: donorDetails.fullName
-    });
-    firebaseUid = userRecord.uid;
-    console.log(`✅ Firebase Auth user auto-created via donation: ${firebaseUid}`);
+    try {
+      // Check if user already exists in Firebase Auth to avoid duplicate errors
+      const existingUser = await auth.getUserByEmail(emailNormalized);
+      firebaseUid = existingUser.uid;
+      console.log(`✅ Retrieved existing Firebase Auth user uid: ${firebaseUid}`);
+    } catch (getErr) {
+      // User doesn't exist in Firebase Auth; create new account
+      const userRecord = await auth.createUser({
+        email: emailNormalized,
+        password: 'Vidyavaidya@2026',
+        phoneNumber: phoneNormalized || undefined,
+        displayName: donorDetails.fullName
+      });
+      firebaseUid = userRecord.uid;
+      console.log(`✅ Firebase Auth user auto-created via donation: ${firebaseUid}`);
+    }
   } catch (authError) {
-    console.warn(`⚠️ Firebase Auth createUser skipped in donation flow (${authError.message})`);
-    firebaseUid = `local-${uuidv4()}`;
+    if (authError.code === 'auth/email-already-exists') {
+      try {
+        const existingUser = await auth.getUserByEmail(emailNormalized);
+        firebaseUid = existingUser.uid;
+        console.log(`✅ Retrieved existing Firebase Auth user uid on email-already-exists error: ${firebaseUid}`);
+      } catch (getErr2) {
+        console.error('❌ Failed to retrieve existing user after email-already-exists error:', getErr2.message);
+        firebaseUid = `local-${uuidv4()}`;
+      }
+    } else {
+      console.warn(`⚠️ Firebase Auth createUser skipped in donation flow (${authError.message})`);
+      firebaseUid = `local-${uuidv4()}`;
+    }
   }
 
   const userData = {
@@ -94,7 +113,6 @@ async function findOrCreateUser(donorDetails, isPanEncrypted = false) {
       country: donorDetails.address?.country || 'India',
       pincode: donorDetails.address?.pincode || '',
     },
-    pan: donorDetails.pan ? (isPanEncrypted ? donorDetails.pan : encrypt(donorDetails.pan)) : '',
     totalDonated: 0,
     donationCount: 0,
     lastLoginAt: timestamp,
@@ -114,6 +132,112 @@ async function findOrCreateUser(donorDetails, isPanEncrypted = false) {
   return firebaseUid;
 }
 
+async function syncUserProfileDetails(uid, donorDetails, isPanEncrypted = false) {
+  if (!uid || uid === 'GUEST') return;
+  
+  try {
+    const userRef = db.collection('users').doc(uid);
+    const userSnap = await userRef.get();
+    const timestamp = admin.firestore.Timestamp.fromDate(new Date());
+    
+    if (!userSnap.exists) {
+      // Auto-create missing user profile with entered details
+      const emailNormalized = donorDetails.email ? donorDetails.email.trim().toLowerCase() : '';
+      const rawPhone = donorDetails.phone || '';
+      const phoneNormalized = rawPhone.startsWith('+') ? rawPhone : `+91${rawPhone.replace(/^0+/, '')}`;
+      
+      const newProfile = {
+        uid,
+        email: emailNormalized,
+        phone: phoneNormalized,
+        fullName: donorDetails.fullName || 'VIDYA VAIDYA',
+        role: 'donor',
+        isAlumni: donorDetails.isAlumni || false,
+        alumniId: donorDetails.alumniId || '',
+        profileComplete: true,
+        address: {
+          line: donorDetails.address?.line || donorDetails.address || '',
+          city: donorDetails.address?.city || '',
+          state: donorDetails.address?.state || '',
+          country: donorDetails.address?.country || 'India',
+          pincode: donorDetails.address?.pincode || '',
+        },
+        totalDonated: 0,
+        donationCount: 0,
+        lastLoginAt: timestamp,
+        createdAt: timestamp,
+        updatedAt: timestamp,
+        isActive: true
+      };
+      await userRef.set(newProfile);
+      console.log(`✅ Created missing user profile for ${uid} during sync`);
+      return;
+    }
+    
+    const userData = userSnap.data();
+    const updates = {};
+    
+    // 1. Aggressively update fullName and email to match donation form
+    if (donorDetails.fullName && donorDetails.fullName.trim() !== userData.fullName) {
+      updates.fullName = donorDetails.fullName.trim();
+    }
+    
+    if (donorDetails.email && donorDetails.email.trim().toLowerCase() !== userData.email) {
+      updates.email = donorDetails.email.trim().toLowerCase();
+    }
+    
+    // 2. Update phone/mobile if empty or changed
+    if (donorDetails.phone) {
+      const rawPhone = donorDetails.phone;
+      const phoneNormalized = rawPhone.startsWith('+') ? rawPhone : `+91${rawPhone.replace(/^0+/, '')}`;
+      if (!userData.phone || userData.phone !== phoneNormalized) {
+        updates.phone = phoneNormalized;
+      }
+    }
+    
+    // 4. Update Alumni fields
+    if (donorDetails.isAlumni) {
+      if (!userData.isAlumni) {
+        updates.isAlumni = true;
+      }
+      if (donorDetails.alumniId && userData.alumniId !== donorDetails.alumniId) {
+        updates.alumniId = donorDetails.alumniId;
+      }
+    }
+    
+    // 5. Merge/Update Address
+    if (donorDetails.address) {
+      const currentAddress = userData.address || {};
+      const newAddress = {
+        line: donorDetails.address.line || currentAddress.line || '',
+        city: donorDetails.address.city || currentAddress.city || '',
+        state: donorDetails.address.state || currentAddress.state || '',
+        country: donorDetails.address.country || currentAddress.country || 'India',
+        pincode: donorDetails.address.pincode || currentAddress.pincode || '',
+      };
+      
+      const hasAddressChanged = 
+        newAddress.line !== currentAddress.line ||
+        newAddress.city !== currentAddress.city ||
+        newAddress.state !== currentAddress.state ||
+        newAddress.country !== currentAddress.country ||
+        newAddress.pincode !== currentAddress.pincode;
+        
+      if (hasAddressChanged) {
+        updates.address = newAddress;
+      }
+    }
+    
+    if (Object.keys(updates).length > 0) {
+      updates.updatedAt = timestamp;
+      await userRef.update(updates);
+      console.log(`✅ Synchronized user details for ${uid} in users collection.`);
+    }
+  } catch (err) {
+    console.error(`⚠️ Failed to sync user profile details for ${uid}:`, err.message);
+  }
+}
+
 const paymentController = {
   /**
    * Create a standard Razorpay payment order
@@ -121,7 +245,15 @@ const paymentController = {
   async createOrder(req, res, next) {
     try {
       const { amount, currency = 'INR', donationType = 'one-time', category, subcategory, donorDetails } = req.body;
-      const uid = req.user ? req.user.uid : 'GUEST';
+      let uid = 'GUEST';
+      if (req.user) {
+        // Only link to active session if emails match; otherwise create a separate donor identity
+        const sessionEmail = req.user.email ? req.user.email.toLowerCase() : '';
+        const formEmail = donorDetails && donorDetails.email ? donorDetails.email.trim().toLowerCase() : '';
+        if (sessionEmail && formEmail && sessionEmail === formEmail) {
+          uid = req.user.uid;
+        }
+      }
 
       // 1. Generate unique local receipt ref
       const localReceiptId = `VV-REC-${Date.now()}`;
@@ -145,9 +277,6 @@ const paymentController = {
         orderIdToUse = `mock_order_${Date.now()}`;
       }
 
-      // 3. Encrypt PAN card cardholder details
-      const encryptedPan = donorDetails.pan ? encrypt(donorDetails.pan) : '';
-
       // 4. Save initial pending transaction state in Firestore
       const timestamp = admin.firestore.Timestamp.fromDate(new Date());
       const isRecurring = donationType === 'monthly';
@@ -158,7 +287,6 @@ const paymentController = {
         donorName: donorDetails.fullName,
         donorEmail: donorDetails.email.toLowerCase(),
         donorPhone: donorDetails.phone,
-        pan: encryptedPan,
         isAlumni: donorDetails.isAlumni || false,
         alumniId: donorDetails.alumniId || '',
         address: donorDetails.address,
@@ -175,7 +303,7 @@ const paymentController = {
         razorpaySignature: '',
         receiptUrl: '',
         receiptNumber: '',
-        is80GEligible: !!donorDetails.pan,
+        is80GEligible: false,
         taxReceiptSent: false,
         notes: req.body.notes || 'Vidyavaidya Portal Support',
         createdAt: timestamp,
@@ -204,7 +332,14 @@ const paymentController = {
   async createSubscription(req, res, next) {
     try {
       const { planAmount, duration = 12, donorDetails } = req.body;
-      const uid = req.user ? req.user.uid : 'GUEST';
+      let uid = 'GUEST';
+      if (req.user) {
+        const sessionEmail = req.user.email ? req.user.email.toLowerCase() : '';
+        const formEmail = donorDetails && donorDetails.email ? donorDetails.email.trim().toLowerCase() : '';
+        if (sessionEmail && formEmail && sessionEmail === formEmail) {
+          uid = req.user.uid;
+        }
+      }
 
       // 1. Fetch or create recurring plan on Razorpay
       const planName = `Vidyavaidya Support - INR ${planAmount} Monthly`;
@@ -270,7 +405,7 @@ const paymentController = {
    */
   async verifyPayment(req, res, next) {
     try {
-      const { razorpay_order_id, razorpay_payment_id, razorpay_signature, orderId, razorpay_subscription_id } = req.body;
+      const { razorpay_order_id, razorpay_payment_id, razorpay_signature, orderId, razorpay_subscription_id, donorDetails } = req.body;
 
       // 1. Reconstruct HMAC-SHA256 signature
       if (razorpay_signature !== 'mock_signature') {
@@ -308,22 +443,32 @@ const paymentController = {
       // DEFERRED USER CREATION: Register guest user natively upon successful transaction
       if (uid === 'GUEST') {
          if (isSubscription) {
-             uid = await findOrCreateUser(donationData.donorDetails, false);
+             uid = await findOrCreateUser(donorDetails || donationData.donorDetails, false);
          } else {
-             const donorDetails = {
+             const guestDetails = donorDetails || {
                  fullName: donationData.donorName,
                  email: donationData.donorEmail,
                  phone: donationData.donorPhone,
                  isAlumni: donationData.isAlumni,
                  alumniId: donationData.alumniId,
-                 address: donationData.address,
-                 pan: donationData.pan
+                 address: donationData.address
              };
-             uid = await findOrCreateUser(donorDetails, true);
+             uid = await findOrCreateUser(guestDetails, true);
          }
          await donationRef.update({ userId: uid });
          donationData.userId = uid;
       }
+
+      // Synchronize latest entered user details to users collection
+      const donorDetailsToSync = donorDetails || (isSubscription ? donationData.donorDetails : {
+          fullName: donationData.donorName,
+          email: donationData.donorEmail,
+          phone: donationData.donorPhone,
+          isAlumni: donationData.isAlumni,
+          alumniId: donationData.alumniId,
+          address: donationData.address
+      });
+      await syncUserProfileDetails(uid, donorDetailsToSync, !isSubscription);
 
       // Check if order was already successfully processed (Idempotence)
       if (donationData.status === 'successful') {
@@ -560,4 +705,8 @@ const paymentController = {
   }
 };
 
-module.exports = paymentController;
+module.exports = {
+  ...paymentController,
+  findOrCreateUser,
+  syncUserProfileDetails
+};

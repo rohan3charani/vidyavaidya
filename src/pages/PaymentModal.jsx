@@ -145,9 +145,22 @@ export default function PaymentModal({ amount, isMonthly, duration, donationType
                 handler: async function (response) {
                     setProcessing(true);
                     try {
+                        let activeDonorDetails = donorDetails;
+                        if (!activeDonorDetails) {
+                            try {
+                                const localDetails = localStorage.getItem("pending_donor_details");
+                                if (localDetails) {
+                                    activeDonorDetails = JSON.parse(localDetails);
+                                }
+                            } catch (e) {
+                                console.error("Error reading pending_donor_details from localStorage:", e);
+                            }
+                        }
+
                         const payload = {
                             razorpay_payment_id: response.razorpay_payment_id,
-                            razorpay_signature: response.razorpay_signature
+                            razorpay_signature: response.razorpay_signature,
+                            donorDetails: activeDonorDetails
                         };
                         if (isSubscription) {
                             payload.razorpay_subscription_id = response.razorpay_subscription_id;
@@ -199,10 +212,23 @@ export default function PaymentModal({ amount, isMonthly, duration, donationType
         try {
             const isSubscription = !!(orderRes && (orderRes.subscriptionId || orderRes.subscription));
             const orderId = isSubscription ? undefined : (orderRes?.orderId || orderRes?.order?.id);
+            let activeDonorDetails = donorDetails;
+            if (!activeDonorDetails) {
+                try {
+                    const localDetails = localStorage.getItem("pending_donor_details");
+                    if (localDetails) {
+                        activeDonorDetails = JSON.parse(localDetails);
+                    }
+                } catch (e) {
+                    console.error("Error reading pending_donor_details from localStorage:", e);
+                }
+            }
+
             const payload = {
                 razorpay_payment_id: "mock_payment_" + Date.now(),
                 razorpay_signature: "mock_signature",
                 orderId: orderId,
+                donorDetails: activeDonorDetails
             };
             if (isSubscription && orderRes) {
                 payload.razorpay_subscription_id = orderRes.subscriptionId || orderRes.subscription?.id;

@@ -1,0 +1,355 @@
+
+> vidyavaidya@0.0.0 build
+> vite build
+
+vite v8.0.5 building client environment for production...
+[2Ktransforming...✓ 2172 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                                            0.74 kB │ gzip:   0.40 kB
+dist/assets/shape-2-ipOItFJG.png                           5.25 kB
+dist/assets/shape-3-BzIhS-fF.png                           8.14 kB
+dist/assets/1776248713391-DdFdAWG-.jpg                    22.20 kB
+dist/assets/1776248714558-Rsa5fqTm.jpg                    26.61 kB
+dist/assets/Secretary-BRO0L8T2.jpeg                       30.64 kB
+dist/assets/1776248713480-BuZOR6T1.jpg                    30.91 kB
+dist/assets/1776248712807-DRGXsmlA.jpg                    31.86 kB
+dist/assets/1776248713891-kmpphh8a.jpg                    32.94 kB
+dist/assets/1776248714102-CdWiIBc4.jpg                    33.15 kB
+dist/assets/1776248713495-B9gwE72n.jpg                    33.21 kB
+dist/assets/1776248713171-BxPNa0R6.jpg                    33.28 kB
+dist/assets/1776248713323-Cymkt2Qu.jpg                    34.09 kB
+dist/assets/1776248713672-CO75SD9A.jpg                    34.20 kB
+dist/assets/1776248712626-D77dGUbh.jpg                    34.20 kB
+dist/assets/1776248714643-hhdyhQmb.jpg                    34.65 kB
+dist/assets/1776248713738-Ba1x-nZ-.jpg                    34.74 kB
+dist/assets/shape-B5gLNBsp.png                            35.17 kB
+dist/assets/1776248714079-Cnx54Amz.jpg                    36.02 kB
+dist/assets/1776248714841-DLnOsz2L.jpg                    36.09 kB
+dist/assets/1776248714970-BWvAopxQ.jpg                    36.15 kB
+dist/assets/1776248713235-DCXhkEAL.jpg                    36.60 kB
+dist/assets/1776248714734-dnPGSIXE.jpg                    37.56 kB
+dist/assets/1776248713225-DZgoNZUj.jpg                    37.66 kB
+dist/assets/1776248712861-d-IlwSsO.jpg                    37.96 kB
+dist/assets/1776248715086-Dr4q2ULo.jpg                    38.24 kB
+dist/assets/1776248713262-BrYvWpZ4.jpg                    38.40 kB
+dist/assets/1776248713907-CRobTBuV.jpg                    38.56 kB
+dist/assets/1776248712976-B3iV4DrF.jpg                    39.51 kB
+dist/assets/1776248713573-BnWCVxoI.jpg                    39.78 kB
+dist/assets/1776248714245-Cn7dpPFR.jpg                    40.21 kB
+dist/assets/1776248713677-hnCwL7Ny.jpg                    40.53 kB
+dist/assets/1776248713301-BK9Ru6mk.jpg                    40.63 kB
+dist/assets/1776248713651-BEE1L9J-.jpg                    41.35 kB
+dist/assets/1776248713622-FEQz9O0K.jpg                    41.41 kB
+dist/assets/1776248713530-mInKQXUe.jpg                    41.86 kB
+dist/assets/1776248714873-NPXHgoFU.jpg                    41.91 kB
+dist/assets/1776248714885-DSwNmWRJ.jpg                    42.23 kB
+dist/assets/1776248714481-BQvMElMI.jpg                    42.32 kB
+dist/assets/1776248714217-DL8TSn5O.jpg                    42.51 kB
+dist/assets/1776248713602-BtoVxM9Z.jpg                    42.67 kB
+dist/assets/1776248712776-DOsBel8_.jpg                    42.91 kB
+dist/assets/1776248714293-CX2a5NPR.jpg                    43.85 kB
+dist/assets/1776248713544-BqpfR4Qb.jpg                    43.98 kB
+dist/assets/1776248713591-C6rYHt_Y.jpg                    44.12 kB
+dist/assets/1776248712790-DwvkrED8.jpg                    44.55 kB
+dist/assets/1776248712838-Du3boFMe.jpg                    44.81 kB
+dist/assets/1776248712742-Csrh011C.jpg                    45.27 kB
+dist/assets/1776248714910-D6bAv5Mt.jpg                    45.35 kB
+dist/assets/1776248713691-CZ7wudhn.jpg                    45.36 kB
+dist/assets/1776248713016-BGHOedEw.jpg                    45.60 kB
+dist/assets/1776248713627-BsbamOiQ.jpg                    45.96 kB
+dist/assets/1776248714422-BSZIEFiC.jpg                    46.12 kB
+dist/assets/1776248714815-dxGf7ngI.jpg                    46.35 kB
+dist/assets/1776248712998-O4CholQa.jpg                    46.76 kB
+dist/assets/1776248713640-vDOygK0G.jpg                    46.99 kB
+dist/assets/1776248714749-Ct-TWki6.jpg                    47.23 kB
+dist/assets/1776248712662-ILKF_tkz.jpg                    47.65 kB
+dist/assets/1776248714466-DMJwTso4.jpg                    47.96 kB
+dist/assets/1776248712929-Bd1K2mNh.jpg                    48.02 kB
+dist/assets/1776248713539-CQqwRUL-.jpg                    48.13 kB
+dist/assets/1776248713355-3ebhP1L3.jpg                    48.34 kB
+dist/assets/1776248714636-C5nxMr7j.jpg                    48.85 kB
+dist/assets/1776248713279-C95m3fjs.jpg                    49.02 kB
+dist/assets/1776248713489-ftQrd_ub.jpg                    49.36 kB
+dist/assets/1776248713608-oTfX-h4f.jpg                    49.74 kB
+dist/assets/1776248714058-B4I-s70w.jpg                    49.77 kB
+dist/assets/1776248714892-DX0AXlyW.jpg                    49.89 kB
+dist/assets/1776248713665-1FHq1GfM.jpg                    50.09 kB
+dist/assets/1776248713578-RTfd7Sdo.jpg                    50.47 kB
+dist/assets/1776248713701-B-T5KpDc.jpg                    50.56 kB
+dist/assets/1776248714676-BQnhVXh-.jpg                    50.59 kB
+dist/assets/1776248713557-Bn50nn1A.jpg                    50.68 kB
+dist/assets/1776248713058-BsR0JCmR.jpg                    51.34 kB
+dist/assets/1776248714276-CvR2fkZ9.jpg                    51.44 kB
+dist/assets/1776248714264-L-iavXsv.jpg                    51.59 kB
+dist/assets/1776248714499-ZReC8SQE.jpg                    51.60 kB
+dist/assets/1776248713633-DDM5cxYZ.jpg                    52.11 kB
+dist/assets/1776248712699-DGhFOopO.jpg                    52.35 kB
+dist/assets/1776248714153-B4nIuFF9.jpg                    52.36 kB
+dist/assets/1776248714531-9MrR0_el.jpg                    52.41 kB
+dist/assets/1776248714408-BK03h-O6.jpg                    52.56 kB
+dist/assets/1776248714780-Bf11C-sf.jpg                    52.60 kB
+dist/assets/1776248713512-Bx_pZwnp.jpg                    52.65 kB
+dist/assets/1776248714846-DXy8YL3b.jpg                    52.92 kB
+dist/assets/1776248713658-1H0KZdaC.jpg                    52.95 kB
+dist/assets/1776248713714-ygol9rgS.jpg                    52.98 kB
+dist/assets/1776248712818-DtucqySQ.jpg                    53.06 kB
+dist/assets/1776248713182-CxNzqRn0.jpg                    53.07 kB
+dist/assets/1776248713724-ppnsrYD-.jpg                    53.10 kB
+dist/assets/1776248714774-B55qtHUp.jpg                    53.21 kB
+dist/assets/1776248715032-D-pqqkOo.jpg                    53.43 kB
+dist/assets/1776248713505-DaFOBxjm.jpg                    53.43 kB
+dist/assets/1776248715093-DFfpzYUB.jpg                    53.60 kB
+dist/assets/1776248714933-B3tdqrUQ.jpg                    53.64 kB
+dist/assets/1776248713645-ub-uH3_D.jpg                    53.76 kB
+dist/assets/1776248715046-YAHtWgbF.jpg                    54.03 kB
+dist/assets/1776248713585-1LrdbuQV.jpg                    54.06 kB
+dist/assets/1776248714801-Y4V-6Jl7.jpg                    54.48 kB
+dist/assets/1776248713009-BFcj8W4w.jpg                    54.49 kB
+dist/assets/1776248714367-C5zRJ-uv.jpg                    54.68 kB
+dist/assets/1776248713565-CJEHc3DL.jpg                    54.70 kB
+dist/assets/1776248714654-D2cdtyvB.jpg                    54.88 kB
+dist/assets/1776248714348-CDChKdby.jpg                    55.45 kB
+dist/assets/1776248713525-DdRyrZm_.jpg                    55.88 kB
+dist/assets/1776248713772-Lo_z5TZW.jpg                    56.15 kB
+dist/assets/1776248712884-BVkGLK5w.jpg                    56.39 kB
+dist/assets/1776248713154-BOednddN.jpg                    56.94 kB
+dist/assets/1776248715051-C5zVul5W.jpg                    57.33 kB
+dist/assets/1776248712846-CQ3h6HFJ.jpg                    57.54 kB
+dist/assets/1776248713050-BwJb3wFD.jpg                    57.56 kB
+dist/assets/1776248713144-BopCwBgF.jpg                    57.59 kB
+dist/assets/1776248712853-D5ofbaIr.jpg                    57.61 kB
+dist/assets/1776248714668-B8w2YZ7S.jpg                    57.80 kB
+dist/assets/1776248715018-oq92krSo.jpg                    57.94 kB
+dist/assets/1776248714192-3oQd49l3.jpg                    58.05 kB
+dist/assets/1776248715098-CKCDRjQI.jpg                    58.11 kB
+dist/assets/1776248713519-C9NspgiE.jpg                    58.13 kB
+dist/assets/1776248712678-B1oQuRLC.jpg                    58.32 kB
+dist/assets/1776248713422-_MzvGso3.jpg                    58.41 kB
+dist/assets/1776248714180-BdOipzor.jpg                    58.48 kB
+dist/assets/1776248714727-DpvPr2hD.jpg                    58.49 kB
+dist/assets/1776248714941-BBLepWxh.jpg                    59.65 kB
+dist/assets/1776248713428-BRzKhdj0.jpg                    59.66 kB
+dist/assets/1776248713268-BbyakS_l.jpg                    59.84 kB
+dist/assets/1776248715013-D0PiSgFq.jpg                    60.05 kB
+dist/assets/1776248714697-DCxZUxOw.jpg                    60.22 kB
+dist/assets/1776248714038-xJ2h4h9Q.jpg                    60.25 kB
+dist/assets/1776248714681-Cvysz_Uo.jpg                    60.26 kB
+dist/assets/1776248714597-BYPvo5TZ.jpg                    60.36 kB
+dist/assets/1776248714199-CbsyypoK.jpg                    60.71 kB
+dist/assets/1776248712636-BoouKbBT.jpg                    60.77 kB
+dist/assets/1776248712719-Da-9FLDR.jpg                    60.77 kB
+dist/assets/1776248714755-0_bpj9ww.jpg                    60.82 kB
+dist/assets/1776248714206-BCl_-cn3.jpg                    61.16 kB
+dist/assets/1776248713096-B7UB-Cec.jpg                    61.18 kB
+dist/assets/1776248713286-Cs3DVi7Y.jpg                    61.41 kB
+dist/assets/1776248714115-vytqLw5w.jpg                    61.42 kB
+dist/assets/1776248714833-CM9z-cun.jpg                    61.61 kB
+dist/assets/1776248714044-wisCRLwc.jpg                    61.70 kB
+dist/assets/1776248712942-rQxK3GyD.jpg                    61.91 kB
+dist/assets/1776248713039-B1vKOpny.jpg                    62.01 kB
+dist/assets/1776248714382-C2kTp5M2.jpg                    62.27 kB
+dist/assets/1776248714787-vAdOre1w.jpg                    62.50 kB
+dist/assets/1776248715065-CYAIPXGj.jpg                    62.62 kB
+dist/assets/1776248713466-D45ZM9zd.jpg                    62.68 kB
+dist/assets/1776248714325-BsxeOa95.jpg                    62.90 kB
+dist/assets/1776248714434-C7F-g3nF.jpg                    63.12 kB
+dist/assets/1776248712647-Cmr255jH.jpg                    63.25 kB
+dist/assets/1776248714859-CMxVKYNP.jpg                    63.32 kB
+dist/assets/1776248714003-C-HpRBUf.jpg                    63.48 kB
+dist/assets/1776248714185-B3LxE17D.jpg                    63.53 kB
+dist/assets/1776248713396-BR1eFPTU.jpg                    63.80 kB
+dist/assets/1776248714948-Dqv1ewOk.jpg                    64.13 kB
+dist/assets/1776248714414-etYDq1Hs.jpg                    64.35 kB
+dist/assets/1776248713073-B8gw2tG8.jpg                    64.57 kB
+dist/assets/1776248714865-EnD6XD7W.jpg                    64.83 kB
+dist/assets/1776248714317-DJPhRENI.jpg                    64.87 kB
+dist/assets/1776248714375-Dt32K2CH.jpg                    65.08 kB
+dist/assets/1776248715000-Dy8ueziW.jpg                    65.28 kB
+dist/assets/1776248713826-BAkGJYtI.jpg                    65.54 kB
+dist/assets/1776248714305-BUQ_bSYG.jpg                    65.77 kB
+dist/assets/1776248713613-mu_F8o04.jpg                    65.84 kB
+dist/assets/1776248713708-CYIOktx-.jpg                    66.18 kB
+dist/assets/1776248713830-DSJoPs2Y.jpg                    66.24 kB
+dist/assets/1776248714389-Bbu2w8dr.jpg                    66.33 kB
+dist/assets/1776248713363-JoOku2Fc.jpg                    66.36 kB
+dist/assets/1776248714741-BbTdjy-H.jpg                    66.51 kB
+dist/assets/1776248714661-Dm9SfxzS.jpg                    66.74 kB
+dist/assets/1776248714822-8E4mCpRV.jpg                    66.84 kB
+dist/assets/1776248714335-Ci7j9APJ.jpg                    66.85 kB
+dist/assets/1776248714475-BaO27KVF.jpg                    67.95 kB
+dist/assets/1776248712727-DPkCWnV5.jpg                    68.48 kB
+dist/assets/1776248714583-BovKWNRL.jpg                    68.86 kB
+dist/assets/1776248712990-N7RB9e66.jpg                    68.89 kB
+dist/assets/1776248714441-CcYd-elE.jpg                    69.33 kB
+dist/assets/1776248713596-DtpEp66n.jpg                    69.37 kB
+dist/assets/1776248714353-CQx-DBhl.jpg                    69.50 kB
+dist/assets/1776248714460-C6N40DP2.jpg                    69.52 kB
+dist/assets/1776248713066-BDqRNPgz.jpg                    69.54 kB
+dist/assets/1776248713372-CtlAaSnc.jpg                    69.92 kB
+dist/assets/1776248713845-CJXMCMEo.jpg                    70.14 kB
+dist/assets/1776248714880-8KNrL8xm.jpg                    70.14 kB
+dist/assets/1776248714167-GB2my1PK.jpg                    70.65 kB
+dist/assets/1776248714616-BGPVFMAe.jpg                    70.75 kB
+dist/assets/1776248713806-Cj3M5Enw.jpg                    70.80 kB
+dist/assets/1776248712824-qglj1W5z.jpg                    71.83 kB
+dist/assets/1776248715073-BV57LNL7.jpg                    71.85 kB
+dist/assets/1776248714124-DelKS3bI.jpg                    72.43 kB
+dist/assets/1776248714995-B_ykryRy.jpg                    72.46 kB
+dist/assets/1776248714110-BE1aQ9DE.jpg                    72.91 kB
+dist/assets/1776248715038-Cj6LufGk.jpg                    73.25 kB
+dist/assets/1776248714704-BdYJ5oMR.jpg                    73.29 kB
+dist/assets/1776248713473-B19FxFmk.jpg                    73.39 kB
+dist/assets/1776248713780-Bymxx2Gj.jpg                    73.62 kB
+dist/assets/1776248713860-DhSWpYHX.jpg                    73.76 kB
+dist/assets/1776248714360-DesnGZtn.jpg                    73.77 kB
+dist/assets/1776248714687-zUyLWuF_.jpg                    73.81 kB
+dist/assets/1776248714395-B_OD6WB-.jpg                    74.39 kB
+dist/assets/1776248714212-viypCq8O.jpg                    74.61 kB
+dist/assets/1776248712982-DUo20M2Z.jpg                    74.62 kB
+dist/assets/1776248714711-C11aGQmJ.jpg                    74.67 kB
+dist/assets/1776248713867-DMqE-Bhg.jpg                    74.97 kB
+dist/assets/1776248714160-D2Uip-7Y.jpg                    75.20 kB
+dist/assets/1776248713746-WqZDHLJo.jpg                    75.21 kB
+dist/assets/1776248714428-0mH71Md2.jpg                    75.36 kB
+dist/assets/1776248714330-CIv0udZa.jpg                    75.59 kB
+dist/assets/1776248714400-Dm3kxGCs.jpg                    75.64 kB
+dist/assets/1776248714131-D2KumdZN.jpg                    75.80 kB
+dist/assets/1776248714851-BHHjnOPx.jpg                    76.05 kB
+dist/assets/1776248714630-CMB7tHpW.jpg                    76.85 kB
+dist/assets/1776248713086-D5yA1o97.jpg                    76.97 kB
+dist/assets/1776248714718-CI2qe7x3.jpg                    77.48 kB
+dist/assets/1776248713997-B5yNKCB9.jpg                    77.52 kB
+dist/assets/1776248714226-C2wT6NK0.jpg                    77.91 kB
+dist/assets/1776248714487-CNrigPRX.jpg                    78.20 kB
+dist/assets/1776248713132-Cnm613QW.jpg                    78.30 kB
+dist/assets/1776248714250-4iZEwUcj.jpg                    78.53 kB
+dist/assets/1776248714766-DsFCUPkX.jpg                    79.10 kB
+dist/assets/1776248714239-tdvaxqkU.jpg                    79.14 kB
+dist/assets/1776248712758-DCc8dPV_.jpg                    79.28 kB
+dist/assets/1776248713342-CM3hp775.jpg                    79.58 kB
+dist/assets/1776248712969-BLODd7cm.jpg                    80.18 kB
+dist/assets/1776248714988-bPPBwH96.jpg                    80.55 kB
+dist/assets/1776248714511-DAs-cHqS.jpg                    81.08 kB
+dist/assets/1776248714343-Ba28EdhA.jpg                    81.17 kB
+dist/assets/1776248713030-CcfTgYys.jpg                    81.34 kB
+dist/assets/1776248713696-BcaNQFBw.jpg                    81.48 kB
+dist/assets/1776248713913-C7_cZ1AV.jpg                    81.58 kB
+dist/assets/1776248713798-N6M_MMlb.jpg                    82.37 kB
+dist/assets/1776248714903-DLNV00oS.jpg                    82.85 kB
+dist/assets/1776248713402-B2ma_4FK.jpg                    82.92 kB
+dist/assets/1776248714287-CinCvePW.jpg                    83.50 kB
+dist/assets/1776248713943-CKcSiWk6.jpg                    83.82 kB
+dist/assets/1776248713445-DY-tentg.jpg                    83.92 kB
+dist/assets/1776248713247-C6gYB0O_.jpg                    84.24 kB
+dist/assets/1776248714977-DttHJ562.jpg                    85.07 kB
+dist/assets/1776248712674-CXLIJ8hi.jpg                    85.14 kB
+dist/assets/1776248714962-DslRh5oI.jpg                    85.38 kB
+dist/assets/1776248715059-ChjhK-gJ.jpg                    85.70 kB
+dist/assets/1776248714794-D335zXZj.jpg                    86.71 kB
+dist/assets/1776248714281-Dzr270Pk.jpg                    86.76 kB
+dist/assets/1776248713550-vz0wDfwx.jpg                    88.07 kB
+dist/assets/1776248713763-kY-x4-xo.jpg                    88.24 kB
+dist/assets/1776248714610-BQmT5E4G.jpg                    88.80 kB
+dist/assets/1776248714828-DjyGtc0i.jpg                    89.61 kB
+dist/assets/1776248714516-BxYFRFww.jpg                    90.21 kB
+dist/assets/1776248713838-D7x0IYSg.jpg                    90.70 kB
+dist/assets/1776248713294-5c3Nos7U.jpg                    92.06 kB
+dist/assets/1776248715080-D_b8Q-_a.jpg                    92.11 kB
+dist/assets/1776248713813-CgV8qsW9.jpg                    92.12 kB
+dist/assets/Chairman _ Managing Trustee-BWsl_4xI.jpeg     92.21 kB
+dist/assets/1776248714982-DfsvzD4F.jpg                    92.38 kB
+dist/assets/1776248713992-Bu57qdJI.jpg                    92.77 kB
+dist/assets/1776248714898-vBAqzLfE.jpg                    93.60 kB
+dist/assets/1776248714097-C0z5YbAU.jpg                    93.80 kB
+dist/assets/1776248713788-CBqph0nv.jpg                    94.66 kB
+dist/assets/1776248713458-CIlEaZ3j.jpg                    96.22 kB
+dist/assets/1776248712831-ChBhWJIL.jpg                    96.33 kB
+dist/assets/1776248713255-BMv-Krqy.jpg                    97.63 kB
+dist/assets/1776248713328-CDWsODBw.jpg                    98.76 kB
+dist/assets/1776248713960-CqCMLJQH.jpg                   100.27 kB
+dist/assets/1776248714298-g9xJ-0go.jpg                   101.82 kB
+dist/assets/1776248714031-D3Gp1ZSx.jpg                   102.80 kB
+dist/assets/1776248715007-a-L_cHXE.jpg                   103.50 kB
+dist/assets/1776248715026-fWlCvLtm.jpg                   103.87 kB
+dist/assets/1776248713211-DHWsXdzv.jpg                   104.42 kB
+dist/assets/1776248713967-CG3TOdEL.jpg                   106.29 kB
+dist/assets/1776248714311-DMzwYPIK.jpg                   106.51 kB
+dist/assets/1776248712957-DTK_Uegx.jpg                   106.52 kB
+dist/assets/1776248713818-R-a07B7f.jpg                   107.49 kB
+dist/assets/1776248714009-BHY5A-Cw.jpg                   109.34 kB
+dist/assets/1776248714258-B6YwQ4kA.jpg                   110.90 kB
+dist/assets/1776248713882-3JB2jznF.jpg                   111.42 kB
+dist/assets/1776248713974-BEDeR1pD.jpg                   112.89 kB
+dist/assets/1776248713078-CwBCPOhy.jpg                   113.39 kB
+dist/assets/1776248714545-ClZIz1PM.jpg                   113.93 kB
+dist/assets/1776248714550-D161lpWV.jpg                   114.30 kB
+dist/assets/1776248712689-DQchZnOt.jpg                   114.44 kB
+dist/assets/1776248713934-DPpW3mmM.jpg                   115.13 kB
+dist/assets/1776248714447-B_8NS_f9.jpg                   119.33 kB
+dist/assets/1776248714270-s9F4ngM2.jpg                   119.77 kB
+dist/assets/1776248714139-9Wv4OFfY.jpg                   120.37 kB
+dist/assets/1776248713979-DwYS7En2.jpg                   120.38 kB
+dist/assets/1776248714590-xxwOpUfE.jpg                   123.73 kB
+dist/assets/1776248714050-QN6MJRFl.jpg                   127.46 kB
+dist/assets/1776248713377-CoHfwDR1.jpg                   128.96 kB
+dist/assets/1776248713954-CERz6LU3.jpg                   132.68 kB
+dist/assets/1776248713948-BD5MFO32.jpg                   134.60 kB
+dist/assets/1776248713414-Cz-EEJfi.jpg                   134.94 kB
+dist/assets/1776248713922-MyviE1Og.jpg                   136.55 kB
+dist/assets/1776248712656-nwfaCfRI.jpg                   137.99 kB
+dist/assets/1776248714231-BDXN8e-0.jpg                   141.79 kB
+dist/assets/1776248713984-aukT1GbA.jpg                   143.32 kB
+dist/assets/1776248714603-CPALBzsc.jpg                   144.59 kB
+dist/assets/1776248714648-DYaVX421.jpg                   157.37 kB
+dist/assets/1776248714505-CphS6fYJ.jpg                   163.02 kB
+dist/assets/1776248713110-BcKxTndT.jpg                   172.39 kB
+dist/assets/1776248714955-B6emI5F4.jpg                   222.72 kB
+dist/assets/1776248714026-CU9FlCUA.jpg                   233.90 kB
+dist/assets/Treasurer-rGyZydgX.jpeg                      241.15 kB
+dist/assets/Name plate-DaqKwkw4.JPG                      287.45 kB
+dist/assets/3-frP6v6PW.jpg                               371.36 kB
+dist/assets/Entrance-CSgLZR9n.JPG                        379.08 kB
+dist/assets/Rajsekhar-BmkfFORm.JPG                       388.22 kB
+dist/assets/Inside1-CJ_2zJFQ.JPG                         744.19 kB
+dist/assets/2-DKQLPUr9.jpg                               744.96 kB
+dist/assets/1-CvCEWgMR.jpg                             1,067.55 kB
+dist/assets/Vidya1-BKOJ5rxz.png                        1,658.64 kB
+dist/assets/3-Bj6pyjL5.png                             1,752.81 kB
+dist/assets/01-BeauaI8J.jpg                            2,106.63 kB
+dist/assets/1-Dxzaeo8L.png                             2,173.33 kB
+dist/assets/2-ovs9qVdI.png                             2,358.57 kB
+dist/assets/index-DVHpunSP.css                           169.70 kB │ gzip:  31.13 kB
+dist/assets/index-v-dFyD6T.js                            619.60 kB │ gzip: 161.57 kB
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✗ Build failed in 1.64s
+error during build:
+Build failed with 1 error:
+
+Error: [vite]: Rolldown failed to resolve import "react-hook-form" from "/Users/rohanbangaram/IC/vidyavaidya/src/pages/admin/CmsComponents.jsx".
+This is most likely unintended because it can break your application at runtime.
+If you do want to externalize this module explicitly add it to
+`build.rollupOptions.external`
+    at viteLog (file:///Users/rohanbangaram/IC/vidyavaidya/node_modules/vite/dist/node/chunks/node.js:33032:57)
+    at file:///Users/rohanbangaram/IC/vidyavaidya/node_modules/vite/dist/node/chunks/node.js:33068:71
+    at onwarn (file:///Users/rohanbangaram/IC/vidyavaidya/node_modules/@vitejs/plugin-react/dist/index.js:40:7)
+    at file:///Users/rohanbangaram/IC/vidyavaidya/node_modules/vite/dist/node/chunks/node.js:33068:28
+    at onRollupLog (file:///Users/rohanbangaram/IC/vidyavaidya/node_modules/vite/dist/node/chunks/node.js:33063:63)
+    at onLog (file:///Users/rohanbangaram/IC/vidyavaidya/node_modules/vite/dist/node/chunks/node.js:32832:4)
+    at file:///Users/rohanbangaram/IC/vidyavaidya/node_modules/rolldown/dist/shared/rolldown-build-CPrIX9V6.mjs:49:26
+    at logger (file:///Users/rohanbangaram/IC/vidyavaidya/node_modules/rolldown/dist/shared/rolldown-build-CPrIX9V6.mjs:40:3)
+    at onLog (file:///Users/rohanbangaram/IC/vidyavaidya/node_modules/rolldown/dist/shared/bindingify-input-options-e7ze4hPR.mjs:1972:32)
+    at aggregateBindingErrorsIntoJsError (file:///Users/rohanbangaram/IC/vidyavaidya/node_modules/rolldown/dist/shared/error-BLhcSyeg.mjs:48:18)
+    at unwrapBindingResult (file:///Users/rohanbangaram/IC/vidyavaidya/node_modules/rolldown/dist/shared/error-BLhcSyeg.mjs:18:128)
+    at #build (file:///Users/rohanbangaram/IC/vidyavaidya/node_modules/rolldown/dist/shared/rolldown-build-CPrIX9V6.mjs:3313:34)
+    at async buildEnvironment (file:///Users/rohanbangaram/IC/vidyavaidya/node_modules/vite/dist/node/chunks/node.js:32939:64)
+    at async Object.build (file:///Users/rohanbangaram/IC/vidyavaidya/node_modules/vite/dist/node/chunks/node.js:33361:19)
+    at async Object.buildApp (file:///Users/rohanbangaram/IC/vidyavaidya/node_modules/vite/dist/node/chunks/node.js:33358:153)
+    at async CAC.<anonymous> (file:///Users/rohanbangaram/IC/vidyavaidya/node_modules/vite/dist/node/cli.js:778:3) {
+  errors: [Getter/Setter]
+}

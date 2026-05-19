@@ -218,7 +218,15 @@ const storiesController = {
 
       const photos = [];
       snap.forEach(doc => {
-        photos.push({ id: doc.id, ...doc.data() });
+        const d = doc.data();
+        if (d.type === 'gallery_photo' && d.isPublished === true) {
+          photos.push({ id: doc.id, ...d });
+        }
+      });
+      photos.sort((a, b) => {
+        const aTime = a.publishedAt?._seconds || 0;
+        const bTime = b.publishedAt?._seconds || 0;
+        return bTime - aTime;
       });
 
       // Sort in-memory to prevent composite index requirement
@@ -246,7 +254,15 @@ const storiesController = {
 
       const videos = [];
       snap.forEach(doc => {
-        videos.push({ id: doc.id, ...doc.data() });
+        const d = doc.data();
+        if (d.type === 'gallery_video' && d.isPublished === true) {
+          videos.push({ id: doc.id, ...d });
+        }
+      });
+      videos.sort((a, b) => {
+        const aTime = a.publishedAt?._seconds || 0;
+        const bTime = b.publishedAt?._seconds || 0;
+        return bTime - aTime;
       });
 
       // Sort in-memory to prevent composite index requirement

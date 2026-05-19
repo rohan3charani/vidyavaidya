@@ -1,12 +1,28 @@
 import Navbar from "../Components/Navbar";
 import Footer from "../Components/Footer";
 import "./Pages.css";
+import { BookOpen, HeartPulse, UsersRound } from "lucide-react";
 
 export default function OurMission() {
   const pillars = [
-    { id: 1, title: "Educate", icon: "📚", description: "Providing quality education and resources to underprivileged children to help them build a foundation for a brighter future. We distribute books, scholarships, and school kits." },
-    { id: 2, title: "Heal", icon: "❤️", description: "Delivering essential healthcare services, organizing free medical camps, and providing critical treatments to vulnerable communities across India." },
-    { id: 3, title: "Empower", icon: "🌱", description: "Conducting skill development and vocational training programs to foster economic independence and social inclusion for women and youth." }
+    { 
+      id: 1, 
+      title: "Educate", 
+      icon: BookOpen, 
+      description: "Providing quality education and resources to underprivileged children to help them build a foundation for a brighter future. We distribute books, scholarships, and school kits." 
+    },
+    { 
+      id: 2, 
+      title: "Heal", 
+      icon: HeartPulse, 
+      description: "Delivering essential healthcare services, organizing free medical camps, and providing critical treatments to vulnerable communities across India." 
+    },
+    { 
+      id: 3, 
+      title: "Empower", 
+      icon: UsersRound, 
+      description: "Conducting skill development and vocational training programs to foster economic independence and social inclusion for women and youth." 
+    }
   ];
 
   const stats = [
@@ -34,13 +50,21 @@ export default function OurMission() {
       <section className="page-section" style={{ background: "#f8fafc" }}>
         <div className="page-container">
           <div className="mission-pillars">
-            {pillars.map(p => (
-              <div key={p.id} className="mission-pillar-card">
-                <span className="mission-pillar-icon">{p.icon}</span>
-                <h3 className="mission-pillar-title">{p.title}</h3>
-                <p className="mission-pillar-desc">{p.description}</p>
-              </div>
-            ))}
+            {pillars.map(p => {
+              const IconComponent = p.icon;
+              return (
+                <div key={p.id} className="mission-pillar-card">
+                  <span className="mission-pillar-icon">
+                    <IconComponent 
+                      className="w-16 h-16 text-[#123B7A] mx-auto" 
+                      strokeWidth={2.5}
+                    />
+                  </span>
+                  <h3 className="mission-pillar-title">{p.title}</h3>
+                  <p className="mission-pillar-desc">{p.description}</p>
+                </div>
+              );
+            })}
           </div>
 
           <div className="mission-stats-row">

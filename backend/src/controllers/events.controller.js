@@ -22,11 +22,12 @@ const eventsController = {
     try {
       const { page = 1, limit = 10, category, status, featured } = req.query;
 
-      let queryRef = db.collection('events');
-
-      if (category) queryRef = queryRef.where('category', '==', category);
-      if (status) queryRef = queryRef.where('status', '==', status);
-      if (featured === 'true') queryRef = queryRef.where('isFeatured', '==', true);
+      // Fetch all and filter in memory to avoid composite index requirement
+      const snap = await db.collection('events').get();
+      let events = [];
+      snap.forEach(doc => {
+        events.push({ id: doc.id, ...doc.data() });
+      });
 
       const snap = await queryRef.get();
       const events = [];
