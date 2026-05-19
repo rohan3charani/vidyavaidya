@@ -458,24 +458,24 @@ export function CTABanner() {
 }
 
 const TEAM = [
-  { 
-    id: "t1", 
-    name: "Chairman & Managing Trustee", 
-    role: "VidyaVaidya Foundation", 
+  {
+    id: "t1",
+    name: "Chairman & Managing Trustee",
+    role: "VidyaVaidya Foundation",
     img: ChairmanImg,
     bio: "A visionary leader more than 15 years of experience in social service and community development. He is the driving force behind VidyaVaidya's mission to provide quality education and healthcare to the underserved. Under his guidance, the foundation has impacted thousands of lives across the nation through sustainable interventions and unwavering dedication."
   },
-  { 
-    id: "t2", 
-    name: "Secretary", 
-    role: "VidyaVaidya Foundation", 
+  {
+    id: "t2",
+    name: "Secretary",
+    role: "VidyaVaidya Foundation",
     img: SecretaryImg,
     bio: "A dedicated administrator and strategist who ensures the smooth operation of all foundation activities. With a background in management and a heart for service, she focuses on building sustainable partnerships and implementing innovative programs that empower youth and children to achieve their full potential."
   },
-  { 
-    id: "t3", 
-    name: "Treasurer", 
-    role: "VidyaVaidya Foundation", 
+  {
+    id: "t3",
+    name: "Treasurer",
+    role: "VidyaVaidya Foundation",
     img: TreasurerImg,
     bio: "A financial expert with a passion for transparency and accountability. He manages the foundation's resources with precision, ensuring that every donation is utilized effectively to maximize social impact. His commitment to fiscal responsibility has earned VidyaVaidya the trust and support of global donors."
   },
@@ -514,9 +514,9 @@ export function TeamMembers() {
       </div>
       <div className="team-grid">
         {TEAM.map((member, i) => (
-          <article 
-            key={member.id} 
-            className="team-card" 
+          <article
+            key={member.id}
+            className="team-card"
             style={{ transitionDelay: `${i * 0.1}s`, cursor: 'pointer' }}
             onClick={() => setSelectedMember(member)}
           >
