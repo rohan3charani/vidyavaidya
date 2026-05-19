@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useMemo } from "react";
 import Navbar from "../Components/Navbar";
 import Footer from "../Components/Footer";
+import { Loader2 } from "lucide-react";
+import api from "../services/api";
 
 // Categories and Data Setup
 const categories = ["All", "Education", "Health", "Community Trust", "Empowerment", "Volunteers"];
@@ -30,11 +32,11 @@ const descriptions = [
   "Joyful moments captured during our outreach programs, reflecting the true spirit of giving and community trust."
 ];
 
-// Map all 200+ images dynamically
-const galleryPhotos = imageUrls.map((url, index) => {
+// Map all 200+ images dynamically as fallback
+const staticGalleryPhotos = imageUrls.map((url, index) => {
   const catIndex = (index * 7) % (categories.length - 1) + 1; // skip "All"
   return {
-    id: index + 1,
+    id: `static-${index + 1}`,
     category: categories[catIndex],
     title: titles[index % titles.length],
     description: descriptions[index % descriptions.length],
@@ -46,13 +48,57 @@ const galleryPhotos = imageUrls.map((url, index) => {
 export default function PhotoGallery() {
   const [activeCategory, setActiveCategory] = useState("All");
   const [lightboxIndex, setLightboxIndex] = useState(null);
+  const [dynamicPhotos, setDynamicPhotos] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchPhotos = async () => {
+      try {
+        const data = await api.stories.list();
+        const photos = (data || []).filter(
+          (s) => s.isPublished && s.type === "gallery_photo"
+        );
+        const list = [];
+        photos.forEach((s) => {
+          if (s.galleryImages && Array.isArray(s.galleryImages)) {
+            s.galleryImages.forEach((imgUrl, imgIdx) => {
+              // Categorize using first tag or default
+              let cat = "Community Trust";
+              if (s.tags && s.tags[0]) {
+                const found = categories.find(
+                  (c) => c.toLowerCase() === s.tags[0].toLowerCase()
+                );
+                if (found) cat = found;
+              }
+              list.push({
+                id: `${s.id}-${imgIdx}`,
+                category: cat,
+                title: s.title,
+                description: s.excerpt || s.content || "VidyaVaidya Trust Outreach",
+                image: imgUrl,
+                alt: s.title
+              });
+            });
+          }
+        });
+        setDynamicPhotos(list);
+      } catch (err) {
+        console.error("Failed to load photos:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPhotos();
+  }, []);
+
+  const displayPhotos = dynamicPhotos.length > 0 ? dynamicPhotos : staticGalleryPhotos;
 
   const filteredPhotos = useMemo(
     () =>
       activeCategory === "All"
-        ? galleryPhotos
-        : galleryPhotos.filter((photo) => photo.category === activeCategory),
-    [activeCategory]
+        ? displayPhotos
+        : displayPhotos.filter((photo) => photo.category === activeCategory),
+    [activeCategory, displayPhotos]
   );
 
   const openLightbox = (index) => setLightboxIndex(index);
@@ -117,7 +163,7 @@ export default function PhotoGallery() {
               <button
                 key={category}
                 type="button"
-                onClick={() => setActiveCategory(category)}
+                onClick={() => { setActiveCategory(category); setLightboxIndex(null); }}
                 className={`whitespace-nowrap rounded-full px-6 py-2.5 text-sm font-semibold transition-all duration-300 ${
                   activeCategory === category
                     ? "bg-teal-700 text-white shadow-lg shadow-teal-700/30 transform scale-105"
@@ -139,47 +185,55 @@ export default function PhotoGallery() {
             </h2>
           </div>
 
-          <div className="columns-2 md:columns-3 lg:columns-4 xl:columns-5 gap-4 space-y-4">
-            {filteredPhotos.map((photo, index) => (
-              <button
-                key={photo.id}
-                type="button"
-                onClick={() => openLightbox(index)}
-                className="group relative w-full break-inside-avoid overflow-hidden rounded-2xl bg-white shadow-sm transition-all duration-500 hover:-translate-y-1.5 hover:shadow-2xl block text-left border border-slate-100"
-                aria-label={`Open ${photo.title} in lightbox`}
-              >
-                <div className="relative overflow-hidden w-full">
-                  <img
-                    src={photo.image}
-                    alt={photo.alt}
-                    loading="lazy"
-                    className="w-full h-auto object-cover transform group-hover:scale-110 transition-transform duration-700 ease-in-out"
-                  />
-                  {/* Dark elegant gradient overlay on hover */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900/95 via-slate-900/40 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-                  
-                  {/* Hover Content */}
-                  <div className="absolute bottom-0 left-0 right-0 p-5 opacity-0 transition-all duration-500 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0">
-                    <span className="inline-block px-2.5 py-1 mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-teal-900 bg-teal-200/90 rounded-full backdrop-blur-sm">
-                      {photo.category}
-                    </span>
-                    <h3 className="text-lg font-bold text-white leading-snug mb-1">{photo.title}</h3>
-                    <p className="text-xs text-slate-300 line-clamp-2">{photo.description}</p>
-                  </div>
-                </div>
-              </button>
-            ))}
-          </div>
-
-          {filteredPhotos.length === 0 && (
-            <div className="text-center py-20 text-slate-500">
-              No photos found in this category.
+          {loading ? (
+            <div className="flex items-center justify-center py-20">
+              <Loader2 className="w-10 h-10 text-teal-600 animate-spin" />
             </div>
+          ) : (
+            <>
+              <div className="columns-2 md:columns-3 lg:columns-4 xl:columns-5 gap-4 space-y-4">
+                {filteredPhotos.map((photo, index) => (
+                  <button
+                    key={photo.id}
+                    type="button"
+                    onClick={() => openLightbox(index)}
+                    className="group relative w-full break-inside-avoid overflow-hidden rounded-2xl bg-white shadow-sm transition-all duration-500 hover:-translate-y-1.5 hover:shadow-2xl block text-left border border-slate-100"
+                    aria-label={`Open ${photo.title} in lightbox`}
+                  >
+                    <div className="relative overflow-hidden w-full">
+                      <img
+                        src={photo.image}
+                        alt={photo.alt}
+                        loading="lazy"
+                        className="w-full h-auto object-cover transform group-hover:scale-110 transition-transform duration-700 ease-in-out"
+                      />
+                      {/* Dark elegant gradient overlay on hover */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-900/95 via-slate-900/40 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+                      
+                      {/* Hover Content */}
+                      <div className="absolute bottom-0 left-0 right-0 p-5 opacity-0 transition-all duration-500 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0">
+                        <span className="inline-block px-2.5 py-1 mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-teal-900 bg-teal-200/90 rounded-full backdrop-blur-sm">
+                          {photo.category}
+                        </span>
+                        <h3 className="text-lg font-bold text-white leading-snug mb-1">{photo.title}</h3>
+                        <p className="text-xs text-slate-300 line-clamp-2">{photo.description}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+
+              {filteredPhotos.length === 0 && (
+                <div className="text-center py-20 text-slate-500">
+                  No photos found in this category.
+                </div>
+              )}
+            </>
           )}
         </section>
 
         {/* Fullscreen Lightbox Modal */}
-        {lightboxIndex !== null && (
+        {lightboxIndex !== null && filteredPhotos[lightboxIndex] && (
           <div className="fixed inset-0 z-[1100] flex items-center justify-center bg-black/95 backdrop-blur-md p-4 transition-opacity duration-300">
             {/* Close */}
             <button

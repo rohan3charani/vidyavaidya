@@ -1,43 +1,27 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from '../Components/Navbar';
 import Footer from '../Components/Footer';
-
-// Importing volunteer images
-import Vol1 from '../assets/Volunteers/Sk.Raffi.jpeg';
-import Vol2 from '../assets/Volunteers/B.Janaki RamiReddy.jpeg';
-import Vol3 from '../assets/Volunteers/T.Hazarathaiah.jpeg';
-import Vol4 from '../assets/Volunteers/T.Kumar.jpeg';
-import Vol5 from '../assets/Volunteers/T.Rajeswara Rao.jpeg';
-import Vol6 from '../assets/Volunteers/M.Sanjeev Reddy.jpeg';
-import Vol7 from '../assets/Volunteers/B.Venkatesh Chowdary.jpeg';
-import Vol8 from '../assets/Volunteers/Sk.Taju Tarak.jpeg';
-import Vol9 from '../assets/Volunteers/V.Anil.jpeg';
-import Vol10 from '../assets/Volunteers/P.Srinivasulu Reddy.jpeg';
-import Vol11 from '../assets/Volunteers/P.Ravi Chandra Sekhar.jpeg';
-import Vol12 from '../assets/Volunteers/M.Venu.jpeg';
-import Vol13 from '../assets/Volunteers/Sk.Hydarshaa.jpeg';
-import Vol14 from '../assets/Volunteers/Sk.Khajamohiddin.jpeg';
-import Vol15 from '../assets/Volunteers/K.Venkat Kishor.jpeg';
-
-const VOLUNTEERS = [
-  { name: "P. Srinivasulu Reddy", img: Vol10 },
-  { name: "B. Venkatesh Chowdary", img: Vol7 },
-  { name: "V. Anil", img: Vol9 },
-  { name: "Sk. Taju Tarak", img: Vol8 },
-  { name: "T. Rajeswara Rao", img: Vol5 },
-  { name: "M. Venu", img: Vol12 },
-  { name: "Sk. Hydarshaa", img: Vol13 },
-  { name: "M. Sanjeev Reddy", img: Vol6 },
-  { name: "Sk. Raffi", img: Vol1 },
-  { name: "B. Janaki RamiReddy", img: Vol2 },
-  { name: "P. Ravi Chandra Sekhar", img: Vol11 },
-  { name: "T. Kumar", img: Vol4 },
-  { name: "K. Venkat Kishor", img: Vol15 },
-  { name: "Sk. Khajamohiddin", img: Vol14 },
-  { name: "T. Hazarathaiah", img: Vol3 },
-];
+import api from '../services/api';
 
 export default function OurVolunteers() {
+  const [volunteers, setVolunteers] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchVolunteers = async () => {
+      try {
+        const data = await api.partners.list();
+        const filtered = (data || []).filter(p => p.type === "government" && p.isActive !== false);
+        setVolunteers(filtered);
+      } catch (err) {
+        console.error("Failed to fetch volunteers:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchVolunteers();
+  }, []);
+
   return (
     <div className="page-wrapper">
       <Navbar />
@@ -56,27 +40,44 @@ export default function OurVolunteers() {
 
         {/* Volunteers Grid */}
         <section className="py-20 px-6 lg:px-20 max-w-7xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8">
-            {VOLUNTEERS.map((v, i) => (
-              <div 
-                key={i} 
-                className="group flex flex-col items-center p-6 bg-white rounded-3xl shadow-sm border border-slate-100 hover:shadow-xl hover:-translate-y-2 transition-all duration-300"
-              >
-                <div className="relative w-full aspect-square mb-6 overflow-hidden rounded-2xl bg-slate-100">
-                  <img 
-                    src={v.img} 
-                    alt={v.name} 
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          {loading ? (
+            <div className="text-center py-12">
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-emerald-500 border-t-transparent"></div>
+              <p className="mt-4 text-slate-500 font-semibold">Loading volunteers...</p>
+            </div>
+          ) : volunteers.length === 0 ? (
+            <div className="text-center py-12 bg-white rounded-3xl border border-slate-100 p-8 shadow-sm max-w-md mx-auto">
+              <span className="text-5xl block mb-4">👥</span>
+              <h3 className="text-xl font-bold text-slate-800 mb-2">No Volunteers Registered</h3>
+              <p className="text-slate-500 text-sm">We are currently expanding our volunteer network. Please check back soon!</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8">
+              {volunteers.map((v, i) => (
+                <div 
+                  key={i} 
+                  className="group flex flex-col items-center p-6 bg-white rounded-3xl shadow-sm border border-slate-100 hover:shadow-xl hover:-translate-y-2 transition-all duration-300"
+                >
+                  <div className="relative w-full aspect-square mb-6 overflow-hidden rounded-2xl bg-slate-100">
+                    {v.logoUrl ? (
+                      <img 
+                        src={v.logoUrl} 
+                        alt={v.name} 
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-4xl bg-emerald-50 text-emerald-600 font-bold">👤</div>
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  </div>
+                  <h3 className="text-md font-bold text-slate-800 text-center leading-tight group-hover:text-emerald-600 transition-colors duration-300">
+                    {v.name}
+                  </h3>
+                  <span className="mt-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Volunteer</span>
                 </div>
-                <h3 className="text-md font-bold text-slate-800 text-center leading-tight group-hover:text-emerald-600 transition-colors duration-300">
-                  {v.name}
-                </h3>
-                <span className="mt-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Volunteer</span>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </section>
 
         {/* CTA Section */}
@@ -103,3 +104,4 @@ export default function OurVolunteers() {
     </div>
   );
 }
+
