@@ -295,7 +295,11 @@ const authController = {
     try {
       const uid = req.user.uid;
       if (uid && !uid.startsWith('local-')) {
-        await auth.revokeRefreshTokens(uid);
+        try {
+          await auth.revokeRefreshTokens(uid);
+        } catch (authError) {
+          console.warn(`⚠️ Failed to revoke Firebase refresh tokens during logout: ${authError.message}`);
+        }
       }
       return res.status(200).json({ success: true, message: 'Logged out and session revoked successfully' });
     } catch (error) {
@@ -333,12 +337,17 @@ const authController = {
       
       // Support demo credentials specified in AdminLogin.jsx
       if ((email === 'admin' || email === 'admin@vidyavaidya.org') && password === 'vidyavaidya@2024') {
+        const token = generateJWT({
+          uid: 'static-demo-admin-uid',
+          email: 'admin@vidyavaidya.org',
+          role: 'admin'
+        });
         return res.status(200).json({
           success: true,
           uid: 'static-demo-admin-uid',
           email: 'admin@vidyavaidya.org',
           role: 'admin',
-          token: 'demo-admin-token-bypass'
+          token
         });
       }
 

@@ -48,31 +48,50 @@ const authMiddleware = async (req, res, next) => {
     }
 
     // Fetch user details from Firestore to verify their state and roles
-    const userDoc = await db.collection('users').doc(decodedToken.uid).get();
-    if (userDoc.exists) {
-      const userData = userDoc.data();
-      if (userData.isActive === false) {
-        return res.status(403).json({ error: 'Forbidden: Your account has been disabled' });
-      }
-      
-      req.user = {
+    const admin = require('firebase-admin');
+    let userDoc = await db.collection('users').doc(decodedToken.uid).get();
+    if (!userDoc.exists) {
+      const timestamp = admin.firestore.Timestamp.fromDate(new Date());
+      const defaultProfile = {
         uid: decodedToken.uid,
-        email: decodedToken.email || userData.email,
-        phone: decodedToken.phone_number || userData.phone,
-        role: userData.role || decodedToken.role || 'donor',
-        admin: decodedToken.admin || (userData.role === 'admin'),
-        profileComplete: userData.profileComplete || false
-      };
-    } else {
-      req.user = {
-        uid: decodedToken.uid,
-        email: decodedToken.email,
-        phone: decodedToken.phone_number,
+        email: decodedToken.email || '',
+        phone: decodedToken.phone_number || '',
+        fullName: decodedToken.name || (decodedToken.email ? decodedToken.email.split('@')[0].toUpperCase() : 'VIDYA VAIDYA'),
         role: decodedToken.role || 'donor',
-        admin: decodedToken.admin || false,
-        profileComplete: false
+        isAlumni: false,
+        profileComplete: false,
+        address: {
+          line: '',
+          city: '',
+          state: '',
+          country: 'India',
+          pincode: ''
+        },
+        pan: '',
+        totalDonated: 0,
+        donationCount: 0,
+        lastLoginAt: timestamp,
+        createdAt: timestamp,
+        updatedAt: timestamp,
+        isActive: true
       };
+      await db.collection('users').doc(decodedToken.uid).set(defaultProfile);
+      userDoc = await db.collection('users').doc(decodedToken.uid).get();
     }
+
+    const userData = userDoc.data();
+    if (userData.isActive === false) {
+      return res.status(403).json({ error: 'Forbidden: Your account has been disabled' });
+    }
+    
+    req.user = {
+      uid: decodedToken.uid,
+      email: decodedToken.email || userData.email,
+      phone: decodedToken.phone_number || userData.phone,
+      role: userData.role || decodedToken.role || 'donor',
+      admin: decodedToken.admin || (userData.role === 'admin'),
+      profileComplete: userData.profileComplete || false
+    };
 
     next();
   } catch (error) {

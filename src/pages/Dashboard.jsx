@@ -61,6 +61,9 @@ export default function Dashboard() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   // Dynamic API State
   const [stats, setStats] = useState(null);
+  const [monthlyChart, setMonthlyChart] = useState([]);
+  const [monthlyFrequency, setMonthlyFrequency] = useState([]);
+  const [categoryBreakdown, setCategoryBreakdown] = useState({});
   const [donations, setDonations] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -90,10 +93,30 @@ export default function Dashboard() {
       const donationsRes = await api.user.getDonations(1, 100).catch(() => ({ donations: [] }));
 
       if (profileRes.profile) {
-        setProfile(profileRes.profile);
-        setEditProfile(profileRes.profile);
+        const backendProfile = profileRes.profile;
+        const flatProfile = {
+          ...backendProfile,
+          fullName: backendProfile.fullName || "",
+          email: backendProfile.email || "",
+          mobile: backendProfile.phone || backendProfile.mobile || "",
+          isAlumni: backendProfile.isAlumni || false,
+          alumniId: backendProfile.alumniId || "",
+          gradYear: backendProfile.yearOfGraduation || backendProfile.gradYear || "",
+          address: (backendProfile.address && typeof backendProfile.address === 'object') ? (backendProfile.address.line || "") : (backendProfile.address || ""),
+          city: (backendProfile.address && typeof backendProfile.address === 'object') ? (backendProfile.address.city || "") : (backendProfile.city || ""),
+          state: (backendProfile.address && typeof backendProfile.address === 'object') ? (backendProfile.address.state || "") : (backendProfile.state || ""),
+          country: (backendProfile.address && typeof backendProfile.address === 'object') ? (backendProfile.address.country || "India") : (backendProfile.country || "India"),
+          pincode: (backendProfile.address && typeof backendProfile.address === 'object') ? (backendProfile.address.pincode || "") : (backendProfile.pincode || ""),
+          pan: backendProfile.pan || ""
+        };
+        setProfile(flatProfile);
+        setEditProfile(flatProfile);
+        localStorage.setItem("vv_user_profile", JSON.stringify(flatProfile));
       }
       setStats(statsRes.stats);
+      setMonthlyChart(statsRes.monthlyChart || []);
+      setMonthlyFrequency(statsRes.monthlyFrequency || []);
+      setCategoryBreakdown(statsRes.categoryBreakdown || {});
       setDonations(donationsRes.donations || []);
       setError(null);
     } catch (err) {
@@ -126,9 +149,31 @@ export default function Dashboard() {
   const handleSaveProfile = async (e) => {
     e.preventDefault();
     try {
-      await api.user.updateProfile(editProfile);
-      setProfile(editProfile);
-      localStorage.setItem("vv_user_profile", JSON.stringify(editProfile));
+      const response = await api.user.updateProfile(editProfile);
+      if (response.success && response.profile) {
+        const backendProfile = response.profile;
+        const flatProfile = {
+          ...backendProfile,
+          fullName: backendProfile.fullName || "",
+          email: backendProfile.email || "",
+          mobile: backendProfile.phone || backendProfile.mobile || "",
+          isAlumni: backendProfile.isAlumni || false,
+          alumniId: backendProfile.alumniId || "",
+          gradYear: backendProfile.yearOfGraduation || backendProfile.gradYear || "",
+          address: (backendProfile.address && typeof backendProfile.address === 'object') ? (backendProfile.address.line || "") : (backendProfile.address || ""),
+          city: (backendProfile.address && typeof backendProfile.address === 'object') ? (backendProfile.address.city || "") : (backendProfile.city || ""),
+          state: (backendProfile.address && typeof backendProfile.address === 'object') ? (backendProfile.address.state || "") : (backendProfile.state || ""),
+          country: (backendProfile.address && typeof backendProfile.address === 'object') ? (backendProfile.address.country || "India") : (backendProfile.country || "India"),
+          pincode: (backendProfile.address && typeof backendProfile.address === 'object') ? (backendProfile.address.pincode || "") : (backendProfile.pincode || ""),
+          pan: backendProfile.pan || ""
+        };
+        setProfile(flatProfile);
+        setEditProfile(flatProfile);
+        localStorage.setItem("vv_user_profile", JSON.stringify(flatProfile));
+      } else {
+        setProfile(editProfile);
+        localStorage.setItem("vv_user_profile", JSON.stringify(editProfile));
+      }
       setIsEditing(false);
       setShowSaveSuccess(true);
       setTimeout(() => setShowSaveSuccess(false), 3000);
@@ -384,9 +429,21 @@ export default function Dashboard() {
                 {filteredDonations.length > 0 ? (
                   <div className="table-rows">
                     {filteredDonations.map((donation) => {
-                      const donationDate = donation.createdAt 
-                        ? new Date(donation.createdAt).toLocaleDateString()
-                        : new Date().toLocaleDateString();
+                      let dateObj = new Date();
+                      if (donation.createdAt) {
+                        if (donation.createdAt._seconds) {
+                          dateObj = new Date(donation.createdAt._seconds * 1000);
+                        } else if (donation.createdAt.seconds) {
+                          dateObj = new Date(donation.createdAt.seconds * 1000);
+                        } else if (typeof donation.createdAt === 'string' || typeof donation.createdAt === 'number') {
+                          dateObj = new Date(donation.createdAt);
+                        }
+                      }
+                      const donationDate = dateObj.toLocaleDateString('en-IN', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                      });
 
                       return (
                         <div className="table-row" key={donation.id}>
@@ -397,7 +454,7 @@ export default function Dashboard() {
                           <span>{donation.isRecurring ? "Recurring" : "One-time"}</span>
                           <span className={`status-badge ${donation.status?.toLowerCase() || 'pending'}`}>
                             {donation.status}
-                            {donation.status === "successful" && (
+                            {donation.status?.toLowerCase() === "successful" && (
                               <button
                                 type="button"
                                 className="receipt-download-btn"
@@ -440,7 +497,29 @@ export default function Dashboard() {
                   <IndianRupee size={16} />
                 </span>
               </div>
-              <div className="empty-center">No data yet</div>
+              {monthlyChart && monthlyChart.length > 0 ? (
+                <div className="monthly-chart-container">
+                  {monthlyChart.map((item, idx) => {
+                    const maxAmount = Math.max(...monthlyChart.map(m => m.amount), 1);
+                    const percentage = (item.amount / maxAmount) * 100;
+                    return (
+                      <div className="monthly-bar-row" key={idx}>
+                        <span className="monthly-bar-label">{item.month}</span>
+                        <div className="monthly-bar-track">
+                          <div 
+                            className="monthly-bar-fill" 
+                            style={{ width: `${percentage}%` }}
+                          >
+                            <span className="monthly-bar-val">₹{item.amount}</span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="empty-center">No data yet</div>
+              )}
             </section>
 
             <section className="bottom-grid">
@@ -448,13 +527,34 @@ export default function Dashboard() {
                 <div className="panel-heading-row">
                   <div>
                     <h3>Payment Frequency</h3>
-                    <p>Payments per month - amount shown above each dot</p>
+                    <p>Payments per month - count shown above each bar</p>
                   </div>
                   <span className="panel-icon">
                     <TrendingUp size={15} />
                   </span>
                 </div>
-                <div className="empty-center">No trend data yet</div>
+                {monthlyFrequency && monthlyFrequency.length > 0 ? (
+                  <div className="frequency-chart-container">
+                    {monthlyFrequency.map((item, idx) => {
+                      const maxCount = Math.max(...monthlyFrequency.map(f => f.count), 1);
+                      const heightPercent = (item.count / maxCount) * 100;
+                      return (
+                        <div className="frequency-bar-col" key={idx}>
+                          <div className="frequency-bar-value">{item.count}</div>
+                          <div className="frequency-bar-track">
+                            <div 
+                              className="frequency-bar-fill" 
+                              style={{ height: `${heightPercent}%` }}
+                            />
+                          </div>
+                          <div className="frequency-bar-label">{item.month}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="empty-center">No trend data yet</div>
+                )}
               </article>
 
               <article className="panel">
@@ -478,7 +578,7 @@ export default function Dashboard() {
                   <div>
                     <span className="dot pending" />
                     Pending
-                    <strong>{donations.filter(d => d.status?.toLowerCase() === 'pending').length}</strong>
+                    <strong>{stats?.pendingCount || 0}</strong>
                   </div>
                 </div>
               </article>

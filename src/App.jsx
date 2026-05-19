@@ -2,7 +2,7 @@ import Hero, { WhatWeDo, CTABanner, TeamMembers, SimpleTestimonials } from "./Co
 import Navbar from "./Components/Navbar";
 import About from "./Components/About";
 import Footer from "./Components/Footer";
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import Loader from "./Components/Loader";
 import AuthPage from "./pages/AuthPage";
@@ -52,6 +52,15 @@ function LandingPage() {
 
 export default function App() {
   const [loading, setLoading] = useState(true);
+  const location = useLocation();
+
+  useEffect(() => {
+    // Reset pending donor details if the user navigates away from the donation flow completely
+    if (location.pathname !== "/donate" && location.pathname !== "/payment") {
+      localStorage.removeItem("pending_donor_details");
+      sessionStorage.removeItem("draft_donor_details");
+    }
+  }, [location.pathname]);
 
   // Run the loading animation ONLY on the initial app load
   useEffect(() => {
@@ -64,9 +73,10 @@ export default function App() {
   return (
     <>
       <div 
-        className={`fixed inset-0 z-50 transition-all duration-700 pointer-events-none ${
-          loading ? "opacity-100" : "opacity-0 invisible delay-300"
+        className={`fixed inset-0 transition-all duration-700 ${
+          loading ? "opacity-100 pointer-events-auto" : "opacity-0 invisible pointer-events-none delay-300"
         }`}
+        style={{ zIndex: 99999 }}
       >
         <Loader />
       </div>
@@ -75,14 +85,7 @@ export default function App() {
       
       <Routes>
         <Route path="/" element={<LandingPage />} />
-        <Route
-          path="/donate"
-          element={
-            <ProtectedRoute>
-              <Donate />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/donate" element={<Donate />} />
         <Route path="/auth" element={<AuthPage />} />
         <Route path="/otp" element={<OtpPage />} />
         <Route
@@ -93,14 +96,7 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-        <Route
-          path="/payment"
-          element={
-            <ProtectedRoute>
-              <Payment />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/payment" element={<Payment />} />
         
         <Route path="/mission" element={<OurMission />} />
         <Route path="/partners" element={<Partners />} />

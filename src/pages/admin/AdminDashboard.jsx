@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, IndianRupee, Users, FileText, TrendingUp,
@@ -8,69 +8,11 @@ import {
   Clock, ShieldCheck, Menu, X, Bell, BarChart3,
   UserCheck, Wallet, Calendar
 } from "lucide-react";
+import api from "../../services/api";
 import "./AdminDashboard.css";
 
 /* ══════════════════════════════════════════════
-   MOCK DATA
-══════════════════════════════════════════════ */
-const MOCK_DONATIONS = [
-  { id: "DON-001", donor: "Priya Sharma",    email: "priya@gmail.com",   phone: "9876543210", amount: 5000,  category: "Education",   type: "One-time",  status: "Successful", date: "2024-04-10", city: "Mumbai" },
-  { id: "DON-002", donor: "Rahul Mehta",     email: "rahul@gmail.com",   phone: "9812345678", amount: 1000,  category: "Healthcare",  type: "Monthly",   status: "Successful", date: "2024-04-09", city: "Pune" },
-  { id: "DON-003", donor: "Sunita Patel",    email: "sunita@yahoo.com",  phone: "9011234567", amount: 30400,  category: "Community",   type: "One-time",  status: "Pending",    date: "2024-04-08", city: "Ahmedabad" },
-  { id: "DON-004", donor: "Arjun Nair",      email: "arjun@gmail.com",   phone: "9988776655", amount: 1056000, category: "Education",   type: "One-time",  status: "Successful", date: "2024-04-08", city: "Kochi" },
-  { id: "DON-005", donor: "Meera Iyer",      email: "meera@hotmail.com", phone: "9123456780", amount: 500,   category: "Community",   type: "Monthly",   status: "Failed",     date: "2024-04-07", city: "Chennai" },
-  { id: "DON-006", donor: "Vikram Singh",    email: "vikram@gmail.com",  phone: "9765432100", amount: 7000,  category: "Healthcare",  type: "One-time",  status: "Successful", date: "2024-04-06", city: "Delhi" },
-  { id: "DON-007", donor: "Ananya Roy",      email: "ananya@gmail.com",  phone: "9654321098", amount: 2000,  category: "Education",   type: "Monthly",   status: "Successful", date: "2024-04-05", city: "Kolkata" },
-  { id: "DON-008", donor: "Kiran Reddy",     email: "kiran@gmail.com",   phone: "9543210987", amount: 15000, category: "Healthcare",  type: "One-time",  status: "Successful", date: "2024-04-05", city: "Hyderabad" },
-  { id: "DON-009", donor: "Pooja Joshi",     email: "pooja@gmail.com",   phone: "9432109876", amount: 300,   category: "Community",   type: "Monthly",   status: "Pending",    date: "2024-04-04", city: "Jaipur" },
-  { id: "DON-010", donor: "Suresh Kumar",    email: "suresh@yahoo.com",  phone: "9321098765", amount: 5000,  category: "Education",   type: "One-time",  status: "Successful", date: "2024-04-03", city: "Bengaluru" },
-  { id: "DON-011", donor: "Deepa Nambiar",   email: "deepa@gmail.com",   phone: "9210987654", amount: 1000,  category: "Healthcare",  type: "Monthly",   status: "Successful", date: "2024-04-02", city: "Thiruvananthapuram" },
-  { id: "DON-012", donor: "Amit Verma",      email: "amit@gmail.com",    phone: "9109876543", amount: 2500,  category: "Education",   type: "One-time",  status: "Failed",     date: "2024-04-01", city: "Lucknow" },
-  { id: "DON-013", donor: "Neha Gupta",      email: "neha@gmail.com",    phone: "9876501234", amount: 3000,  category: "Community",   type: "One-time",  status: "Successful", date: "2024-03-31", city: "Noida" },
-  { id: "DON-014", donor: "Ravi Shankar",    email: "ravi@hotmail.com",  phone: "9765012345", amount: 5000,  category: "Healthcare",  type: "Monthly",   status: "Successful", date: "2024-03-30", city: "Nagpur" },
-  { id: "DON-015", donor: "Divya Krishnan",  email: "divya@gmail.com",   phone: "9654012345", amount: 7500,  category: "Education",   type: "One-time",  status: "Successful", date: "2024-03-28", city: "Coimbatore" },
-];
-
-const MOCK_USERS = [
-  { id: "USR-001", name: "Priya Sharma",    email: "priya@gmail.com",   phone: "9876543210", joined: "2024-03-01", lastLogin: "2024-04-10", status: "Active",   donations: 1, totalDonated: 5000 },
-  { id: "USR-002", name: "Rahul Mehta",     email: "rahul@gmail.com",   phone: "9812345678", joined: "2024-02-15", lastLogin: "2024-04-09", status: "Active",   donations: 2, totalDonated: 2000 },
-  { id: "USR-003", name: "Sunita Patel",    email: "sunita@yahoo.com",  phone: "9011234567", joined: "2024-01-20", lastLogin: "2024-04-08", status: "Pending",  donations: 1, totalDonated: 3000 },
-  { id: "USR-004", name: "Arjun Nair",      email: "arjun@gmail.com",   phone: "9988776655", joined: "2024-03-10", lastLogin: "2024-04-08", status: "Active",   donations: 1, totalDonated: 10000 },
-  { id: "USR-005", name: "Meera Iyer",      email: "meera@hotmail.com", phone: "9123456780", joined: "2024-02-28", lastLogin: "2024-04-07", status: "Inactive", donations: 1, totalDonated: 500 },
-  { id: "USR-006", name: "Vikram Singh",    email: "vikram@gmail.com",  phone: "9765432100", joined: "2024-01-05", lastLogin: "2024-04-06", status: "Active",   donations: 1, totalDonated: 7000 },
-  { id: "USR-007", name: "Ananya Roy",      email: "ananya@gmail.com",  phone: "9654321098", joined: "2024-03-22", lastLogin: "2024-04-05", status: "Active",   donations: 2, totalDonated: 4000 },
-  { id: "USR-008", name: "Kiran Reddy",     email: "kiran@gmail.com",   phone: "9543210987", joined: "2024-02-10", lastLogin: "2024-04-05", status: "Active",   donations: 1, totalDonated: 15000 },
-  { id: "USR-009", name: "Pooja Joshi",     email: "pooja@gmail.com",   phone: "9432109876", joined: "2024-03-18", lastLogin: "2024-04-04", status: "Pending",  donations: 1, totalDonated: 600 },
-  { id: "USR-010", name: "Suresh Kumar",    email: "suresh@yahoo.com",  phone: "9321098765", joined: "2024-01-30", lastLogin: "2024-04-03", status: "Active",   donations: 1, totalDonated: 5000 },
-  { id: "USR-011", name: "Deepa Nambiar",   email: "deepa@gmail.com",   phone: "9210987654", joined: "2024-02-05", lastLogin: "2024-04-02", status: "Active",   donations: 1, totalDonated: 1000 },
-  { id: "USR-012", name: "Amit Verma",      email: "amit@gmail.com",    phone: "9109876543", joined: "2024-03-25", lastLogin: "2024-04-01", status: "Inactive", donations: 1, totalDonated: 2500 },
-];
-
-const MONTHLY_DATA = [
-  { month: "Nov", amount: 12000 },
-  { month: "Dec", amount: 28000 },
-  { month: "Jan", amount: 45000 },
-  { month: "Feb", amount: 38000 },
-  { month: "Mar", amount: 62000 },
-  { month: "Apr", amount: 71500 },
-];
-
-const CATEGORY_BREAKDOWN = [
-  { label: "Education",  amount: 37500, color: "#1abc9c", pct: 52 },
-  { label: "Healthcare", amount: 24000, color: "#0b3c5d", pct: 33 },
-  { label: "Community",  amount: 10800, color: "#48c9b0", pct: 15 },
-];
-
-const NAV_ITEMS = [
-  { id: "overview",       label: "Overview",        icon: LayoutDashboard },
-  { id: "donations",      label: "All Donations",   icon: Heart },
-  { id: "users",          label: "User Logins",     icon: Users },
-  { id: "user-donations", label: "User Donations",  icon: Wallet },
-  { id: "analytics",      label: "Analytics",       icon: BarChart3 },
-];
-
-/* ══════════════════════════════════════════════
-   HELPERS
+   HELPERS & STYLED BADGES
 ══════════════════════════════════════════════ */
 const fmt = (n) => `₹${Number(n).toLocaleString("en-IN")}`;
 
@@ -89,17 +31,77 @@ function StatusBadge({ status }) {
    OVERVIEW SECTION
 ══════════════════════════════════════════════ */
 function Overview() {
-  const totalRaised = MOCK_DONATIONS.filter(d => d.status === "Successful").reduce((s, d) => s + d.amount, 0);
-  const totalDonors  = MOCK_USERS.length;
-  const successCount = MOCK_DONATIONS.filter(d => d.status === "Successful").length;
-  const pendingCount = MOCK_DONATIONS.filter(d => d.status === "Pending").length;
-  const maxBar = Math.max(...MONTHLY_DATA.map(m => m.amount));
+  const [data, setData] = useState(null);
+  const [recentDonations, setRecentDonations] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    let active = true;
+    async function load() {
+      try {
+        setLoading(true);
+        const [overviewRes, donationsRes] = await Promise.all([
+          api.admin.getOverview(),
+          api.admin.getDonations(1, 5)
+        ]);
+        if (active) {
+          setData(overviewRes);
+          setRecentDonations(donationsRes.donations || []);
+          setError(null);
+        }
+      } catch (err) {
+        if (active) setError(err.message || "Failed to load overview data");
+      } finally {
+        if (active) setLoading(false);
+      }
+    }
+    load();
+    return () => { active = false; };
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="adm-section adm-loading">
+        <div className="adm-spinner" />
+        <p>Loading overview analytics...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="adm-section adm-error">
+        <div className="adm-error-alert">
+          <strong>Error:</strong> {error}
+        </div>
+      </div>
+    );
+  }
+
+  const stats = data?.stats || {};
+  const totalRaised = stats.totalRaised || 0;
+  const totalDonors = stats.totalDonors || 0;
+  const successCount = stats.successfulDonations || 0;
+  const pendingCount = stats.pendingDonations || 0;
+  const monthlyGrowth = stats.monthlyGrowth || 12.5;
+
+  const revenueTrend = data?.revenueTrend || [];
+  const maxBar = Math.max(...revenueTrend.map(r => r.amount), 1);
 
   const kpis = [
-    { label: "Total Funds Raised",  value: fmt(totalRaised), sub: `${successCount} successful donations`, trend: "+18%", up: true, icon: IndianRupee, color: "#1abc9c" },
+    { label: "Total Funds Raised",  value: fmt(totalRaised), sub: `${successCount} successful donations`, trend: `+${monthlyGrowth}%`, up: true, icon: IndianRupee, color: "#1abc9c" },
     { label: "Registered Users",    value: totalDonors,      sub: "All time registrations",              trend: "+12%", up: true, icon: Users,       color: "#0b3c5d" },
     { label: "Pending Approvals",   value: pendingCount,     sub: "Awaiting verification",               trend: "-3",   up: false, icon: Clock,       color: "#f39c12" },
     { label: "Lives Impacted",      value: "15,000+",        sub: "Across education & health",           trend: "+5%",  up: true, icon: Heart,       color: "#e74c3c" },
+  ];
+
+  const catBreakdown = data?.categoryBreakdown || { Education: 0, Healthcare: 0, Community: 0 };
+  const totalCategoryAmount = Object.values(catBreakdown).reduce((s, v) => s + v, 0) || 1;
+  const categories = [
+    { label: "Education",  amount: catBreakdown.Education || 0, color: "#1abc9c", pct: Math.round(((catBreakdown.Education || 0) / totalCategoryAmount) * 100) },
+    { label: "Healthcare", amount: catBreakdown.Healthcare || 0, color: "#0b3c5d", pct: Math.round(((catBreakdown.Healthcare || 0) / totalCategoryAmount) * 100) },
+    { label: "Community",  amount: catBreakdown.Community || 0, color: "#48c9b0", pct: Math.round(((catBreakdown.Community || 0) / totalCategoryAmount) * 100) },
   ];
 
   return (
@@ -138,20 +140,26 @@ function Overview() {
         <div className="adm-panel adm-chart-panel">
           <div className="adm-panel-title">
             <TrendingUp size={16} />
-            Monthly Donations (₹)
+            Recent Revenue Trend (7 Days)
           </div>
-          <div className="adm-bar-chart">
-            {MONTHLY_DATA.map((m) => (
-              <div className="adm-bar-col" key={m.month}>
-                <span className="adm-bar-val">{fmt(m.amount)}</span>
-                <div
-                  className="adm-bar"
-                  style={{ height: `${(m.amount / maxBar) * 100}%` }}
-                />
-                <span className="adm-bar-label">{m.month}</span>
-              </div>
-            ))}
-          </div>
+          {revenueTrend.length > 0 ? (
+            <div className="adm-bar-chart">
+              {revenueTrend.map((m) => (
+                <div className="adm-bar-col" key={m.date}>
+                  <span className="adm-bar-val">{fmt(m.amount)}</span>
+                  <div
+                    className="adm-bar"
+                    style={{ height: `${(m.amount / maxBar) * 100}%` }}
+                  />
+                  <span className="adm-bar-label">{m.date}</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="adm-empty-chart" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px', color: '#888' }}>
+              No recent trend data found
+            </div>
+          )}
         </div>
 
         {/* Category breakdown */}
@@ -161,7 +169,7 @@ function Overview() {
             Donation Categories
           </div>
           <div className="adm-cat-list">
-            {CATEGORY_BREAKDOWN.map((c) => (
+            {categories.map((c) => (
               <div className="adm-cat-row" key={c.label}>
                 <div className="adm-cat-info">
                   <span className="adm-cat-dot" style={{ background: c.color }} />
@@ -180,15 +188,15 @@ function Overview() {
           <div className="adm-quick-stats">
             <div className="adm-qs">
               <CheckCircle2 size={14} color="#1abc9c" />
-              <span>{MOCK_DONATIONS.filter(d => d.status === "Successful").length} Successful</span>
+              <span>{successCount} Successful</span>
             </div>
             <div className="adm-qs">
               <XCircle size={14} color="#e74c3c" />
-              <span>{MOCK_DONATIONS.filter(d => d.status === "Failed").length} Failed</span>
+              <span>{stats.failedDonations || 0} Failed</span>
             </div>
             <div className="adm-qs">
               <Clock size={14} color="#f39c12" />
-              <span>{MOCK_DONATIONS.filter(d => d.status === "Pending").length} Pending</span>
+              <span>{pendingCount} Pending</span>
             </div>
           </div>
         </div>
@@ -212,23 +220,41 @@ function Overview() {
               </tr>
             </thead>
             <tbody>
-              {MOCK_DONATIONS.slice(0, 5).map(d => (
-                <tr key={d.id}>
-                  <td>
-                    <div className="adm-donor-cell">
-                      <div className="adm-avatar-sm">{d.donor[0]}</div>
-                      <div>
-                        <div className="adm-donor-name">{d.donor}</div>
-                        <div className="adm-donor-email">{d.email}</div>
-                      </div>
-                    </div>
+              {recentDonations.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="adm-empty-row" style={{ textAlign: 'center', padding: '20px', color: '#888' }}>
+                    No donations found
                   </td>
-                  <td><strong className="adm-amount">{fmt(d.amount)}</strong></td>
-                  <td><span className="adm-cat-chip">{d.category}</span></td>
-                  <td className="adm-muted">{d.date}</td>
-                  <td><StatusBadge status={d.status} /></td>
                 </tr>
-              ))}
+              ) : (
+                recentDonations.map(d => {
+                  let dateStr = "N/A";
+                  if (d.createdAt) {
+                    const dateObj = new Date(d.createdAt._seconds ? d.createdAt._seconds * 1000 : (d.createdAt.seconds ? d.createdAt.seconds * 1000 : d.createdAt));
+                    dateStr = dateObj.toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' });
+                  }
+                  const displayStatus = d.status ? (d.status.charAt(0).toUpperCase() + d.status.slice(1)) : "Pending";
+                  return (
+                    <tr key={d.id}>
+                      <td>
+                        <div className="adm-donor-cell">
+                          <div className="adm-avatar-sm">{(d.donorName || "D")[0]}</div>
+                          <div>
+                            <div className="adm-donor-name">{d.donorName || "Anonymous"}</div>
+                            <div className="adm-donor-email">{d.donorEmail || "N/A"}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td><strong className="adm-amount">{fmt(d.amount)}</strong></td>
+                      <td><span className="adm-cat-chip">{d.category || "General"}</span></td>
+                      <td className="adm-muted">{dateStr}</td>
+                      <td>
+                        <StatusBadge status={displayStatus} />
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>
@@ -246,22 +272,49 @@ function AllDonations() {
   const [typeFilter, setTypeFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
   const [page, setPage] = useState(1);
+  const [donations, setDonations] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [overviewStats, setOverviewStats] = useState(null);
   const PER_PAGE = 8;
 
-  const filtered = useMemo(() => {
-    return MOCK_DONATIONS.filter(d => {
-      const q = search.toLowerCase();
-      const matchQ = !q || d.donor.toLowerCase().includes(q) || d.id.toLowerCase().includes(q) || d.email.toLowerCase().includes(q);
-      const matchCat = catFilter === "All" || d.category === catFilter;
-      const matchType = typeFilter === "All" || d.type === typeFilter;
-      const matchStatus = statusFilter === "All" || d.status === statusFilter;
-      return matchQ && matchCat && matchType && matchStatus;
-    });
-  }, [search, catFilter, typeFilter, statusFilter]);
+  useEffect(() => {
+    let active = true;
+    async function load() {
+      try {
+        setLoading(true);
+        const filters = {};
+        if (search.trim()) filters.search = search.trim();
+        if (catFilter !== "All") filters.category = catFilter;
+        if (typeFilter !== "All") {
+          filters.type = typeFilter === "One-time" ? "one-time" : "monthly";
+        }
+        if (statusFilter !== "All") {
+          filters.status = statusFilter.toLowerCase();
+        }
 
-  const totalPages = Math.ceil(filtered.length / PER_PAGE);
-  const paged = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
-  const totalAmount = filtered.filter(d => d.status === "Successful").reduce((s, d) => s + d.amount, 0);
+        const res = await api.admin.getDonations(page, PER_PAGE, filters);
+        if (active) {
+          setDonations(res.donations || []);
+          setTotal(res.total || 0);
+          setError(null);
+        }
+      } catch (err) {
+        if (active) setError(err.message || "Failed to load donations");
+      } finally {
+        if (active) setLoading(false);
+      }
+    }
+    load();
+    return () => { active = false; };
+  }, [search, catFilter, typeFilter, statusFilter, page]);
+
+  useEffect(() => {
+    api.admin.getOverview().then(res => setOverviewStats(res.stats)).catch(() => {});
+  }, []);
+
+  const totalPages = Math.ceil(total / PER_PAGE);
 
   return (
     <div className="adm-section">
@@ -274,19 +327,19 @@ function AllDonations() {
       <div className="adm-summary-strip">
         <div className="adm-ss-item">
           <span className="adm-ss-label">Filtered Results</span>
-          <span className="adm-ss-value">{filtered.length}</span>
+          <span className="adm-ss-value">{total}</span>
         </div>
         <div className="adm-ss-item">
           <span className="adm-ss-label">Total Amount</span>
-          <span className="adm-ss-value adm-green">{fmt(totalAmount)}</span>
+          <span className="adm-ss-value adm-green">{fmt(overviewStats?.totalRaised || 0)}</span>
         </div>
         <div className="adm-ss-item">
           <span className="adm-ss-label">Successful</span>
-          <span className="adm-ss-value">{filtered.filter(d => d.status === "Successful").length}</span>
+          <span className="adm-ss-value">{overviewStats?.successfulDonations || 0}</span>
         </div>
         <div className="adm-ss-item">
           <span className="adm-ss-label">Pending</span>
-          <span className="adm-ss-value adm-orange">{filtered.filter(d => d.status === "Pending").length}</span>
+          <span className="adm-ss-value adm-orange">{overviewStats?.pendingDonations || 0}</span>
         </div>
       </div>
 
@@ -323,55 +376,73 @@ function AllDonations() {
 
       {/* Table */}
       <div className="adm-panel">
-        <div className="adm-table-wrap">
-          <table className="adm-table">
-            <thead>
-              <tr>
-                <th>Donation ID</th>
-                <th>Donor</th>
-                <th>Amount</th>
-                <th>Category</th>
-                <th>Type</th>
-                <th>City</th>
-                <th>Date</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {paged.length === 0 ? (
-                <tr><td colSpan={8} className="adm-empty-row">No donations match your filters</td></tr>
-              ) : paged.map(d => (
-                <tr key={d.id}>
-                  <td><code className="adm-id">{d.id}</code></td>
-                  <td>
-                    <div className="adm-donor-cell">
-                      <div className="adm-avatar-sm">{d.donor[0]}</div>
-                      <div>
-                        <div className="adm-donor-name">{d.donor}</div>
-                        <div className="adm-donor-email">{d.email}</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td><strong className="adm-amount">{fmt(d.amount)}</strong></td>
-                  <td><span className="adm-cat-chip">{d.category}</span></td>
-                  <td><span className="adm-type-chip">{d.type}</span></td>
-                  <td className="adm-muted">{d.city}</td>
-                  <td className="adm-muted">{d.date}</td>
-                  <td><StatusBadge status={d.status} /></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="adm-pagination">
-            <button disabled={page === 1} onClick={() => setPage(p => p - 1)}>← Prev</button>
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
-              <button key={p} className={page === p ? "adm-page-active" : ""} onClick={() => setPage(p)}>{p}</button>
-            ))}
-            <button disabled={page === totalPages} onClick={() => setPage(p => p + 1)}>Next →</button>
+        {loading ? (
+          <div className="adm-table-loading" style={{ padding: '40px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            <div className="adm-spinner" />
           </div>
+        ) : error ? (
+          <div className="adm-table-error" style={{ color: 'red', padding: '20px', textAlign: 'center' }}>{error}</div>
+        ) : (
+          <>
+            <div className="adm-table-wrap">
+              <table className="adm-table">
+                <thead>
+                  <tr>
+                    <th>Donation ID</th>
+                    <th>Donor</th>
+                    <th>Amount</th>
+                    <th>Category</th>
+                    <th>Type</th>
+                    <th>City</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {donations.length === 0 ? (
+                    <tr><td colSpan={8} className="adm-empty-row">No donations match your filters</td></tr>
+                  ) : donations.map(d => {
+                    let dateStr = "N/A";
+                    if (d.createdAt) {
+                      const dateObj = new Date(d.createdAt._seconds ? d.createdAt._seconds * 1000 : (d.createdAt.seconds ? d.createdAt.seconds * 1000 : d.createdAt));
+                      dateStr = dateObj.toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' });
+                    }
+                    const displayStatus = d.status ? (d.status.charAt(0).toUpperCase() + d.status.slice(1)) : "Pending";
+                    return (
+                      <tr key={d.id}>
+                        <td><code className="adm-id" title={d.donationId || d.id}>{(d.donationId || d.id).slice(0, 10)}...</code></td>
+                        <td>
+                          <div className="adm-donor-cell">
+                            <div className="adm-avatar-sm">{(d.donorName || "D")[0]}</div>
+                            <div>
+                              <div className="adm-donor-name">{d.donorName || "Anonymous"}</div>
+                              <div className="adm-donor-email">{d.donorEmail || "N/A"}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td><strong className="adm-amount">{fmt(d.amount)}</strong></td>
+                        <td><span className="adm-cat-chip">{d.category || "General"}</span></td>
+                        <td><span className="adm-type-chip">{d.donationType === "monthly" ? "Monthly" : "One-time"}</span></td>
+                        <td className="adm-muted">{d.city || d.donorCity || "India"}</td>
+                        <td className="adm-muted">{dateStr}</td>
+                        <td><StatusBadge status={displayStatus} /></td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="adm-pagination">
+                <button disabled={page === 1} onClick={() => setPage(p => p - 1)}>← Prev</button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
+                  <button key={p} className={page === p ? "adm-page-active" : ""} onClick={() => setPage(p)}>{p}</button>
+                ))}
+                <button disabled={page === totalPages} onClick={() => setPage(p => p + 1)}>Next →</button>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
@@ -384,15 +455,43 @@ function AllDonations() {
 function UserLogins() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const filtered = useMemo(() => {
-    return MOCK_USERS.filter(u => {
-      const q = search.toLowerCase();
-      const matchQ = !q || u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q) || u.phone.includes(q);
-      const matchStatus = statusFilter === "All" || u.status === statusFilter;
-      return matchQ && matchStatus;
-    });
+  useEffect(() => {
+    let active = true;
+    async function load() {
+      try {
+        setLoading(true);
+        const filters = {};
+        if (search.trim()) filters.search = search.trim();
+        
+        const res = await api.admin.getUsers(1, 1000, filters);
+        if (active) {
+          let list = res.users || [];
+          if (statusFilter !== "All") {
+            list = list.filter(u => {
+              const uStatus = u.isActive === true ? "Active" : (u.isActive === false ? "Inactive" : "Pending");
+              return uStatus === statusFilter;
+            });
+          }
+          setUsers(list);
+          setError(null);
+        }
+      } catch (err) {
+        if (active) setError(err.message || "Failed to load users");
+      } finally {
+        if (active) setLoading(false);
+      }
+    }
+    load();
+    return () => { active = false; };
   }, [search, statusFilter]);
+
+  const activeCount = users.filter(u => u.isActive === true).length;
+  const inactiveCount = users.filter(u => u.isActive === false).length;
+  const pendingUserCount = users.filter(u => u.isActive === undefined || u.isActive === null).length;
 
   return (
     <div className="adm-section">
@@ -405,19 +504,19 @@ function UserLogins() {
       <div className="adm-summary-strip">
         <div className="adm-ss-item">
           <span className="adm-ss-label">Total Users</span>
-          <span className="adm-ss-value">{MOCK_USERS.length}</span>
+          <span className="adm-ss-value">{users.length}</span>
         </div>
         <div className="adm-ss-item">
           <span className="adm-ss-label">Active</span>
-          <span className="adm-ss-value adm-green">{MOCK_USERS.filter(u => u.status === "Active").length}</span>
+          <span className="adm-ss-value adm-green">{activeCount}</span>
         </div>
         <div className="adm-ss-item">
           <span className="adm-ss-label">Pending</span>
-          <span className="adm-ss-value adm-orange">{MOCK_USERS.filter(u => u.status === "Pending").length}</span>
+          <span className="adm-ss-value adm-orange">{pendingUserCount}</span>
         </div>
         <div className="adm-ss-item">
           <span className="adm-ss-label">Inactive</span>
-          <span className="adm-ss-value">{MOCK_USERS.filter(u => u.status === "Inactive").length}</span>
+          <span className="adm-ss-value">{inactiveCount}</span>
         </div>
       </div>
 
@@ -441,46 +540,67 @@ function UserLogins() {
       </div>
 
       <div className="adm-panel">
-        <div className="adm-table-wrap">
-          <table className="adm-table">
-            <thead>
-              <tr>
-                <th>User ID</th>
-                <th>Name</th>
-                <th>Phone</th>
-                <th>Joined</th>
-                <th>Last Login</th>
-                <th>Donations</th>
-                <th>Total Given</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.length === 0 ? (
-                <tr><td colSpan={8} className="adm-empty-row">No users found</td></tr>
-              ) : filtered.map(u => (
-                <tr key={u.id}>
-                  <td><code className="adm-id">{u.id}</code></td>
-                  <td>
-                    <div className="adm-donor-cell">
-                      <div className="adm-avatar-sm">{u.name[0]}</div>
-                      <div>
-                        <div className="adm-donor-name">{u.name}</div>
-                        <div className="adm-donor-email">{u.email}</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="adm-muted">{u.phone}</td>
-                  <td className="adm-muted">{u.joined}</td>
-                  <td className="adm-muted">{u.lastLogin}</td>
-                  <td className="adm-center"><span className="adm-count-badge">{u.donations}</span></td>
-                  <td><strong className="adm-amount">{fmt(u.totalDonated)}</strong></td>
-                  <td><StatusBadge status={u.status} /></td>
+        {loading ? (
+          <div className="adm-table-loading" style={{ padding: '40px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            <div className="adm-spinner" />
+          </div>
+        ) : error ? (
+          <div className="adm-table-error" style={{ color: 'red', padding: '20px', textAlign: 'center' }}>{error}</div>
+        ) : (
+          <div className="adm-table-wrap">
+            <table className="adm-table">
+              <thead>
+                <tr>
+                  <th>User ID</th>
+                  <th>Name</th>
+                  <th>Phone</th>
+                  <th>Joined</th>
+                  <th>Last Login</th>
+                  <th>Donations</th>
+                  <th>Total Given</th>
+                  <th>Status</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {users.length === 0 ? (
+                  <tr><td colSpan={8} className="adm-empty-row">No users found</td></tr>
+                ) : users.map(u => {
+                  let joinedDateStr = "N/A";
+                  if (u.createdAt) {
+                    const dateObj = new Date(u.createdAt._seconds ? u.createdAt._seconds * 1000 : (u.createdAt.seconds ? u.createdAt.seconds * 1000 : u.createdAt));
+                    joinedDateStr = dateObj.toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' });
+                  }
+                  let loginDateStr = "N/A";
+                  if (u.lastLogin) {
+                    const dateObj = new Date(u.lastLogin._seconds ? u.lastLogin._seconds * 1000 : (u.lastLogin.seconds ? u.lastLogin.seconds * 1000 : u.lastLogin));
+                    loginDateStr = dateObj.toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' });
+                  }
+                  const uStatus = u.isActive === true ? "Active" : (u.isActive === false ? "Inactive" : "Pending");
+                  return (
+                    <tr key={u.id}>
+                      <td><code className="adm-id" title={u.id}>{u.id.slice(0, 8)}...</code></td>
+                      <td>
+                        <div className="adm-donor-cell">
+                          <div className="adm-avatar-sm">{(u.fullName || "U")[0]}</div>
+                          <div>
+                            <div className="adm-donor-name">{u.fullName || "User"}</div>
+                            <div className="adm-donor-email">{u.email}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="adm-muted">{u.phone || u.mobile || "N/A"}</td>
+                      <td className="adm-muted">{joinedDateStr}</td>
+                      <td className="adm-muted">{loginDateStr}</td>
+                      <td className="adm-center"><span className="adm-count-badge">{u.donationCount || 0}</span></td>
+                      <td><strong className="adm-amount">{fmt(u.totalDonated || 0)}</strong></td>
+                      <td><StatusBadge status={uStatus} /></td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -492,17 +612,56 @@ function UserLogins() {
 function UserDonations() {
   const [search, setSearch] = useState("");
   const [selectedUser, setSelectedUser] = useState(null);
+  const [users, setUsers] = useState([]);
+  const [userDonations, setUserDonations] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const filtered = useMemo(() => {
-    if (!search) return MOCK_USERS;
-    const q = search.toLowerCase();
-    return MOCK_USERS.filter(u => u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q));
-  }, [search]);
+  useEffect(() => {
+    let active = true;
+    async function load() {
+      try {
+        setLoading(true);
+        const res = await api.admin.getUsers(1, 1000);
+        if (active) {
+          setUsers(res.users || []);
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        if (active) setLoading(false);
+      }
+    }
+    load();
+    return () => { active = false; };
+  }, []);
 
-  const userDonations = useMemo(() => {
-    if (!selectedUser) return [];
-    return MOCK_DONATIONS.filter(d => d.email === selectedUser.email);
+  useEffect(() => {
+    if (!selectedUser) {
+      setUserDonations([]);
+      return;
+    }
+    let active = true;
+    async function loadUserDonations() {
+      try {
+        const res = await api.admin.getDonations(1, 100, { search: selectedUser.email });
+        if (active) {
+          setUserDonations(res.donations || []);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    loadUserDonations();
+    return () => { active = false; };
   }, [selectedUser]);
+
+  const filteredUsers = useMemo(() => {
+    const q = search.toLowerCase();
+    return users.filter(u => 
+      (u.fullName || "").toLowerCase().includes(q) || 
+      (u.email || "").toLowerCase().includes(q)
+    );
+  }, [users, search]);
 
   return (
     <div className="adm-section">
@@ -523,22 +682,28 @@ function UserDonations() {
               onChange={e => setSearch(e.target.value)}
             />
           </div>
-          <div className="adm-ud-user-list">
-            {filtered.map(u => (
-              <div
-                key={u.id}
-                className={`adm-ud-user-item ${selectedUser?.id === u.id ? "adm-ud-active" : ""}`}
-                onClick={() => setSelectedUser(u)}
-              >
-                <div className="adm-avatar-sm">{u.name[0]}</div>
-                <div className="adm-ud-user-info">
-                  <div className="adm-donor-name">{u.name}</div>
-                  <div className="adm-donor-email">{u.email}</div>
+          {loading ? (
+            <div style={{ padding: '20px', textAlign: 'center' }}>
+              <div className="adm-spinner" style={{ margin: 'auto' }} />
+            </div>
+          ) : (
+            <div className="adm-ud-user-list">
+              {filteredUsers.map(u => (
+                <div
+                  key={u.id}
+                  className={`adm-ud-user-item ${selectedUser?.id === u.id ? "adm-ud-active" : ""}`}
+                  onClick={() => setSelectedUser(u)}
+                >
+                  <div className="adm-avatar-sm">{(u.fullName || "U")[0]}</div>
+                  <div className="adm-ud-user-info">
+                    <div className="adm-donor-name">{u.fullName || "User"}</div>
+                    <div className="adm-donor-email">{u.email}</div>
+                  </div>
+                  <span className="adm-ud-total">{fmt(u.totalDonated || 0)}</span>
                 </div>
-                <span className="adm-ud-total">{fmt(u.totalDonated)}</span>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Donation Detail */}
@@ -551,20 +716,20 @@ function UserDonations() {
           ) : (
             <>
               <div className="adm-ud-detail-header">
-                <div className="adm-avatar-lg">{selectedUser.name[0]}</div>
+                <div className="adm-avatar-lg">{(selectedUser.fullName || "U")[0]}</div>
                 <div>
-                  <h3>{selectedUser.name}</h3>
-                  <p>{selectedUser.email} · {selectedUser.phone}</p>
+                  <h3>{selectedUser.fullName || "User"}</h3>
+                  <p>{selectedUser.email} · {selectedUser.phone || selectedUser.mobile || "N/A"}</p>
                   <div className="adm-ud-meta-chips">
-                    <span>Joined: {selectedUser.joined}</span>
-                    <span>Last Login: {selectedUser.lastLogin}</span>
-                    <StatusBadge status={selectedUser.status} />
+                    <span>Joined: {selectedUser.createdAt ? new Date(selectedUser.createdAt._seconds ? selectedUser.createdAt._seconds * 1000 : (selectedUser.createdAt.seconds ? selectedUser.createdAt.seconds * 1000 : selectedUser.createdAt)).toLocaleDateString('en-IN') : "N/A"}</span>
+                    <span>Last Login: {selectedUser.lastLogin ? new Date(selectedUser.lastLogin._seconds ? selectedUser.lastLogin._seconds * 1000 : (selectedUser.lastLogin.seconds ? selectedUser.lastLogin.seconds * 1000 : selectedUser.lastLogin)).toLocaleDateString('en-IN') : "N/A"}</span>
+                    <StatusBadge status={selectedUser.isActive === true ? "Active" : (selectedUser.isActive === false ? "Inactive" : "Pending")} />
                   </div>
                 </div>
                 <div className="adm-ud-total-box">
                   <div className="adm-ud-total-label">Total Donated</div>
-                  <div className="adm-ud-total-value">{fmt(selectedUser.totalDonated)}</div>
-                  <div className="adm-ud-total-sub">{selectedUser.donations} donation(s)</div>
+                  <div className="adm-ud-total-value">{fmt(selectedUser.totalDonated || 0)}</div>
+                  <div className="adm-ud-total-sub">{selectedUser.donationCount || 0} donation(s)</div>
                 </div>
               </div>
 
@@ -583,16 +748,24 @@ function UserDonations() {
                   <tbody>
                     {userDonations.length === 0 ? (
                       <tr><td colSpan={6} className="adm-empty-row">No donations found for this user</td></tr>
-                    ) : userDonations.map(d => (
-                      <tr key={d.id}>
-                        <td><code className="adm-id">{d.id}</code></td>
-                        <td><strong className="adm-amount">{fmt(d.amount)}</strong></td>
-                        <td><span className="adm-cat-chip">{d.category}</span></td>
-                        <td><span className="adm-type-chip">{d.type}</span></td>
-                        <td className="adm-muted">{d.date}</td>
-                        <td><StatusBadge status={d.status} /></td>
-                      </tr>
-                    ))}
+                    ) : userDonations.map(d => {
+                      let dateStr = "N/A";
+                      if (d.createdAt) {
+                        const dateObj = new Date(d.createdAt._seconds ? d.createdAt._seconds * 1000 : (d.createdAt.seconds ? d.createdAt.seconds * 1000 : d.createdAt));
+                        dateStr = dateObj.toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' });
+                      }
+                      const displayStatus = d.status ? (d.status.charAt(0).toUpperCase() + d.status.slice(1)) : "Pending";
+                      return (
+                        <tr key={d.id}>
+                          <td><code className="adm-id" title={d.donationId || d.id}>{(d.donationId || d.id).slice(0, 10)}...</code></td>
+                          <td><strong className="adm-amount">{fmt(d.amount)}</strong></td>
+                          <td><span className="adm-cat-chip">{d.category || "General"}</span></td>
+                          <td><span className="adm-type-chip">{d.donationType === "monthly" ? "Monthly" : "One-time"}</span></td>
+                          <td className="adm-muted">{dateStr}</td>
+                          <td><StatusBadge status={displayStatus} /></td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -608,14 +781,61 @@ function UserDonations() {
    ANALYTICS SECTION
 ══════════════════════════════════════════════ */
 function Analytics() {
-  const totalRaised = MOCK_DONATIONS.filter(d => d.status === "Successful").reduce((s, d) => s + d.amount, 0);
-  const avgDonation = Math.round(totalRaised / MOCK_DONATIONS.filter(d => d.status === "Successful").length);
-  const topDonor = [...MOCK_USERS].sort((a, b) => b.totalDonated - a.totalDonated)[0];
+  const [data, setData] = useState(null);
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    async function load() {
+      try {
+        setLoading(true);
+        const [overviewRes, usersRes] = await Promise.all([
+          api.admin.getOverview(),
+          api.admin.getUsers(1, 1000)
+        ]);
+        if (active) {
+          setData(overviewRes);
+          setUsers(usersRes.users || []);
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        if (active) setLoading(false);
+      }
+    }
+    load();
+    return () => { active = false; };
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="adm-section adm-loading">
+        <div className="adm-spinner" />
+        <p>Loading analytics data...</p>
+      </div>
+    );
+  }
+
+  const stats = data?.stats || {};
+  const totalRaised = stats.totalRaised || 0;
+  const successfulCount = stats.successfulDonations || 0;
+  const avgDonation = successfulCount ? Math.round(totalRaised / successfulCount) : 0;
+  const topDonors = [...users].sort((a, b) => (b.totalDonated || 0) - (a.totalDonated || 0)).slice(0, 8);
+  const topDonor = topDonors[0] || { fullName: "N/A", totalDonated: 0 };
+
+  const catBreakdown = data?.categoryBreakdown || { Education: 0, Healthcare: 0, Community: 0 };
+  const totalCategoryAmount = Object.values(catBreakdown).reduce((s, v) => s + v, 0) || 1;
+  const categories = [
+    { label: "Education Programs",    pct: Math.round(((catBreakdown.Education || 0) / totalCategoryAmount) * 100), color: "#1abc9c", amount: catBreakdown.Education || 0 },
+    { label: "Healthcare & Medicine",  pct: Math.round(((catBreakdown.Healthcare || 0) / totalCategoryAmount) * 100), color: "#0b3c5d", amount: catBreakdown.Healthcare || 0 },
+    { label: "Community Welfare",      pct: Math.round(((catBreakdown.Community || 0) / totalCategoryAmount) * 100), color: "#48c9b0", amount: catBreakdown.Community || 0 },
+  ];
 
   const impactMetrics = [
     { icon: BookOpen, label: "Students Supported",     value: "450+",  color: "#1abc9c", desc: "Through education sponsorships" },
     { icon: Stethoscope, label: "Medical Cases",       value: "180+",  color: "#0b3c5d", desc: "Healthcare assistance provided" },
-    { icon: Globe, label: "Cities Reached",            value: "12",    color: "#48c9b0", desc: "Across Maharashtra & India" },
+    { icon: Globe, label: "Cities Reached",            value: "12",    color: "#48c9b0", desc: "Across India & Maharashtra" },
     { icon: Heart, label: "Families Helped",           value: "620+",  color: "#e74c3c", desc: "Through community welfare" },
   ];
 
@@ -648,12 +868,7 @@ function Analytics() {
         <div className="adm-panel adm-analytics-panel">
           <div className="adm-panel-title"><TrendingUp size={16} /> Fund Utilisation</div>
           <div className="adm-util-list">
-            {[
-              { label: "Education Programs",    pct: 45, color: "#1abc9c" },
-              { label: "Healthcare & Medicine",  pct: 30, color: "#0b3c5d" },
-              { label: "Community Welfare",      pct: 15, color: "#48c9b0" },
-              { label: "Operations & Admin",     pct: 10, color: "#95a5a6" },
-            ].map(u => (
+            {categories.map(u => (
               <div className="adm-util-row" key={u.label}>
                 <div className="adm-util-info">
                   <span className="adm-cat-dot" style={{ background: u.color }} />
@@ -681,25 +896,11 @@ function Analytics() {
             </div>
             <div className="adm-stat-row">
               <span>Top Donor</span>
-              <strong>{topDonor.name}</strong>
+              <strong>{topDonor.fullName || "N/A"}</strong>
             </div>
             <div className="adm-stat-row">
               <span>Top Donation</span>
-              <strong className="adm-green">{fmt(topDonor.totalDonated)}</strong>
-            </div>
-            <div className="adm-stat-row">
-              <span>Monthly Donations</span>
-              <strong>{MOCK_DONATIONS.filter(d => d.type === "Monthly").length}</strong>
-            </div>
-            <div className="adm-stat-row">
-              <span>One-time Donations</span>
-              <strong>{MOCK_DONATIONS.filter(d => d.type === "One-time").length}</strong>
-            </div>
-            <div className="adm-stat-row">
-              <span>Success Rate</span>
-              <strong className="adm-green">
-                {Math.round((MOCK_DONATIONS.filter(d => d.status === "Successful").length / MOCK_DONATIONS.length) * 100)}%
-              </strong>
+              <strong className="adm-green">{fmt(topDonor.totalDonated || 0)}</strong>
             </div>
           </div>
         </div>
@@ -714,26 +915,29 @@ function Analytics() {
               <tr><th>Rank</th><th>Donor</th><th>City</th><th>Total Donated</th><th>Donations</th><th>Status</th></tr>
             </thead>
             <tbody>
-              {[...MOCK_USERS].sort((a, b) => b.totalDonated - a.totalDonated).slice(0, 8).map((u, i) => (
-                <tr key={u.id}>
-                  <td>
-                    <span className={`adm-rank ${i < 3 ? "adm-rank-top" : ""}`}>#{i + 1}</span>
-                  </td>
-                  <td>
-                    <div className="adm-donor-cell">
-                      <div className="adm-avatar-sm">{u.name[0]}</div>
-                      <div>
-                        <div className="adm-donor-name">{u.name}</div>
-                        <div className="adm-donor-email">{u.email}</div>
+              {topDonors.map((u, i) => {
+                const uStatus = u.isActive === true ? "Active" : (u.isActive === false ? "Inactive" : "Pending");
+                return (
+                  <tr key={u.id}>
+                    <td>
+                      <span className={`adm-rank ${i < 3 ? "adm-rank-top" : ""}`}>#{i + 1}</span>
+                    </td>
+                    <td>
+                      <div className="adm-donor-cell">
+                        <div className="adm-avatar-sm">{(u.fullName || "U")[0]}</div>
+                        <div>
+                          <div className="adm-donor-name">{u.fullName || "User"}</div>
+                          <div className="adm-donor-email">{u.email}</div>
+                        </div>
                       </div>
-                    </div>
-                  </td>
-                  <td className="adm-muted">India</td>
-                  <td><strong className="adm-amount">{fmt(u.totalDonated)}</strong></td>
-                  <td className="adm-center"><span className="adm-count-badge">{u.donations}</span></td>
-                  <td><StatusBadge status={u.status} /></td>
-                </tr>
-              ))}
+                    </td>
+                    <td className="adm-muted">{u.city || u.donorCity || "India"}</td>
+                    <td><strong className="adm-amount">{fmt(u.totalDonated || 0)}</strong></td>
+                    <td className="adm-center"><span className="adm-count-badge">{u.donationCount || 0}</span></td>
+                    <td><StatusBadge status={uStatus} /></td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -762,6 +966,14 @@ export default function AdminDashboard() {
     "user-donations": <UserDonations />,
     analytics:       <Analytics />,
   };
+
+  const NAV_ITEMS = [
+    { id: "overview",       label: "Overview",        icon: LayoutDashboard },
+    { id: "donations",      label: "All Donations",   icon: Heart },
+    { id: "users",          label: "User Logins",     icon: Users },
+    { id: "user-donations", label: "User Donations",  icon: Wallet },
+    { id: "analytics",      label: "Analytics",       icon: BarChart3 },
+  ];
 
   return (
     <div className="adm-root">
