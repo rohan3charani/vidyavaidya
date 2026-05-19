@@ -6,13 +6,12 @@ import {
   Heart, BookOpen, Stethoscope, Globe, RefreshCw,
   ArrowUpRight, ArrowDownRight, CheckCircle2, XCircle,
   Clock, ShieldCheck, Menu, X, Bell, BarChart3,
-  UserCheck, Wallet, Calendar
+  UserCheck, Wallet, Calendar, Handshake, Plus, Pencil,
+  Trash2, ToggleLeft, ToggleRight
 } from "lucide-react";
 import api from "../../services/api";
+import { PartnersSection, StoriesSection, EventsSection, SharedToast } from "./CmsComponents";
 import "./AdminDashboard.css";
-
-/* ══════════════════════════════════════════════
-   HELPERS & STYLED BADGES
 ══════════════════════════════════════════════ */
 const fmt = (n) => `₹${Number(n).toLocaleString("en-IN")}`;
 
@@ -953,6 +952,12 @@ export default function AdminDashboard() {
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState("overview");
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [toast, setToast] = useState(null);
+
+  const showToast = (message, type = "success") => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  };
 
   const handleLogout = () => {
     localStorage.removeItem("vv_admin_auth");
@@ -965,6 +970,9 @@ export default function AdminDashboard() {
     users:           <UserLogins />,
     "user-donations": <UserDonations />,
     analytics:       <Analytics />,
+    partners:        <PartnersSection showToast={showToast} />,
+    stories:         <StoriesSection showToast={showToast} />,
+    events:          <EventsSection showToast={showToast} />,
   };
 
   const NAV_ITEMS = [
@@ -973,6 +981,9 @@ export default function AdminDashboard() {
     { id: "users",          label: "User Logins",     icon: Users },
     { id: "user-donations", label: "User Donations",  icon: Wallet },
     { id: "analytics",      label: "Analytics",       icon: BarChart3 },
+    { id: "partners",       label: "Partners",        icon: Handshake },
+    { id: "stories",        label: "Stories",         icon: FileText },
+    { id: "events",         label: "Events",          icon: Calendar },
   ];
 
   return (
@@ -1043,6 +1054,8 @@ export default function AdminDashboard() {
           </div>
         </main>
       </div>
+
+      <SharedToast toast={toast} />
     </div>
   );
 }

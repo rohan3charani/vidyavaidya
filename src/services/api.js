@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 /**
  * Vidyavaidya Frontend API Integration Service
  * Bridges React components directly to the Node.js + Firebase Express backend.
@@ -346,6 +347,58 @@ const api = {
       const params = new URLSearchParams({ ...filters, token }).toString();
       return `${API_BASE_URL}/admin/export/donations?${params}`;
     }
+=======
+const API_BASE_URL = 'http://localhost:5000/api';
+
+async function apiRequest(endpoint, options = {}) {
+  const token = localStorage.getItem('vv_token');
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...options.headers,
+  };
+
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    ...options,
+    headers,
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || `Request failed with status ${response.status}`);
+  }
+
+  const contentType = response.headers.get('content-type');
+  if (contentType && contentType.includes('application/json')) {
+    return await response.json();
+  }
+  return await response.text();
+}
+
+const api = {
+  partners: {
+    list: (filters = {}) => apiRequest(`/partners?${new URLSearchParams(filters)}`),
+    getBySlug: (slug) => apiRequest(`/partners/${slug}`),
+    create: (data) => apiRequest('/partners', { method: 'POST', body: JSON.stringify(data) }),
+    update: (id, data) => apiRequest(`/partners/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+    delete: (id) => apiRequest(`/partners/${id}`, { method: 'DELETE' }),
+  },
+  stories: {
+    list: (filters = {}) => apiRequest(`/stories?${new URLSearchParams(filters)}`),
+    create: (data) => apiRequest('/stories', { method: 'POST', body: JSON.stringify(data) }),
+    update: (id, data) => apiRequest(`/stories/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+    delete: (id) => apiRequest(`/stories/${id}`, { method: 'DELETE' }),
+    getUploadUrl: (fileName, contentType) => apiRequest('/stories/gallery/upload-url', { method: 'POST', body: JSON.stringify({ fileName, contentType }) }),
+    getPhotos: () => apiRequest('/stories/gallery/photos'),
+    getVideos: () => apiRequest('/stories/gallery/videos'),
+  },
+  events: {
+    list: (filters = {}) => apiRequest(`/events?${new URLSearchParams(filters)}`),
+    create: (data) => apiRequest('/events', { method: 'POST', body: JSON.stringify(data) }),
+    update: (id, data) => apiRequest(`/events/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+    delete: (id) => apiRequest(`/events/${id}`, { method: 'DELETE' }),
+    getRegistrations: (eventId) => apiRequest(`/events/${eventId}/registrations`),
+>>>>>>> Stashed changes
   }
 };
 
