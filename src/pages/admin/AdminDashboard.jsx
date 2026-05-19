@@ -12,7 +12,7 @@ import {
 import api from "../../services/api";
 import { PartnersSection, StoriesSection, EventsSection, SharedToast } from "./CmsComponents";
 import "./AdminDashboard.css";
-══════════════════════════════════════════════ */
+
 const fmt = (n) => `₹${Number(n).toLocaleString("en-IN")}`;
 
 function StatusBadge({ status }) {
