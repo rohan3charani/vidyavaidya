@@ -16,7 +16,8 @@ import {
   Building2,
   User,
   ArrowLeft,
-  Check
+  Check,
+  Heart
 } from "lucide-react";
 import api from "../services/api";
 import "./Dashboard.css";
@@ -312,19 +313,51 @@ export default function Dashboard() {
         {currentView === "dashboard" ? (
           /* ================= DASHBOARD VIEW ================= */
           <>
-            <article className="profile-card">
-              <div className="avatar">{initial}</div>
-              <div className="profile-main">
-                <span className="greeting">{greeting}</span>
-                <h1>{profile.fullName}</h1>
-                <div className="contact-line">
-                  <span>
-                    <Mail size={14} /> {profile.email}
-                  </span>
-                  <span>
-                    <Phone size={14} /> {profile.mobile}
-                  </span>
+            <article className="profile-card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', flexWrap: 'wrap' }}>
+                <div className="avatar">{initial}</div>
+                <div className="profile-main">
+                  <span className="greeting">{greeting}</span>
+                  <h1>{profile.fullName}</h1>
+                  <div className="contact-line">
+                    <span>
+                      <Mail size={14} /> {profile.email}
+                    </span>
+                    <span>
+                      <Phone size={14} /> {profile.mobile}
+                    </span>
+                  </div>
                 </div>
+              </div>
+              <div className="profile-actions">
+                <button 
+                  onClick={() => navigate('/donate')}
+                  className="donate-action-btn"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    background: 'linear-gradient(135deg, #00A99D 0%, #007A72 100%)',
+                    color: '#fff',
+                    padding: '0.75rem 1.5rem',
+                    borderRadius: '8px',
+                    fontWeight: '600',
+                    border: 'none',
+                    cursor: 'pointer',
+                    boxShadow: '0 4px 15px rgba(0, 169, 157, 0.2)',
+                    transition: 'transform 0.2s ease, box-shadow 0.2s ease'
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.boxShadow = '0 6px 20px rgba(0, 169, 157, 0.3)';
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.transform = 'none';
+                    e.currentTarget.style.boxShadow = '0 4px 15px rgba(0, 169, 157, 0.2)';
+                  }}
+                >
+                  <Heart size={18} fill="currentColor" /> Donate Now
+                </button>
               </div>
             </article>
 
