@@ -10,6 +10,7 @@ import {
   RefreshCw,
   Search,
   TrendingUp,
+  FileText,
   LogOut,
   MapPin,
   Building2,
@@ -17,6 +18,7 @@ import {
   ArrowLeft,
   Check
 } from "lucide-react";
+import api from "../services/api";
 import "./Dashboard.css";
 
 export default function Dashboard() {
@@ -57,6 +59,11 @@ export default function Dashboard() {
   const [type, setType] = useState("All types");
   const [status, setStatus] = useState("All status");
   const [isRefreshing, setIsRefreshing] = useState(false);
+  // Dynamic API State
+  const [stats, setStats] = useState(null);
+  const [donations, setDonations] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   // Click outside listener to securely close dropdown
   useEffect(() => {
@@ -76,30 +83,107 @@ export default function Dashboard() {
     return "Good evening";
   }, []);
 
-  const handleLogout = () => {
+  const fetchDashboardData = async () => {
+    try {
+      const profileRes = await api.user.getProfile().catch(() => ({ profile: null }));
+      const statsRes = await api.user.getDashboardStats().catch(() => ({ stats: null }));
+      const donationsRes = await api.user.getDonations(1, 100).catch(() => ({ donations: [] }));
+
+      if (profileRes.profile) {
+        setProfile(profileRes.profile);
+        setEditProfile(profileRes.profile);
+      }
+      setStats(statsRes.stats);
+      setDonations(donationsRes.donations || []);
+      setError(null);
+    } catch (err) {
+      setError(err.message || "Failed to load dashboard data");
+    } finally {
+      setLoading(false);
+      setIsRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await api.auth.logout();
+    } catch (e) {}
     localStorage.removeItem("vv_auth");
+    localStorage.removeItem("vv_token");
+    localStorage.removeItem("vv_user_profile");
     navigate("/");
   };
 
   const handleRefresh = () => {
     setIsRefreshing(true);
-    // When click on refresh button it should refresh the page
-    setTimeout(() => {
-      setIsRefreshing(false);
-      window.location.reload();
-    }, 1000);
+    fetchDashboardData();
   };
 
-  const handleSaveProfile = (e) => {
+  const handleSaveProfile = async (e) => {
     e.preventDefault();
-    setProfile(editProfile);
-    localStorage.setItem("vv_user_profile", JSON.stringify(editProfile));
-    setIsEditing(false);
-    setShowSaveSuccess(true);
-    setTimeout(() => setShowSaveSuccess(false), 3000);
+    try {
+      await api.user.updateProfile(editProfile);
+      setProfile(editProfile);
+      localStorage.setItem("vv_user_profile", JSON.stringify(editProfile));
+      setIsEditing(false);
+      setShowSaveSuccess(true);
+      setTimeout(() => setShowSaveSuccess(false), 3000);
+    } catch (err) {
+      alert("Failed to update profile: " + err.message);
+    }
   };
 
-  const initial = profile.fullName.charAt(0);
+  const handleDownloadReceipt = async (donationId) => {
+    try {
+      const response = await api.user.getReceiptUrl(donationId);
+      if (response.success && response.receiptUrl) {
+        window.open(response.receiptUrl, "_blank");
+      } else {
+        alert("Receipt generation is processing. Please try again in a few moments.");
+      }
+    } catch (err) {
+      alert("Failed to retrieve tax receipt: " + err.message);
+    }
+  };
+
+  // Safe defaults if API hasn't resolved yet
+  const activeUser = {
+    name: profile?.fullName || "VIDYA VAIDYA",
+    email: profile?.email || "vidyavaidyanlr@gmail.com",
+    phone: profile?.phone || profile?.mobile || "+91 1234567890",
+  };
+
+  // Dynamic filter lists for payments
+  const filteredDonations = useMemo(() => {
+    return donations.filter((donation) => {
+      const matchesSearch =
+        donation.id?.toLowerCase().includes(search.toLowerCase()) ||
+        donation.category?.toLowerCase().includes(search.toLowerCase()) ||
+        donation.subcategory?.toLowerCase().includes(search.toLowerCase()) ||
+        donation.razorpayPaymentId?.toLowerCase().includes(search.toLowerCase());
+
+      const matchesCategory =
+        category === "All types" ||
+        donation.category?.toLowerCase() === category.toLowerCase();
+
+      const matchesType =
+        type === "All types" ||
+        (type === "Recurring" && donation.isRecurring) ||
+        (type === "One-time" && !donation.isRecurring);
+
+      const matchesStatus =
+        status === "All status" ||
+        donation.status?.toLowerCase() === status.toLowerCase();
+
+      return matchesSearch && matchesCategory && matchesType && matchesStatus;
+    });
+  }, [donations, search, category, type, status]);
+
+  const initial = activeUser.name.charAt(0);
 
   return (
     <main className="dashboard-root">
@@ -209,10 +293,10 @@ export default function Dashboard() {
                     <IndianRupee size={15} />
                   </span>
                 </div>
-                <h2>₹0</h2>
+                <h2>₹{stats?.totalDonated || 0}</h2>
                 <div className="stat-bottom">
-                  <span>0 Contributions</span>
-                  <strong>0%</strong>
+                  <span>{stats?.contributionsCount || 0} Contributions</span>
+                  <strong>100%</strong>
                 </div>
               </article>
 
@@ -221,10 +305,10 @@ export default function Dashboard() {
                   <p>FAILED</p>
                   <span className="stat-icon">✕</span>
                 </div>
-                <h2>0</h2>
+                <h2>{stats?.failedCount || 0}</h2>
                 <div className="stat-bottom">
-                  <span>of 0 Total</span>
-                  <strong>0%</strong>
+                  <span>of {donations.length} Total</span>
+                  <strong>{donations.length ? Math.round(((stats?.failedCount || 0) / donations.length) * 100) : 0}%</strong>
                 </div>
               </article>
 
@@ -235,10 +319,10 @@ export default function Dashboard() {
                     <RefreshCw size={14} />
                   </span>
                 </div>
-                <h2>0</h2>
+                <h2>{stats?.recurringCount || 0}</h2>
                 <div className="stat-bottom">
                   <span>Monthly</span>
-                  <strong>0%</strong>
+                  <strong>{donations.length ? Math.round(((stats?.recurringCount || 0) / donations.length) * 100) : 0}%</strong>
                 </div>
               </article>
 
@@ -247,10 +331,10 @@ export default function Dashboard() {
                   <p>ONE-TIME</p>
                   <span className="stat-icon">⚡</span>
                 </div>
-                <h2>0</h2>
+                <h2>{stats?.oneTimeCount || 0}</h2>
                 <div className="stat-bottom">
                   <span>One-time</span>
-                  <strong>0%</strong>
+                  <strong>{donations.length ? Math.round(((stats?.oneTimeCount || 0) / donations.length) * 100) : 0}%</strong>
                 </div>
               </article>
             </section>
@@ -258,7 +342,7 @@ export default function Dashboard() {
             <section className="panel transactions-panel">
               <div className="panel-head">
                 <h3>All Transactions</h3>
-                <span className="count-pill">0</span>
+                <span className="count-pill">{filteredDonations.length}</span>
               </div>
               <div className="filters-row">
                 <div className="search-wrap">
@@ -297,10 +381,52 @@ export default function Dashboard() {
                   <span>Type</span>
                   <span>Status</span>
                 </div>
-                <div className="table-empty">
-                  <CalendarDays size={18} />
-                  <p>No transactions found</p>
-                </div>
+                {filteredDonations.length > 0 ? (
+                  <div className="table-rows">
+                    {filteredDonations.map((donation) => {
+                      const donationDate = donation.createdAt 
+                        ? new Date(donation.createdAt).toLocaleDateString()
+                        : new Date().toLocaleDateString();
+
+                      return (
+                        <div className="table-row" key={donation.id}>
+                          <span>{donationDate}</span>
+                          <span className="tx-id" title={donation.id}>{donation.id}</span>
+                          <span className="amount-cell">₹{donation.amount}</span>
+                          <span>{donation.category || "General"}</span>
+                          <span>{donation.isRecurring ? "Recurring" : "One-time"}</span>
+                          <span className={`status-badge ${donation.status?.toLowerCase() || 'pending'}`}>
+                            {donation.status}
+                            {donation.status === "successful" && (
+                              <button
+                                type="button"
+                                className="receipt-download-btn"
+                                title="Download Tax Receipt"
+                                onClick={() => handleDownloadReceipt(donation.id)}
+                                style={{
+                                  marginLeft: '6px',
+                                  background: 'transparent',
+                                  border: 'none',
+                                  color: '#1abc9c',
+                                  cursor: 'pointer',
+                                  display: 'inline-flex',
+                                  verticalAlign: 'middle'
+                                }}
+                              >
+                                <FileText size={13} />
+                              </button>
+                            )}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="table-empty">
+                    <CalendarDays size={18} />
+                    <p>No transactions found</p>
+                  </div>
+                )}
               </div>
             </section>
 
@@ -342,17 +468,17 @@ export default function Dashboard() {
                   <div>
                     <span className="dot success" />
                     Successful
-                    <strong>0</strong>
+                    <strong>{stats?.contributionsCount || 0}</strong>
                   </div>
                   <div>
                     <span className="dot failed" />
                     Failed
-                    <strong>0</strong>
+                    <strong>{stats?.failedCount || 0}</strong>
                   </div>
                   <div>
                     <span className="dot pending" />
                     Pending
-                    <strong>0</strong>
+                    <strong>{donations.filter(d => d.status?.toLowerCase() === 'pending').length}</strong>
                   </div>
                 </div>
               </article>
@@ -386,11 +512,11 @@ export default function Dashboard() {
               <div className="profile-summary-side">
                 <div className="profile-summary-avatar-card">
                   <div className="profile-summary-avatar">{initial}</div>
-                  <h3>{profile.fullName}</h3>
-                  <p className="profile-summary-email">{profile.email}</p>
+                  <h3>{profile?.fullName || activeUser.name}</h3>
+                  <p className="profile-summary-email">{profile?.email || activeUser.email}</p>
                   <div className="profile-summary-badges">
                     <span className="profile-badge-pill donor-badge">Active Donor</span>
-                    {profile.isAlumni && (
+                    {profile?.isAlumni && (
                       <span className="profile-badge-pill alumni-badge">Alumni Partner</span>
                     )}
                   </div>

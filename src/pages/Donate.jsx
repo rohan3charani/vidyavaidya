@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import api from "../services/api";
 import vidyaLogo from "../assets/Vidya1.png";
 import "./Donate.css";
 
@@ -81,7 +82,7 @@ export default function Donate() {
     /* Common form */
     const [form, setForm] = useState({
         fullName: "", email: "", mobile: "", isAlumni: false,
-        alumniId: "", yearOfGrad: "",
+        alumniId: "", yearOfGrad: "", pan: "",
         address: "", city: "", state: "", country: "India", pincode: "",
     });
     const [errors, setErrors] = useState({});
@@ -89,6 +90,7 @@ export default function Donate() {
     /* Foreign donor form */
     const [foreignForm, setForeignForm] = useState({
         firstName: "", lastName: "", email: "", phone: "", queryType: "", message: "",
+        country: "", donationIntent: "", organizationName: ""
     });
     const [foreignErrors, setForeignErrors] = useState({});
     const [foreignSubmitted, setForeignSubmitted] = useState(false);
@@ -126,6 +128,9 @@ export default function Donate() {
         else if (!isValidPhone(form.mobile)) e.mobile = "Enter a valid 10-digit mobile number";
         if (form.isAlumni && !form.alumniId.trim()) e.alumniId = "Alumni ID is required";
         if (form.isAlumni && !form.yearOfGrad) e.yearOfGrad = "Select your graduation year";
+        if (form.pan.trim() && !/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(form.pan.toUpperCase())) {
+            e.pan = "Enter a valid 10-digit PAN (e.g. ABCDE1234F)";
+        }
         if (!form.address.trim()) e.address = "Address is required";
         if (!form.city.trim()) e.city = "City is required";
         if (!form.state) e.state = "State is required";
@@ -134,7 +139,7 @@ export default function Donate() {
         return e;
     };
 
-    /* ── Continue handler ── */
+        /* ── Continue handler ── */
     const handleContinue = () => {
         if (displayAmount <= 0) {
             alert("Please select or enter a donation amount.");
@@ -143,10 +148,52 @@ export default function Donate() {
         const e = validateCommon();
         setErrors(e);
         if (Object.keys(e).length === 0) {
+            // Derive category
+            let category = "Education";
+            let eduTotal = 0;
+            let healthTotal = 0;
+            let commTotal = 0;
+            
+            selectedAmounts.forEach(amt => {
+                if ([1000, 5000, 10000].includes(amt)) eduTotal += amt;
+                else if ([2000, 7000, 15000].includes(amt)) healthTotal += amt;
+                else if ([500, 3000].includes(amt)) commTotal += amt;
+            });
+
+            if (customAmountNum > 0) {
+                eduTotal += customAmountNum;
+            }
+
+            if (healthTotal > eduTotal && healthTotal > commTotal) {
+                category = "Healthcare";
+            } else if (commTotal > eduTotal && commTotal > healthTotal) {
+                category = "Community";
+            }
+
+            const donorDetails = {
+                fullName: form.fullName,
+                email: form.email,
+                phone: `+91${form.mobile}`,
+                pan: form.pan || "",
+                isAlumni: form.isAlumni,
+                alumniId: form.isAlumni ? form.alumniId : "",
+                address: {
+                    line: form.address,
+                    city: form.city,
+                    state: form.state,
+                    country: form.country,
+                    pincode: form.pincode
+                }
+            };
+
             navigate("/payment", {
                 state: {
                     amount: displayAmount,
                     isMonthly: tab === "monthly",
+                    duration: tab === "monthly" ? duration : undefined,
+                    donationType: tab === "monthly" ? "monthly" : "one-time",
+                    category,
+                    donorDetails
                 },
             });
         }
@@ -163,13 +210,33 @@ export default function Donate() {
         else if (!isValidEmail(foreignForm.email)) e.email = "Invalid email";
         if (!foreignForm.phone.trim()) e.phone = "Required";
         if (!foreignForm.queryType) e.queryType = "Select a query type";
+        if (!foreignForm.country.trim()) e.country = "Required";
+        if (!foreignForm.donationIntent.trim()) e.donationIntent = "Required";
+        if (!foreignForm.message.trim() || foreignForm.message.trim().length < 10) e.message = "Message must be at least 10 characters";
         return e;
     };
 
-    const handleForeignSubmit = () => {
+    const handleForeignSubmit = async () => {
         const e = validateForeign();
         setForeignErrors(e);
-        if (Object.keys(e).length === 0) setForeignSubmitted(true);
+        if (Object.keys(e).length === 0) {
+            try {
+                const payload = {
+                    name: `${foreignForm.firstName} ${foreignForm.lastName}`,
+                    email: foreignForm.email,
+                    phone: foreignForm.phone,
+                    queryType: foreignForm.queryType === "Tax Benefits (FCRA)" ? "Tax Benefits (FCRA)" : "Other",
+                    message: foreignForm.message,
+                    country: foreignForm.country,
+                    donationIntent: foreignForm.donationIntent,
+                    organizationName: foreignForm.organizationName || ""
+                };
+                await api.contact.submitForeign(payload);
+                setForeignSubmitted(true);
+            } catch (err) {
+                setForeignErrors({ submit: err.message || "Failed to submit inquiry." });
+            }
+        }
     };
 
     /* ── Render ── */
@@ -377,15 +444,33 @@ export default function Donate() {
                                             <input type="tel" className={`df-input ${foreignErrors.phone ? "err" : ""}`} value={foreignForm.phone} onChange={(e) => setForeignField("phone", e.target.value)} placeholder="+1 234 567 8900" />
                                         </FormField>
                                     </div>
+                                    <div className="donate-form-grid-2">
+                                        <FormField label="Country" required error={foreignErrors.country}>
+                                            <input className={`df-input ${foreignErrors.country ? "err" : ""}`} value={foreignForm.country} onChange={(e) => setForeignField("country", e.target.value)} placeholder="Country" />
+                                        </FormField>
+                                        <FormField label="Organization Name (Optional)" error={foreignErrors.organizationName}>
+                                            <input className="df-input" value={foreignForm.organizationName} onChange={(e) => setForeignField("organizationName", e.target.value)} placeholder="Organization Name" />
+                                        </FormField>
+                                    </div>
                                     <FormField label="Query Type" required error={foreignErrors.queryType}>
                                         <select className={`df-input ${foreignErrors.queryType ? "err" : ""}`} value={foreignForm.queryType} onChange={(e) => setForeignField("queryType", e.target.value)}>
                                             <option value="">Select query type</option>
                                             {QUERY_TYPES.map((q) => <option key={q} value={q}>{q}</option>)}
                                         </select>
                                     </FormField>
-                                    <FormField label="Message / Additional Inquiry" error={foreignErrors.message}>
-                                        <textarea className="df-input df-textarea" rows={4} value={foreignForm.message} onChange={(e) => setForeignField("message", e.target.value)} placeholder="Tell us more about your inquiry..." />
+                                    <FormField label="Donation Intent / Purpose" required error={foreignErrors.donationIntent}>
+                                        <textarea className={`df-input ${foreignErrors.donationIntent ? "err" : ""}`} rows={2} value={foreignForm.donationIntent} onChange={(e) => setForeignField("donationIntent", e.target.value)} placeholder="e.g. Healthcare support, student scholarships..." />
                                     </FormField>
+                                    <FormField label="Message / Additional Inquiry" required error={foreignErrors.message}>
+                                        <textarea className={`df-input df-textarea ${foreignErrors.message ? "err" : ""}`} rows={3} value={foreignForm.message} onChange={(e) => setForeignField("message", e.target.value)} placeholder="Tell us more about your inquiry..." />
+                                    </FormField>
+                                    
+                                    {foreignErrors.submit && (
+                                        <div style={{ color: "#ef4444", fontSize: "0.875rem", marginBottom: "1rem" }}>
+                                            ⚠ {foreignErrors.submit}
+                                        </div>
+                                    )}
+
                                     <button className="donate-foreign-submit" onClick={handleForeignSubmit}>
                                         Submit Inquiry
                                     </button>
@@ -500,6 +585,14 @@ function CommonForm({ form, errors, setField }) {
                             placeholder="10-digit mobile"
                         />
                     </div>
+                </FormField>
+                <FormField label="PAN Card (Optional, for 80G Tax Exemption)" error={errors.pan}>
+                    <input
+                        className={`df-input ${errors.pan ? "err" : ""}`}
+                        value={form.pan || ""}
+                        onChange={(e) => setField("pan", e.target.value.toUpperCase().slice(0, 10))}
+                        placeholder="ABCDE1234F"
+                    />
                 </FormField>
             </div>
 

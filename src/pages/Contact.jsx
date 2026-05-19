@@ -1,10 +1,17 @@
 import { useState } from "react";
 import Navbar from "../Components/Navbar";
 import Footer from "../Components/Footer";
+import api from "../services/api";
 import "./Pages.css";
 import { Mail, Phone, MapPin } from "lucide-react";
 
 export default function Contact() {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [subject, setSubject] = useState("");
+  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
   const details = [
@@ -27,6 +34,27 @@ export default function Contact() {
       ) 
     }
   ];
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    try {
+      await api.contact.submit({
+        name,
+        email,
+        subject,
+        message,
+        queryType: "General Inquiry"
+      });
+      setSubmitted(true);
+    } catch (err) {
+      setError(err.message || "Failed to submit. Please try again later.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="page-wrapper contact-page">
@@ -82,24 +110,60 @@ export default function Contact() {
               ) : (
                 <>
                   <h2>Send a Message</h2>
-                  <form onSubmit={(e) => { e.preventDefault(); setSubmitted(true); }}>
+                  <form onSubmit={handleSubmit}>
                     <div className="cf-field">
                       <label className="cf-label">Your Name</label>
-                      <input className="cf-input" type="text" placeholder="Full Name" required />
+                      <input 
+                        className="cf-input" 
+                        type="text" 
+                        placeholder="Full Name" 
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        required 
+                      />
                     </div>
                     <div className="cf-field">
                       <label className="cf-label">Email Address</label>
-                      <input className="cf-input" type="email" placeholder="you@example.com" required />
+                      <input 
+                        className="cf-input" 
+                        type="email" 
+                        placeholder="you@example.com" 
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required 
+                      />
                     </div>
                     <div className="cf-field">
                       <label className="cf-label">Subject</label>
-                      <input className="cf-input" type="text" placeholder="How can we help?" required />
+                      <input 
+                        className="cf-input" 
+                        type="text" 
+                        placeholder="How can we help?" 
+                        value={subject}
+                        onChange={(e) => setSubject(e.target.value)}
+                        required 
+                      />
                     </div>
                     <div className="cf-field">
                       <label className="cf-label">Message</label>
-                      <textarea className="cf-input cf-textarea" placeholder="Write your message here..." required />
+                      <textarea 
+                        className="cf-input cf-textarea" 
+                        placeholder="Write your message here..." 
+                        value={message}
+                        onChange={(e) => setMessage(e.target.value)}
+                        required 
+                      />
                     </div>
-                    <button type="submit" className="cf-submit">Send Message →</button>
+
+                    {error && (
+                      <div className="cf-error" style={{ color: "#ef4444", marginBottom: "1rem", fontSize: "0.875rem" }}>
+                        ⚠ {error}
+                      </div>
+                    )}
+
+                    <button type="submit" className="cf-submit" disabled={loading}>
+                      {loading ? "Sending..." : "Send Message →"}
+                    </button>
                   </form>
                 </>
               )}

@@ -7,6 +7,10 @@ export default function Payment() {
 
     const amount = state?.amount ?? 0;
     const isMonthly = state?.isMonthly ?? false;
+    const duration = state?.duration;
+    const donationType = state?.donationType ?? "one-time";
+    const category = state?.category ?? "Education";
+    const donorDetails = state?.donorDetails;
 
     const handleClose = () => {
         navigate("/donate");
@@ -16,6 +20,10 @@ export default function Payment() {
         <PaymentModal
             amount={amount}
             isMonthly={isMonthly}
+            duration={duration}
+            donationType={donationType}
+            category={category}
+            donorDetails={donorDetails}
             onClose={handleClose}
         />
     );
