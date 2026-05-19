@@ -3,6 +3,7 @@ const { db } = require('../config/firebase');
 const admin = require('firebase-admin');
 const receiptService = require('../services/receipt.service');
 const emailService = require('../services/email.service');
+const { findOrCreateUser, syncUserProfileDetails } = require('./payment.controller');
 
 const webhookController = {
   /**
@@ -54,6 +55,31 @@ const webhookController = {
                 return;
               }
 
+              let uid = donation.userId;
+              if (uid === 'GUEST') {
+                const donorDetails = {
+                  fullName: donation.donorName,
+                  email: donation.donorEmail,
+                  phone: donation.donorPhone,
+                  isAlumni: donation.isAlumni,
+                  alumniId: donation.alumniId,
+                  address: donation.address
+                };
+                uid = await findOrCreateUser(donorDetails, true);
+                donation.userId = uid;
+              }
+
+              // Synchronize latest entered user details to users collection
+              const donorDetails = {
+                fullName: donation.donorName,
+                email: donation.donorEmail,
+                phone: donation.donorPhone,
+                isAlumni: donation.isAlumni,
+                alumniId: donation.alumniId,
+                address: donation.address
+              };
+              await syncUserProfileDetails(uid, donorDetails, true);
+
               // Update transaction details
               const currentYear = new Date().getFullYear();
               const randomSerial = Math.floor(100000 + Math.random() * 900000);
@@ -62,6 +88,7 @@ const webhookController = {
 
               const updatedDonation = {
                 ...donation,
+                userId: uid,
                 donationId: payment.id,
                 status: 'successful',
                 paymentMethod: payment.method || 'online',
@@ -72,7 +99,7 @@ const webhookController = {
               await donationRef.set(updatedDonation);
 
               // Update user stats
-              const userRef = db.collection('users').doc(donation.userId);
+              const userRef = db.collection('users').doc(uid);
               await db.runTransaction(async (transaction) => {
                 const userSnap = await transaction.get(userRef);
                 if (userSnap.exists) {
@@ -139,6 +166,16 @@ const webhookController = {
               const subData = subSnap.data();
               const timestamp = admin.firestore.Timestamp.fromDate(new Date());
 
+              let uid = subData.userId;
+              if (uid === 'GUEST') {
+                uid = await findOrCreateUser(subData.donorDetails, false);
+                await subRef.update({ userId: uid });
+                subData.userId = uid;
+              }
+
+              // Synchronize latest entered user details to users collection
+              await syncUserProfileDetails(uid, subData.donorDetails, false);
+
               // Create a brand new donation doc for this recurring monthly charge
               const newDonationId = payment.id;
               const currentYear = new Date().getFullYear();
@@ -148,11 +185,10 @@ const webhookController = {
               const donationDetails = {
                 orderId: subscriptionPayload.id,
                 donationId: newDonationId,
-                userId: subData.userId,
+                userId: uid,
                 donorName: subData.donorDetails.fullName,
                 donorEmail: subData.donorDetails.email,
                 donorPhone: subData.donorDetails.phone || '',
-                pan: subData.donorDetails.pan || '',
                 address: subData.donorDetails.address || {},
                 amount: Number(payment.amount) / 100, // convert back from paise
                 amountInPaise: payment.amount,
@@ -166,7 +202,7 @@ const webhookController = {
                 paymentMethod: payment.method || 'card',
                 receiptNumber: receiptSerial,
                 receiptUrl: '',
-                is80GEligible: !!subData.donorDetails.pan,
+                is80GEligible: false,
                 taxReceiptSent: false,
                 createdAt: timestamp,
                 updatedAt: timestamp
@@ -181,7 +217,7 @@ const webhookController = {
               });
 
               // Update user stats
-              const userRef = db.collection('users').doc(subData.userId);
+              const userRef = db.collection('users').doc(uid);
               await db.runTransaction(async (transaction) => {
                 const userSnap = await transaction.get(userRef);
                 if (userSnap.exists) {

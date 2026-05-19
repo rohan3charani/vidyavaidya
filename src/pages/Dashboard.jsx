@@ -106,8 +106,7 @@ export default function Dashboard() {
           city: (backendProfile.address && typeof backendProfile.address === 'object') ? (backendProfile.address.city || "") : (backendProfile.city || ""),
           state: (backendProfile.address && typeof backendProfile.address === 'object') ? (backendProfile.address.state || "") : (backendProfile.state || ""),
           country: (backendProfile.address && typeof backendProfile.address === 'object') ? (backendProfile.address.country || "India") : (backendProfile.country || "India"),
-          pincode: (backendProfile.address && typeof backendProfile.address === 'object') ? (backendProfile.address.pincode || "") : (backendProfile.pincode || ""),
-          pan: backendProfile.pan || ""
+          pincode: (backendProfile.address && typeof backendProfile.address === 'object') ? (backendProfile.address.pincode || "") : (backendProfile.pincode || "")
         };
         setProfile(flatProfile);
         setEditProfile(flatProfile);
@@ -164,8 +163,7 @@ export default function Dashboard() {
           city: (backendProfile.address && typeof backendProfile.address === 'object') ? (backendProfile.address.city || "") : (backendProfile.city || ""),
           state: (backendProfile.address && typeof backendProfile.address === 'object') ? (backendProfile.address.state || "") : (backendProfile.state || ""),
           country: (backendProfile.address && typeof backendProfile.address === 'object') ? (backendProfile.address.country || "India") : (backendProfile.country || "India"),
-          pincode: (backendProfile.address && typeof backendProfile.address === 'object') ? (backendProfile.address.pincode || "") : (backendProfile.pincode || ""),
-          pan: backendProfile.pan || ""
+          pincode: (backendProfile.address && typeof backendProfile.address === 'object') ? (backendProfile.address.pincode || "") : (backendProfile.pincode || "")
         };
         setProfile(flatProfile);
         setEditProfile(flatProfile);

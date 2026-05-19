@@ -82,7 +82,7 @@ export default function Donate() {
     /* Common form */
     const [form, setForm] = useState({
         fullName: "", email: "", mobile: "", isAlumni: false,
-        alumniId: "", yearOfGrad: "", pan: "",
+        alumniId: "", yearOfGrad: "",
         address: "", city: "", state: "", country: "India", pincode: "",
     });
     const [errors, setErrors] = useState({});
@@ -93,7 +93,7 @@ export default function Donate() {
             sessionStorage.removeItem("donation_just_completed");
             setForm({
                 fullName: "", email: "", mobile: "", isAlumni: false,
-                alumniId: "", yearOfGrad: "", pan: "",
+                alumniId: "", yearOfGrad: "",
                 address: "", city: "", state: "", country: "India", pincode: "",
             });
             setSelectedAmounts([]);
@@ -135,8 +135,7 @@ export default function Donate() {
                     city: profile.address?.city || "",
                     state: profile.address?.state || "",
                     country: profile.address?.country || "India",
-                    pincode: profile.address?.pincode || "",
-                    pan: profile.pan || ""
+                    pincode: profile.address?.pincode || ""
                 }));
                 return;
             } catch (e) {
@@ -191,9 +190,6 @@ export default function Donate() {
         else if (!isValidPhone(form.mobile)) e.mobile = "Enter a valid 10-digit mobile number";
         if (form.isAlumni && !form.alumniId.trim()) e.alumniId = "Alumni ID is required";
         if (form.isAlumni && !form.yearOfGrad) e.yearOfGrad = "Select your graduation year";
-        if (form.pan.trim() && !/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(form.pan.toUpperCase())) {
-            e.pan = "Enter a valid 10-digit PAN (e.g. ABCDE1234F)";
-        }
         if (!form.address.trim()) e.address = "Address is required";
         if (!form.city.trim()) e.city = "City is required";
         if (!form.state) e.state = "State is required";
@@ -237,7 +233,6 @@ export default function Donate() {
                 fullName: form.fullName,
                 email: form.email,
                 phone: `+91${form.mobile}`,
-                pan: form.pan || "",
                 isAlumni: form.isAlumni,
                 alumniId: form.isAlumni ? form.alumniId : "",
                 address: {

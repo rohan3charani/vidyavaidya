@@ -26,14 +26,18 @@ export const generateSlug = (text) => {
     .replace(/^-+|-+$/g, "");
 };
 
-export const fmtDate = (dStr) => {
-  if (!dStr) return "—";
+export const fmtDate = (val) => {
+  if (!val) return "—";
   try {
-    const d = new Date(dStr);
-    if (isNaN(d.getTime())) return dStr;
+    // Handle Firestore Timestamp object natively
+    if (typeof val === 'object' && val._seconds) {
+      val = val._seconds * 1000;
+    }
+    const d = new Date(val);
+    if (isNaN(d.getTime())) return typeof val === 'object' ? JSON.stringify(val) : String(val);
     return d.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
   } catch (e) {
-    return dStr;
+    return typeof val === 'object' ? JSON.stringify(val) : String(val);
   }
 };
 
@@ -335,28 +339,30 @@ export function MultiImageInput({ value = [], onChange, showToast }) {
    PARTNERS SECTION
    ══════════════════════════════════════════════ */
 
+const optStr = () => z.string().optional().default("");
+
 const partnerSchema = z.object({
   name: z.string().min(2, { message: "Partner Name must be at least 2 characters" }),
   type: z.enum(["hospital", "ngo", "educational", "corporate", "government"]),
-  city: z.string().optional().or(z.literal("")),
-  state: z.string().optional().or(z.literal("")),
-  description: z.string().optional().or(z.literal("")),
-  shortBio: z.string().optional().or(z.literal("")),
-  logoUrl: z.string().optional().or(z.literal("")),
-  coverImageUrl: z.string().optional().or(z.literal("")),
-  websiteUrl: z.string().optional().or(z.literal("")),
-  contactEmail: z.string().optional().or(z.literal("")),
-  contactPhone: z.string().optional().or(z.literal("")),
-  partnershipStartDate: z.string().optional().or(z.literal("")),
-  displayOrder: z.preprocess((val) => val === "" || val === undefined ? 10 : Number(val), z.number().int()),
-  isFeatured: z.boolean().optional(),
-  isActive: z.boolean().optional(),
-  address: z.string().optional().or(z.literal("")),
-  country: z.string().optional().or(z.literal("India")),
-  linkedinUrl: z.string().optional().or(z.literal("")),
-  twitterUrl: z.string().optional().or(z.literal("")),
-  facebookUrl: z.string().optional().or(z.literal("")),
-  instagramUrl: z.string().optional().or(z.literal(""))
+  city:                optStr(),
+  state:               optStr(),
+  description:         optStr(),
+  shortBio:            optStr(),
+  logoUrl:             optStr(),
+  coverImageUrl:       optStr(),
+  websiteUrl:          optStr(),
+  contactEmail:        optStr(),
+  contactPhone:        optStr(),
+  partnershipStartDate: optStr(),
+  displayOrder:        z.coerce.number().int().optional().default(10),
+  isFeatured:          z.boolean().optional().default(false),
+  isActive:            z.boolean().optional().default(true),
+  address:             optStr(),
+  country:             optStr(),
+  linkedinUrl:         optStr(),
+  twitterUrl:          optStr(),
+  facebookUrl:         optStr(),
+  instagramUrl:        optStr()
 });
 
 export function PartnersSection({ showToast }) {
@@ -413,11 +419,11 @@ export function PartnersSection({ showToast }) {
       instagramUrl: ""
     }
   });
-      const fetchPartners = async () => {
+  const fetchPartners = async () => {
     setLoading(true);
     try {
       const data = await api.partners.list();
-      setPartners(data || []);
+      setPartners(data.partners || []);
     } catch (err) {
       showToast(err.message || "Failed to load partners", "error");
     } finally {
@@ -1399,7 +1405,7 @@ export function StoriesSection({ showToast }) {
     setLoading(true);
     try {
       const data = await api.stories.list();
-      setStories(data || []);
+      setStories(data.stories || []);
     } catch (err) {
       showToast(err.message || "Failed to load stories", "error");
     } finally {
@@ -1889,7 +1895,7 @@ export function EventsSection({ showToast }) {
     setLoading(true);
     try {
       const data = await api.events.list();
-      setEvents(data || []);
+      setEvents(data.events || []);
     } catch (err) {
       showToast(err.message || "Failed to load events", "error");
     } finally {
@@ -1958,7 +1964,7 @@ export function EventsSection({ showToast }) {
     setRegLoading(true);
     try {
       const data = await api.events.getRegistrations(evt.id);
-      setRegistrations(data || []);
+      setRegistrations(data.registrations || []);
     } catch (err) {
       showToast(err.message || "Failed to load registrations", "error");
     } finally {

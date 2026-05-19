@@ -97,7 +97,6 @@ const authController = {
           country: 'India',
           pincode: ''
         },
-        pan: '',
         totalDonated: 0,
         donationCount: 0,
         lastLoginAt: timestamp,
