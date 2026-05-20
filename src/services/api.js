@@ -450,6 +450,33 @@ const api = {
       const params = new URLSearchParams({ ...filters, token }).toString();
       return `${API_BASE_URL}/admin/export/donations?${params}`;
     }
+  },
+
+  /**
+   * 9. Foreign Donors Handlers
+   */
+  foreignDonors: {
+    async list() {
+      const res = await apiRequest('/foreign-donors');
+      return res.donors || [];
+    },
+    async submit(data) {
+      return apiRequest('/foreign-donors', {
+        method: 'POST',
+        body: JSON.stringify(data)
+      });
+    },
+    async updateStatus(id, status) {
+      return apiRequest(`/foreign-donors/${id}/status`, {
+        method: 'PUT',
+        body: JSON.stringify({ status })
+      });
+    },
+    async delete(id) {
+      return apiRequest(`/foreign-donors/${id}`, {
+        method: 'DELETE'
+      });
+    }
   }
 };
 
