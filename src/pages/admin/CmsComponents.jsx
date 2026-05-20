@@ -634,13 +634,13 @@ export function PartnersSection({ showToast }) {
   const paged = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
   return (
-    <div className="adm-section bg-slate-50/50 p-6 rounded-3xl border border-slate-100">
+    <div className="adm-section">
       
       {/* Header Panel */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-        <div>
-          <h2 className="text-3xl font-extrabold text-slate-800 tracking-tight">Partners Ecosystem</h2>
-          <p className="text-sm text-slate-500 mt-1">Manage VidyaVaidya collaborations, medical networks, and CSR alignments</p>
+        <div className="adm-section-header">
+          <h2>Partners</h2>
+          <p>Manage VidyaVaidya collaborations, medical networks, and CSR alignments</p>
         </div>
         <button 
           className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-3 rounded-2xl transition-all duration-300 shadow-lg shadow-emerald-600/20 flex items-center gap-2 border-none text-sm"
@@ -1615,18 +1615,13 @@ export function StoriesSection({ showToast }) {
   const pagedStories = filteredStories.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
   return (
-    <div className="adm-section bg-slate-50/50 p-6 rounded-3xl border border-slate-100 animate-fadeIn">
+    <div className="adm-section animate-fadeIn">
       
       {/* Redesigned Header Panel */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-        <div>
-          <h2 className="text-3xl font-extrabold text-slate-800 tracking-tight flex items-center gap-2.5">
-            <Newspaper className="w-8 h-8 text-teal-600 stroke-[2.2]" />
-            News Articles & Media
-          </h2>
-          <p className="text-sm text-slate-500 mt-1">
-            Publish and manage news content, media assets, announcements, and public stories.
-          </p>
+        <div className="adm-section-header">
+          <h2>Stories</h2>
+          <p>Publish and manage news content, media assets, announcements, and public stories</p>
         </div>
         <button 
           onClick={handleOpenAdd}
@@ -2407,14 +2402,10 @@ export function EventsSection({ showToast }) {
       `}</style>
 
       {/* HEADER SECTION */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-4 border-b border-slate-100">
-        <div>
-          <h2 className="text-2xl font-black text-slate-800 tracking-tight flex items-center gap-2">
-            Media Galleries & Events
-          </h2>
-          <p className="text-slate-500 text-sm mt-0.5">
-            Organize and showcase event galleries, awareness drives, healthcare initiatives, and community impact stories.
-          </p>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-4 border-b border-slate-100 mb-8">
+        <div className="adm-section-header">
+          <h2>Events</h2>
+          <p>Organize and showcase event galleries, awareness drives, healthcare initiatives, and community impact stories</p>
         </div>
       </div>
 
@@ -3385,11 +3376,9 @@ export function TestimonialsSection({ showToast }) {
   return (
     <div className="adm-section animate-fadeIn">
       {/* 1. Header Hero section */}
-      <div className="mb-6">
-        <h2 className="text-3xl font-extrabold tracking-tight text-slate-800">Testimonials Management</h2>
-        <p className="text-xs text-slate-500 mt-1.5 leading-relaxed max-w-2xl">
-          Showcase impactful experiences and trusted voices from healthcare camps, volunteers, donors, and communities.
-        </p>
+      <div className="adm-section-header">
+        <h2>Testimonials</h2>
+        <p>Showcase impactful experiences and trusted voices from healthcare camps, volunteers, donors, and communities</p>
       </div>
 
       {/* 3. Main Dashboard section */}

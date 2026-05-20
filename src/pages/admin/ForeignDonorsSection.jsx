@@ -460,7 +460,7 @@ export default function ForeignDonorsSection({ showToast: parentShowToast }) {
   };
 
   return (
-    <div className="w-full mx-auto px-4 py-8 bg-slate-50/40 min-h-screen text-black font-sans antialiased">
+    <div className="adm-section">
       
       {/* Self-contained Premium floating Toast Alert */}
       <AnimatePresence>
@@ -487,13 +487,9 @@ export default function ForeignDonorsSection({ showToast: parentShowToast }) {
 
       {/* Clean Premium Header Section */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end border-b border-slate-200 pb-5 mb-8">
-        <div>
-          <h2 className="text-2xl md:text-3xl font-black tracking-tight text-black leading-none">
-            Foreign Donor Registrations
-          </h2>
-          <p className="text-[11px] text-slate-500 mt-2.5 font-bold uppercase tracking-wider">
-            Manage and respond to foreign donor queries and registrations
-          </p>
+        <div className="adm-section-header" style={{ marginBottom: 0 }}>
+          <h2>Foreign Donors</h2>
+          <p>Manage and respond to foreign donor queries and registrations</p>
         </div>
         <div className="mt-4 md:mt-0">
           <span className="px-4 py-2 bg-white border border-slate-200 shadow-sm rounded-xl text-[10px] font-black text-slate-500 uppercase tracking-widest">
