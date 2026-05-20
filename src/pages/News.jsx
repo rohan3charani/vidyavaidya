@@ -16,7 +16,7 @@ export default function News() {
   useEffect(() => {
     const fetchNews = async () => {
       try {
-        const data = await api.stories.list();
+        const data = await api.stories.list({ limit: 150 });
         const newsItems = (data || []).filter(
           (s) => s.isPublished && (s.type === "news" || s.type === "press")
         );
@@ -87,18 +87,18 @@ export default function News() {
         </div>
       ) : (
         <>
-          {/* First Half: Standard Grid (Previous Style) */}
+          {/* First Half: Masonry Grid for Recent Articles */}
           <section className="py-16 px-6 lg:px-20 bg-white">
             <div className="max-w-7xl mx-auto">
               <h2 className="text-3xl font-bold mb-10 text-slate-800 text-center relative pb-4">
                 Recent Articles
                 <span className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-24 h-1 bg-teal-500 rounded-full"></span>
               </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              <div className="columns-1 sm:columns-2 md:columns-3 lg:columns-4 gap-6">
                 {firstHalf.map((item, index) => (
                   <div 
                     key={index} 
-                    className="group relative rounded-lg overflow-hidden shadow-md hover:shadow-xl border border-slate-100 bg-white cursor-pointer transition-all duration-300"
+                    className="group relative break-inside-avoid rounded-2xl overflow-hidden shadow-md hover:shadow-xl border border-slate-100 bg-white cursor-pointer transition-all duration-300 mb-6"
                     onClick={() => setSelectedIndex(index)}
                   >
                     <img 
@@ -127,11 +127,11 @@ export default function News() {
                   Article Archives
                   <span className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-24 h-1 bg-teal-500 rounded-full"></span>
                 </h2>
-                <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-6 space-y-6">
+                <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-6">
                   {secondHalf.map((item, index) => (
                     <div 
                       key={index} 
-                      className="group relative break-inside-avoid rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 cursor-pointer border border-gray-200 bg-white"
+                      className="group relative break-inside-avoid rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 cursor-pointer border border-gray-200 bg-white mb-6"
                       onClick={() => setSelectedIndex(midPoint + index)}
                     >
                       {/* Image */}

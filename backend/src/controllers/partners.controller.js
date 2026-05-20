@@ -19,9 +19,13 @@ const partnersController = {
    */
   async listPartners(req, res, next) {
     try {
-      const { type, featured } = req.query;
+      const { type, featured, all } = req.query;
 
-      let queryRef = db.collection('partners').where('isActive', '==', true);
+      let queryRef = db.collection('partners');
+      
+      if (all !== 'true') {
+        queryRef = queryRef.where('isActive', '==', true);
+      }
 
       if (type) queryRef = queryRef.where('type', '==', type);
       if (featured === 'true') queryRef = queryRef.where('isFeatured', '==', true);
@@ -195,10 +199,22 @@ const partnersController = {
       const { partnerId } = req.params;
       const updates = { ...req.body };
 
-      const partnerRef = db.collection('partners').doc(partnerId);
-      const doc = await partnerRef.get();
+      // First try direct Firestore doc ID lookup
+      let partnerRef = db.collection('partners').doc(partnerId);
+      let doc = await partnerRef.get();
+
+      // Fallback: query by partnerId field (for seeded/legacy data)
       if (!doc.exists) {
-        return res.status(404).json({ error: 'Partner profile not found' });
+        const snap = await db.collection('partners')
+          .where('partnerId', '==', partnerId)
+          .limit(1)
+          .get();
+        if (!snap.empty) {
+          partnerRef = snap.docs[0].ref;
+          doc = snap.docs[0];
+        } else {
+          return res.status(404).json({ error: 'Partner profile not found' });
+        }
       }
 
       // Convert flat fields to nested structures if present
@@ -279,20 +295,29 @@ const partnersController = {
     try {
       const { partnerId } = req.params;
 
-      const partnerRef = db.collection('partners').doc(partnerId);
-      const doc = await partnerRef.get();
+      // First try direct Firestore doc ID lookup
+      let partnerRef = db.collection('partners').doc(partnerId);
+      let doc = await partnerRef.get();
+
+      // Fallback: query by partnerId field (for seeded/legacy data)
       if (!doc.exists) {
-        return res.status(404).json({ error: 'Partner profile not found' });
+        const snap = await db.collection('partners')
+          .where('partnerId', '==', partnerId)
+          .limit(1)
+          .get();
+        if (!snap.empty) {
+          partnerRef = snap.docs[0].ref;
+          doc = snap.docs[0];
+        } else {
+          return res.status(404).json({ error: 'Partner profile not found' });
+        }
       }
 
-      await partnerRef.update({
-        isActive: false,
-        updatedAt: admin.firestore.Timestamp.fromDate(new Date())
-      });
+      await partnerRef.delete();
 
       return res.status(200).json({
         success: true,
-        message: 'Partner profile deactivated successfully'
+        message: 'Partner profile deleted successfully'
       });
     } catch (error) {
       next(error);

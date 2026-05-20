@@ -54,7 +54,7 @@ export default function PhotoGallery() {
   useEffect(() => {
     const fetchPhotos = async () => {
       try {
-        const res = await api.events.list();
+        const res = await api.events.list({ limit: 1000 });
         const data = res?.events || (Array.isArray(res) ? res : []);
         const photos = data.filter(
           (e) => e.eventType === "photo" || (e.galleryUrls && e.galleryUrls.length > 0)
@@ -93,7 +93,7 @@ export default function PhotoGallery() {
     fetchPhotos();
   }, []);
 
-  const displayPhotos = dynamicPhotos.length > 0 ? dynamicPhotos : staticGalleryPhotos;
+  const displayPhotos = [...dynamicPhotos, ...staticGalleryPhotos];
 
   const filteredPhotos = useMemo(
     () =>

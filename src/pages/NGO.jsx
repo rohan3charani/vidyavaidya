@@ -4,45 +4,25 @@ import Footer from "../Components/Footer";
 import api from "../services/api";
 import { Link } from "react-router-dom";
 
-// Static fallback card for Sairam Hospital (shown when no dynamic data is available)
-import SairamLogo from "../assets/Partners/GLOBAL HEALTH CARE/SAIRAM HOSPITAL/1.png";
-
-const STATIC_HOSPITALS = [
-  {
-    id: "sairam-hospital-static",
-    slug: "sairam-hospital",
-    name: "SAIRAM HOSPITAL",
-    shortBio: "Led by Dr. C. Satish Reddy & Dr. K. Lalitha Shirdisa",
-    description:
-      "A beacon of health and community care, Sairam Hospital provides vital medical assistance and unwavering support to our mission of healing and empowerment.",
-    logoUrl: SairamLogo,
-    location: { city: "Nellore", state: "Andhra Pradesh" },
-    isFeatured: true,
-    isStatic: true,
-  },
-];
-
-export default function GlobalHealthCare() {
-  const [hospitals, setHospitals] = useState([]);
+export default function NGO() {
+  const [partners, setPartners] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchHospitals = async () => {
+    const fetchPartners = async () => {
       try {
         const data = await api.partners.list();
         const filtered = (data || []).filter(
-          (p) => p.type === "hospital" && p.isActive !== false
+          (p) => p.type === "ngo" && p.isActive !== false
         );
-        // If API returns results, use them; otherwise fall back to static list
-        setHospitals(filtered.length > 0 ? filtered : STATIC_HOSPITALS);
+        setPartners(filtered);
       } catch (err) {
-        console.error("Failed to fetch hospitals:", err);
-        setHospitals(STATIC_HOSPITALS);
+        console.error("Failed to fetch NGO partners:", err);
       } finally {
         setLoading(false);
       }
     };
-    fetchHospitals();
+    fetchPartners();
   }, []);
 
   return (
@@ -51,23 +31,21 @@ export default function GlobalHealthCare() {
 
       <main className="flex-grow">
         {/* ── Hero ── */}
-        <section className="relative pt-32 pb-24 px-6 lg:px-20 overflow-hidden bg-gradient-to-br from-emerald-700 via-teal-800 to-cyan-900 text-white text-center">
+        <section className="relative pt-32 pb-24 px-6 lg:px-20 overflow-hidden bg-gradient-to-br from-orange-600 via-amber-700 to-red-800 text-white text-center">
           <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-            <div className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] rounded-full bg-emerald-400/20 blur-[120px]" />
-            <div className="absolute top-[40%] -right-[10%] w-[40%] h-[60%] rounded-full bg-cyan-400/20 blur-[120px]" />
+            <div className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] rounded-full bg-orange-400/20 blur-[120px]" />
+            <div className="absolute top-[40%] -right-[10%] w-[40%] h-[60%] rounded-full bg-red-400/20 blur-[120px]" />
           </div>
 
           <div className="relative z-10 max-w-4xl mx-auto">
-            <span className="inline-flex rounded-full bg-emerald-500/20 border border-emerald-400/30 px-5 py-2 text-xs font-extrabold uppercase tracking-[0.24em] text-emerald-200 mb-6">
-              Partner Network
+            <span className="inline-flex rounded-full bg-orange-500/20 border border-orange-400/30 px-5 py-2 text-xs font-extrabold uppercase tracking-[0.24em] text-orange-200 mb-6">
+              NGO Alliances
             </span>
             <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl mb-5">
-              Global Health Care
+              NGO Partner Network
             </h1>
-            <p className="mx-auto max-w-2xl text-base text-teal-100 sm:text-lg font-medium leading-relaxed">
-              Discover the incredible hospitals and medical centres operating
-              under our Global Health Care partnership — committed to healing
-              communities across India.
+            <p className="mx-auto max-w-2xl text-base text-orange-100 sm:text-lg font-medium leading-relaxed">
+              Cooperating with global and local non-governmental organizations to deliver healthcare, relief, and livelihood assistance.
             </p>
 
             {/* Breadcrumb */}
@@ -87,30 +65,30 @@ export default function GlobalHealthCare() {
         <section className="py-20 px-6 lg:px-20 max-w-7xl mx-auto">
           {loading ? (
             <div className="text-center py-16">
-              <div className="inline-block animate-spin rounded-full h-10 w-10 border-4 border-teal-500 border-t-transparent" />
-              <p className="mt-4 text-slate-500 font-semibold">Loading hospitals...</p>
+              <div className="inline-block animate-spin rounded-full h-10 w-10 border-4 border-orange-500 border-t-transparent" />
+              <p className="mt-4 text-slate-500 font-semibold">Loading NGO partners...</p>
             </div>
-          ) : hospitals.length === 0 ? (
+          ) : partners.length === 0 ? (
             <div className="text-center py-16 bg-white rounded-3xl border border-slate-100 p-10 shadow-sm max-w-md mx-auto">
-              <span className="text-6xl block mb-5">🏥</span>
-              <h3 className="text-xl font-extrabold text-slate-800 mb-2">No Hospitals Registered</h3>
+              <span className="text-6xl block mb-5">🤝</span>
+              <h3 className="text-xl font-extrabold text-slate-800 mb-2">No NGO Partners Registered</h3>
               <p className="text-slate-500 text-sm leading-relaxed">
-                We are currently expanding our hospital network. Please check back soon!
+                We are actively looking for non-profit and grassroots groups to execute targeted healthcare drives.
               </p>
             </div>
           ) : (
             <>
               <div className="text-center mb-12 space-y-2">
-                <p className="text-sm font-bold text-teal-600 uppercase tracking-widest">
-                  {hospitals.length} Hospital{hospitals.length > 1 ? "s" : ""} in Our Network
+                <p className="text-sm font-bold text-orange-650 uppercase tracking-widest">
+                  {partners.length} Organization{partners.length > 1 ? "s" : ""} in Our Network
                 </p>
                 <h2 className="text-2xl font-extrabold text-slate-800">
-                  Our Medical Partners
+                  Our NGO Partners
                 </h2>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {hospitals.map((p) => {
+                {partners.map((p) => {
                   const city  = p.location?.city  || p.city  || "";
                   const state = p.location?.state || p.state || "";
 
@@ -121,7 +99,7 @@ export default function GlobalHealthCare() {
                       className="group flex flex-col bg-white rounded-3xl shadow-sm border border-slate-100 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 relative overflow-hidden"
                     >
                       {/* Hover gradient overlay */}
-                      <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 via-teal-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-0" />
+                      <div className="absolute inset-0 bg-gradient-to-br from-orange-50 via-amber-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-0" />
 
                       {/* Cover / Logo area */}
                       <div className="relative z-10 flex flex-col items-center pt-10 pb-6 px-8">
@@ -135,7 +113,7 @@ export default function GlobalHealthCare() {
                           </div>
                         ) : (
                           <span className="text-7xl mb-5 group-hover:scale-110 transition-transform duration-500 block">
-                            🏥
+                            🤝
                           </span>
                         )}
 
@@ -169,8 +147,8 @@ export default function GlobalHealthCare() {
                       {/* Footer strip */}
                       <div className="relative z-10 mt-auto px-8 pb-7 flex items-center justify-between w-full border-t border-slate-100 pt-4">
                         <div className="flex items-center gap-2">
-                          <span className="text-xs font-extrabold uppercase tracking-widest text-emerald-700 bg-emerald-50 border border-emerald-100 px-3 py-1 rounded-full">
-                            Hospital
+                          <span className="text-xs font-extrabold uppercase tracking-widest text-orange-700 bg-orange-50 border border-orange-100 px-3 py-1 rounded-full">
+                            NGO Alliance
                           </span>
                           {(city || state) && (
                             <span className="text-[10px] text-slate-400 font-semibold">
@@ -178,7 +156,7 @@ export default function GlobalHealthCare() {
                             </span>
                           )}
                         </div>
-                        <span className="text-emerald-500 font-bold group-hover:translate-x-1 transition-transform duration-300 flex items-center gap-1 text-xs">
+                        <span className="text-orange-500 font-bold group-hover:translate-x-1 transition-transform duration-300 flex items-center gap-1 text-xs">
                           View Profile
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

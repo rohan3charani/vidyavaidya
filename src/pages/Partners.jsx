@@ -41,7 +41,15 @@ export default function Partners() {
           government: { type: "Volunteer Network", logo: HandHeart }
         };
 
-        const mapped = (list || []).map(item => {
+        const filteredList = (list || []).filter(item => 
+          item.type !== "hospital" && 
+          item.type !== "corporate" && 
+          item.type !== "government" &&
+          item.type !== "educational" &&
+          item.type !== "ngo"
+        );
+
+        const mapped = filteredList.map(item => {
           const mapping = typeMappings[item.type] || { type: item.type || "Partner", logo: Building2 };
           return {
             id: item.id || item.partnerId,

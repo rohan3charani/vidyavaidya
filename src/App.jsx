@@ -34,6 +34,8 @@ import News from "./pages/News";
 import Publishings from "./pages/Publishings";
 import Contact from "./pages/Contact";
 import OurVolunteers from "./pages/OurVolunteers";
+import EducationSupport from "./pages/EducationSupport";
+import NGO from "./pages/NGO";
 import Home from "./Components/Hero";
 
 function LandingPage() {
@@ -112,6 +114,8 @@ export default function App() {
         <Route path="/publishings" element={<Publishings />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/Ourvolunteers" element={<OurVolunteers />} />
+        <Route path="/EducationSupport" element={<EducationSupport />} />
+        <Route path="/NGO" element={<NGO />} />
 
         {/* ── Admin Routes ── */}
         <Route path="/admin" element={<AdminLogin />} />

@@ -13,6 +13,37 @@ const slugify = (text) => {
     .replace(/-+$/, '');
 };
 
+const uploadBase64Helper = async (base64Data, defaultName = 'image.jpg') => {
+  if (!base64Data || !base64Data.startsWith('data:image/')) {
+    return base64Data; // Already a URL or empty
+  }
+  try {
+    const match = base64Data.match(/^data:(image\/\w+);base64,/);
+    if (!match) return base64Data;
+    const contentType = match[1];
+    const ext = contentType.split('/')[1] || 'jpg';
+    const base64Clean = base64Data.replace(/^data:image\/\w+;base64,/, "");
+    const buffer = Buffer.from(base64Clean, 'base64');
+
+    const bucket = storage.bucket();
+    const uniqueName = `stories/${Date.now()}_${defaultName.replace(/[^a-zA-Z0-9]/g, '_')}.${ext}`;
+    const file = bucket.file(uniqueName);
+
+    await file.save(buffer, {
+      metadata: {
+        contentType: contentType,
+        cacheControl: 'public, max-age=31536000'
+      },
+      public: true
+    });
+
+    return `https://storage.googleapis.com/${bucket.name}/${uniqueName}`;
+  } catch (err) {
+    console.error('Failed to upload base64 image to storage:', err);
+    return base64Data; // Fallback to base64
+  }
+};
+
 const storiesController = {
   /**
    * Public: List all articles with filtration and page index offset pagination
@@ -102,6 +133,12 @@ const storiesController = {
       const slug = slugify(title);
       const timestamp = admin.firestore.Timestamp.fromDate(new Date());
 
+      // If coverImageUrl is base64, automatically upload to Cloud Storage
+      let finalCoverImageUrl = coverImageUrl || '';
+      if (coverImageUrl && coverImageUrl.startsWith('data:image/')) {
+        finalCoverImageUrl = await uploadBase64Helper(coverImageUrl, title || 'cover');
+      }
+
       const finalGalleryUrls = (galleryUrls && galleryUrls.length > 0) ? galleryUrls : (galleryImages || []);
       const finalSource = source !== 'Vidyavaidya Board' ? source : (sourceByline || 'Vidyavaidya Board');
       const finalAuthorName = authorName || (req.user && req.user.fullName) || 'Vidyavaidya Board';
@@ -114,7 +151,7 @@ const storiesController = {
         type: type || 'news', // "news" | "impact" | "publishing" | "press" | "blog"
         content: content || excerpt || 'Vidyavaidya featured article.',
         excerpt: excerpt || content?.slice(0, 150) || 'Vidyavaidya featured article.',
-        coverImageUrl: coverImageUrl || '',
+        coverImageUrl: finalCoverImageUrl,
         galleryUrls: finalGalleryUrls,
         author: {
           name: finalAuthorName,
@@ -158,6 +195,11 @@ const storiesController = {
 
       if (!storySnap.exists) {
         return res.status(404).json({ error: 'Article not found' });
+      }
+
+      // If coverImageUrl is updated with a base64 string, upload to Cloud Storage
+      if (updates.coverImageUrl && updates.coverImageUrl.startsWith('data:image/')) {
+        updates.coverImageUrl = await uploadBase64Helper(updates.coverImageUrl, updates.title || storySnap.data().title || 'cover');
       }
 
       if (updates.galleryImages !== undefined && updates.galleryUrls === undefined) {

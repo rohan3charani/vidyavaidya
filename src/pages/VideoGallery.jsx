@@ -19,7 +19,7 @@ export default function VideoGallery() {
   useEffect(() => {
     const fetchVideos = async () => {
       try {
-        const res = await api.events.list();
+        const res = await api.events.list({ limit: 1000 });
         const data = res?.events || (Array.isArray(res) ? res : []);
         const vids = data.filter(
           (e) => e.eventType === "video" || !!e.videoUrl
@@ -41,7 +41,7 @@ export default function VideoGallery() {
     fetchVideos();
   }, []);
 
-  const videos = dynamicVideos.length > 0 ? dynamicVideos : staticVideos;
+  const videos = [...dynamicVideos, ...staticVideos];
 
   const handleWatch = (url) => {
     if (url) {
