@@ -248,7 +248,7 @@ export default function OurMission() {
                 stroke="url(#line-grad-green)" 
                 strokeWidth="3.5" 
                 strokeLinecap="round"
-                strokeDasharray="1 8" 
+                strokeDasharray="2 10" 
                 className="mission-connecting-line"
               />
 
@@ -258,7 +258,7 @@ export default function OurMission() {
                 stroke="url(#line-grad-blue)" 
                 strokeWidth="3.5" 
                 strokeLinecap="round"
-                strokeDasharray="1 8" 
+                strokeDasharray="2 10" 
                 className="mission-connecting-line"
               />
 
@@ -268,7 +268,7 @@ export default function OurMission() {
                 stroke="url(#line-grad-purple)" 
                 strokeWidth="3.5" 
                 strokeLinecap="round"
-                strokeDasharray="1 8" 
+                strokeDasharray="2 10" 
                 className="mission-connecting-line"
               />
 
@@ -498,7 +498,7 @@ export default function OurMission() {
                 <svg viewBox="0 0 200 200" width="120" height="120" style={{ overflow: "visible" }}>
                   <polygon points="10 100, 55 22, 145 22, 190 100, 145 178, 55 178" fill="none" stroke="#10b981" strokeWidth="2.5" />
                   <circle cx="100" cy="100" r="48" fill="rgba(16, 185, 129, 0.03)" stroke="rgba(16, 185, 129, 0.15)" strokeWidth="1.5" />
-                  <g transform="translate(76, 76)">
+                  <g className="mobile-hex-icon-g" transform="translate(76, 76)">
                     <path d="M 6 10 C 12 8, 21 8, 24 11 V 37 C 21 34, 12 34, 6 36 V 10 Z" fill="#10b981" />
                     <path d="M 42 10 C 36 8, 27 8, 24 11 V 37 C 27 34, 36 34, 42 36 V 10 Z" fill="#10b981" opacity="0.9" />
                     <path d="M 24 11 V 37" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" opacity="0.4" />
@@ -528,7 +528,7 @@ export default function OurMission() {
                 <svg viewBox="0 0 200 200" width="120" height="120" style={{ overflow: "visible" }}>
                   <polygon points="10 100, 55 22, 145 22, 190 100, 145 178, 55 178" fill="none" stroke="#3b82f6" strokeWidth="2.5" />
                   <circle cx="100" cy="100" r="48" fill="rgba(59, 130, 246, 0.03)" stroke="rgba(59, 130, 246, 0.15)" strokeWidth="1.5" />
-                  <g transform="translate(76, 76)">
+                  <g className="mobile-hex-icon-g" transform="translate(76, 76)">
                     <path d="M 24 40 C 24 40, 6 26, 6 15 C 6 8.5, 11 4, 17 4 C 21 4, 23 6, 24 7.5 C 25 6, 27 4, 31 4 C 37 4, 42 8.5, 42 15 C 42 26, 24 40, 24 40 Z" fill="#3b82f6" />
                     <path d="M 12 16 H 18 L 21 9 L 25 23 L 28 12 L 30 16 H 36" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   </g>
@@ -557,7 +557,7 @@ export default function OurMission() {
                 <svg viewBox="0 0 200 200" width="120" height="120" style={{ overflow: "visible" }}>
                   <polygon points="10 100, 55 22, 145 22, 190 100, 145 178, 55 178" fill="none" stroke="#a855f7" strokeWidth="2.5" />
                   <circle cx="100" cy="100" r="48" fill="rgba(168, 85, 247, 0.03)" stroke="rgba(168, 85, 247, 0.15)" strokeWidth="1.5" />
-                  <g transform="translate(76, 76)">
+                  <g className="mobile-hex-icon-g" transform="translate(76, 76)">
                     <polygon points="24,1 27,7 34,7 29,11 31,17 24,13 17,17 19,11 14,7 21,7" fill="#fbbf24" />
                     <circle cx="24" cy="23" r="5" fill="#ffffff" />
                     <path d="M 18 37 C 18 31, 30 31, 30 37 Z" fill="#ffffff" />

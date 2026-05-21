@@ -5,6 +5,7 @@ import {
   CheckCheck, Clock, AlertCircle, Info, Trash2
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import vidyaLogo from "../../assets/Vidya1.png";
 
 /* ══════════════════════════════════════════
    BREADCRUMB — dynamic based on active module
@@ -23,7 +24,8 @@ const MODULE_META = {
   profile:         { parent: "Account",   label: "My Profile" },
 };
 
-function Breadcrumb({ activeSection }) {
+function Breadcrumb({ activeSection, setActiveSection }) {
+  const navigate = useNavigate();
   const meta = MODULE_META[activeSection] || { parent: "Dashboard", label: activeSection };
   return (
     <motion.div
@@ -33,9 +35,22 @@ function Breadcrumb({ activeSection }) {
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.22 }}
     >
-      <Home size={13} className="adn-bc-home" />
+      <Home 
+        size={13} 
+        className="adn-bc-home" 
+        onClick={() => navigate("/")}
+        style={{ cursor: "pointer" }}
+        title="Go to main home page"
+      />
       <ChevronRight size={12} className="adn-bc-sep" />
-      <span className="adn-bc-parent">{meta.parent}</span>
+      <span 
+        className="adn-bc-parent" 
+        onClick={() => setActiveSection("overview")}
+        style={{ cursor: "pointer" }}
+        title="Go to Overview"
+      >
+        {meta.parent}
+      </span>
       <ChevronRight size={12} className="adn-bc-sep" />
       <span className="adn-bc-current">{meta.label}</span>
     </motion.div>
@@ -300,7 +315,7 @@ function ProfileDropdown({ onProfile, onLogout }) {
 /* ══════════════════════════════════════════
    LOGOUT MODAL
 ══════════════════════════════════════════ */
-function LogoutModal({ onConfirm, onCancel }) {
+export function LogoutModal({ onConfirm, onCancel }) {
   return (
     <AnimatePresence>
       <motion.div
@@ -347,23 +362,14 @@ export default function AdminNavbar({
   onToggleSidebar,
   activeSection,
   setActiveSection,
+  onLogoutTrigger,
 }) {
-  const navigate = useNavigate();
-  const [showLogoutModal, setShowLogoutModal] = useState(false);
-
-  const handleLogout = () => {
-    localStorage.removeItem("vv_token");
-    localStorage.removeItem("vv_auth");
-    localStorage.removeItem("vv_admin_auth");
-    navigate("/");
-  };
-
   return (
     <>
       <header className="adn-topbar">
 
-        {/* ── Left: Toggle ── */}
-        <div className="adn-topbar-left">
+        {/* ── Left: Toggle & Brand name ── */}
+        <div className="adn-topbar-left" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           <button
             className="adn-toggle-btn"
             onClick={onToggleSidebar}
@@ -371,11 +377,22 @@ export default function AdminNavbar({
           >
             <Menu size={20} className="adn-toggle-icon" />
           </button>
+          {!sidebarOpen && (
+            <div 
+              className="adn-navbar-brand" 
+              onClick={onLogoutTrigger} 
+              style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: "8px" }}
+              title="Click to logout"
+            >
+              <img src={vidyaLogo} alt="VidyaVaidya Logo" style={{ height: "24px", width: "auto" }} />
+              <span style={{ fontWeight: "700", color: "#0b3c5d", fontSize: "16px" }}>VidyaVaidya</span>
+            </div>
+          )}
         </div>
 
         {/* ── Center: Dynamic Breadcrumb ── */}
         <div className="adn-topbar-center-v2">
-          <Breadcrumb activeSection={activeSection} />
+          <Breadcrumb activeSection={activeSection} setActiveSection={setActiveSection} />
         </div>
 
         {/* ── Right: Bell + Avatar ── */}
@@ -384,18 +401,11 @@ export default function AdminNavbar({
           <div className="adn-divider-v" />
           <ProfileDropdown
             onProfile={() => setActiveSection("profile")}
-            onLogout={() => setShowLogoutModal(true)}
+            onLogout={onLogoutTrigger}
           />
         </div>
 
       </header>
-
-      {showLogoutModal && (
-        <LogoutModal
-          onConfirm={handleLogout}
-          onCancel={() => setShowLogoutModal(false)}
-        />
-      )}
     </>
   );
 }

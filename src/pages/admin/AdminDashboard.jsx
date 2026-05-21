@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, IndianRupee, Users, FileText, TrendingUp,
   Search, Heart, Globe,
@@ -11,7 +12,7 @@ import {
 import api from "../../services/api";
 import { PartnersSection, StoriesSection, EventsSection, TestimonialsSection, SharedToast } from "./CmsComponents";
 import ForeignDonorsSection from "./ForeignDonorsSection";
-import AdminNavbar from "./AdminNavbar";
+import AdminNavbar, { LogoutModal } from "./AdminNavbar";
 import AdminProfilePage from "./AdminProfilePage";
 import vidyaLogo from "../../assets/Vidya1.png";
 import "./AdminDashboard.css";
@@ -952,9 +953,18 @@ function Analytics() {
    MAIN DASHBOARD SHELL
 ══════════════════════════════════════════════ */
 export default function AdminDashboard() {
+  const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState("overview");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [toast, setToast] = useState(null);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+
+  const handleLogout = () => {
+    localStorage.removeItem("vv_token");
+    localStorage.removeItem("vv_auth");
+    localStorage.removeItem("vv_admin_auth");
+    navigate("/");
+  };
 
   const showToast = (message, type = "success") => {
     setToast({ message, type });
@@ -992,7 +1002,12 @@ export default function AdminDashboard() {
     <div className="adm-root">
       {/* SIDEBAR */}
       <aside className={`adm-sidebar ${sidebarOpen ? "adm-sidebar-open" : "adm-sidebar-collapsed"}`}>
-        <div className="adm-sidebar-logo">
+        <div 
+          className="adm-sidebar-logo" 
+          onClick={() => setShowLogoutModal(true)} 
+          style={{ cursor: "pointer" }}
+          title="Click to logout"
+        >
           <img src={vidyaLogo} alt="VidyaVaidya Logo" className="adm-logo-img-sidebar" />
           {sidebarOpen && (
             <div className="adm-logo-text">
@@ -1030,6 +1045,7 @@ export default function AdminDashboard() {
           onToggleSidebar={() => setSidebarOpen(o => !o)}
           activeSection={activeSection}
           setActiveSection={setActiveSection}
+          onLogoutTrigger={() => setShowLogoutModal(true)}
         />
 
         {/* Content */}
@@ -1041,6 +1057,13 @@ export default function AdminDashboard() {
       </div>
 
       <SharedToast toast={toast} />
+
+      {showLogoutModal && (
+        <LogoutModal
+          onConfirm={handleLogout}
+          onCancel={() => setShowLogoutModal(false)}
+        />
+      )}
     </div>
   );
 }
