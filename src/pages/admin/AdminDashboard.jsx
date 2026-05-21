@@ -1,16 +1,19 @@
 import { useState, useMemo, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, IndianRupee, Users, FileText, TrendingUp,
-  LogOut, Search, Filter, ChevronDown, Eye, Download,
-  Heart, BookOpen, Stethoscope, Globe, RefreshCw,
+  Search, Heart, Globe,
   ArrowUpRight, ArrowDownRight, CheckCircle2, XCircle,
-  Clock, ShieldCheck, Menu, X, Bell, BarChart3,
-  UserCheck, Wallet, Calendar, Handshake, Plus, Pencil,
-  Trash2, ToggleLeft, ToggleRight, MessageSquareQuote
+  Clock, ShieldCheck, Bell, BarChart3,
+  UserCheck, Wallet, Calendar, Handshake, Plus,
+  Trash2, ToggleLeft, ToggleRight, MessageSquareQuote, User,
+  BookOpen, Stethoscope
 } from "lucide-react";
 import api from "../../services/api";
 import { PartnersSection, StoriesSection, EventsSection, TestimonialsSection, SharedToast } from "./CmsComponents";
+import ForeignDonorsSection from "./ForeignDonorsSection";
+import AdminNavbar from "./AdminNavbar";
+import AdminProfilePage from "./AdminProfilePage";
+import vidyaLogo from "../../assets/Vidya1.png";
 import "./AdminDashboard.css";
 
 const fmt = (n) => `₹${Number(n).toLocaleString("en-IN")}`;
@@ -949,7 +952,6 @@ function Analytics() {
    MAIN DASHBOARD SHELL
 ══════════════════════════════════════════════ */
 export default function AdminDashboard() {
-  const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState("overview");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [toast, setToast] = useState(null);
@@ -959,21 +961,18 @@ export default function AdminDashboard() {
     setTimeout(() => setToast(null), 3000);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("vv_admin_auth");
-    navigate("/admin");
-  };
-
   const SECTIONS = {
-    overview:        <Overview />,
-    donations:       <AllDonations />,
-    users:           <UserLogins />,
+    overview:         <Overview />,
+    donations:        <AllDonations />,
+    users:            <UserLogins />,
     "user-donations": <UserDonations />,
-    analytics:       <Analytics />,
-    partners:        <PartnersSection showToast={showToast} />,
-    stories:         <StoriesSection showToast={showToast} />,
-    events:          <EventsSection showToast={showToast} />,
-    testimonials:    <TestimonialsSection showToast={showToast} />,
+    "foreign-donors": <ForeignDonorsSection showToast={showToast} />,
+    analytics:        <Analytics />,
+    partners:         <PartnersSection showToast={showToast} />,
+    stories:          <StoriesSection showToast={showToast} />,
+    events:           <EventsSection showToast={showToast} />,
+    testimonials:     <TestimonialsSection showToast={showToast} />,
+    profile:          <AdminProfilePage showToast={showToast} />,
   };
 
   const NAV_ITEMS = [
@@ -981,6 +980,7 @@ export default function AdminDashboard() {
     { id: "donations",      label: "All Donations",   icon: Heart },
     { id: "users",          label: "User Logins",     icon: Users },
     { id: "user-donations", label: "User Donations",  icon: Wallet },
+    { id: "foreign-donors", label: "Foreign Donors",  icon: Globe },
     { id: "analytics",      label: "Analytics",       icon: BarChart3 },
     { id: "partners",       label: "Partners",        icon: Handshake },
     { id: "stories",        label: "Stories",         icon: FileText },
@@ -993,11 +993,11 @@ export default function AdminDashboard() {
       {/* SIDEBAR */}
       <aside className={`adm-sidebar ${sidebarOpen ? "adm-sidebar-open" : "adm-sidebar-collapsed"}`}>
         <div className="adm-sidebar-logo">
-          <div className="adm-logo-icon"><ShieldCheck size={20} /></div>
+          <img src={vidyaLogo} alt="VidyaVaidya Logo" className="adm-logo-img-sidebar" />
           {sidebarOpen && (
             <div className="adm-logo-text">
               <span className="adm-logo-main">VidyaVaidya</span>
-              <span className="adm-logo-sub">Admin Panel</span>
+              <span className="adm-logo-sub">ADMIN PANEL</span>
             </div>
           )}
         </div>
@@ -1008,7 +1008,7 @@ export default function AdminDashboard() {
             return (
               <button
                 key={item.id}
-                className={`adm-nav-btn ${activeSection === item.id ? "adm-nav-active" : ""}`}
+                className={`adm-nav-btn ${activeSection === item.id ? (item.id === "foreign-donors" ? "adm-nav-foreign-active" : "adm-nav-active") : ""}`}
                 onClick={() => setActiveSection(item.id)}
                 title={!sidebarOpen ? item.label : ""}
               >
@@ -1019,35 +1019,18 @@ export default function AdminDashboard() {
           })}
         </nav>
 
-        <div className="adm-sidebar-footer">
-          <button className="adm-nav-btn adm-logout-btn" onClick={handleLogout}>
-            <LogOut size={18} />
-            {sidebarOpen && <span>Logout</span>}
-          </button>
-        </div>
+        <div className="adm-sidebar-footer" />
       </aside>
 
       {/* MAIN */}
       <div className="adm-main">
-        {/* Topbar */}
-        <header className="adm-topbar">
-          <button className="adm-menu-btn" onClick={() => setSidebarOpen(o => !o)}>
-            {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
-          </button>
-          <div className="adm-topbar-title">
-            {NAV_ITEMS.find(i => i.id === activeSection)?.label}
-          </div>
-          <div className="adm-topbar-right">
-            <div className="adm-notification">
-              <Bell size={18} />
-              <span className="adm-notif-dot" />
-            </div>
-            <div className="adm-admin-chip">
-              <div className="adm-admin-avatar">A</div>
-              <span>Admin</span>
-            </div>
-          </div>
-        </header>
+        {/* Topbar — redesigned */}
+        <AdminNavbar
+          sidebarOpen={sidebarOpen}
+          onToggleSidebar={() => setSidebarOpen(o => !o)}
+          activeSection={activeSection}
+          setActiveSection={setActiveSection}
+        />
 
         {/* Content */}
         <main className="adm-content">
