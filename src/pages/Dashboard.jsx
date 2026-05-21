@@ -14,7 +14,8 @@ import {
   User,
   ArrowLeft,
   Check,
-  Camera
+  Camera,
+  Heart
 } from "lucide-react";
 import api from "../services/api";
 import "./Dashboard.css";
