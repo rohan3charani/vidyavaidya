@@ -32,6 +32,9 @@ export default function DonorForm() {
 
     try {
       await api.community.apply("donor", {
+        name,
+        email,
+        phone,
         donationType,
         preferredCause,
         location,

@@ -37,6 +37,9 @@ export default function VolunteerForm() {
       }
 
       await api.community.apply("volunteer", {
+        name,
+        email,
+        phone,
         skills: skillsArray,
         availability,
         experience: `Interest: ${interest}`,

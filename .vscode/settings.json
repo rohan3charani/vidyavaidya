@@ -1,4 +1,5 @@
 {
     "workbench.editor.enablePreview": true,
-    "markdown.preview.scrollPreviewWithEditor": true
+    "markdown.preview.scrollPreviewWithEditor": true,
+    "git.ignoreLimitWarning": true
 }

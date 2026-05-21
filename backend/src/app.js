@@ -66,9 +66,9 @@ app.use('/api/webhook', express.raw({
   }
 }));
 
-// 5. Standard Body Parsers (with size limits)
-app.use(express.json({ limit: '10kb' }));
-app.use(express.urlencoded({ extended: true, limit: '10kb' }));
+// 5. Standard Body Parsers (with size limits increased to 50mb for base64 file uploads)
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb', parameterLimit: 50000 }));
 
 // 6. Security Sanitizations (XSS)
 app.use(xss());

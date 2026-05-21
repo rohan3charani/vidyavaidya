@@ -19,9 +19,13 @@ const partnersController = {
    */
   async listPartners(req, res, next) {
     try {
-      const { type, featured } = req.query;
+      const { type, featured, all } = req.query;
 
-      let queryRef = db.collection('partners').where('isActive', '==', true);
+      let queryRef = db.collection('partners');
+      
+      if (all !== 'true') {
+        queryRef = queryRef.where('isActive', '==', true);
+      }
 
       if (type) queryRef = queryRef.where('type', '==', type);
       if (featured === 'true') queryRef = queryRef.where('isFeatured', '==', true);
@@ -79,7 +83,54 @@ const partnersController = {
    */
   async createPartner(req, res, next) {
     try {
-      const { name, type, description, shortBio = '', logoUrl = '', coverImageUrl = '', website = '', contactEmail = '', contactPhone = '', location = { address: '', city: '', state: '', country: 'India' }, servicesOffered = [], teamMembers = [], isFeatured = false, displayOrder = 10, socialLinks = { linkedin: '', twitter: '', facebook: '', instagram: '' } } = req.body;
+      const {
+        name,
+        type,
+        description,
+        shortBio = '',
+        logoUrl = '',
+        coverImageUrl = '',
+        website = '',
+        websiteUrl = '', // fallback
+        contactEmail = '',
+        contactPhone = '',
+        location,
+        address = '',
+        city = '',
+        state = '',
+        country = 'India',
+        servicesOffered = [],
+        teamMembers = [],
+        isFeatured = false,
+        displayOrder = 10,
+        socialLinks,
+        linkedinUrl = '',
+        twitterUrl = '',
+        facebookUrl = '',
+        instagramUrl = '',
+        partnershipStartDate,
+        supportQuote = '',
+        supportQuoteAuthor = '',
+        galleryUrls = [],
+        galleryImages = []
+      } = req.body;
+
+      const finalLocation = location || {
+        address: address || '',
+        city: city || '',
+        state: state || '',
+        country: country || 'India'
+      };
+
+      const finalSocialLinks = socialLinks || {
+        linkedin: linkedinUrl || '',
+        twitter: twitterUrl || '',
+        facebook: facebookUrl || '',
+        instagram: instagramUrl || ''
+      };
+
+      const finalWebsite = website || websiteUrl || '';
+      const finalGalleryUrls = (galleryUrls && galleryUrls.length > 0) ? galleryUrls : (galleryImages || []);
 
       const slug = slugify(name);
       
@@ -90,29 +141,40 @@ const partnersController = {
       }
 
       const timestamp = admin.firestore.Timestamp.fromDate(new Date());
+      let parsedStartDate = timestamp;
+      if (partnershipStartDate) {
+        const parsed = new Date(partnershipStartDate);
+        if (!isNaN(parsed.getTime())) {
+          parsedStartDate = admin.firestore.Timestamp.fromDate(parsed);
+        }
+      }
+
       const partnerRef = db.collection('partners').doc();
 
       const newPartner = {
         partnerId: partnerRef.id,
         name,
         slug: uniqueSlug,
-        type, // "hospital" | "corporate" | "ngo" | "government" | "educational"
-        description,
-        shortBio: shortBio || description.slice(0, 100) + '...',
+        type: type || 'hospital', // "hospital" | "corporate" | "ngo" | "government" | "educational"
+        description: description || shortBio || '',
+        shortBio: shortBio || (description ? description.slice(0, 100) + '...' : ''),
         logoUrl,
         coverImageUrl,
-        website,
+        website: finalWebsite,
         contactEmail,
         contactPhone,
-        location,
+        location: finalLocation,
         servicesOffered,
         teamMembers,
-        isFeatured,
+        isFeatured: !!isFeatured,
         isActive: true,
-        partnershipStartDate: timestamp,
+        partnershipStartDate: parsedStartDate,
         displayOrder: Number(displayOrder),
-        socialLinks,
-        createdBy: req.user.uid,
+        socialLinks: finalSocialLinks,
+        supportQuote: supportQuote || '',
+        supportQuoteAuthor: supportQuoteAuthor || '',
+        galleryUrls: finalGalleryUrls,
+        createdBy: (req.user && req.user.uid) || 'admin',
         createdAt: timestamp,
         updatedAt: timestamp
       };
@@ -137,10 +199,74 @@ const partnersController = {
       const { partnerId } = req.params;
       const updates = { ...req.body };
 
-      const partnerRef = db.collection('partners').doc(partnerId);
-      const doc = await partnerRef.get();
+      // First try direct Firestore doc ID lookup
+      let partnerRef = db.collection('partners').doc(partnerId);
+      let doc = await partnerRef.get();
+
+      // Fallback: query by partnerId field (for seeded/legacy data)
       if (!doc.exists) {
-        return res.status(404).json({ error: 'Partner profile not found' });
+        const snap = await db.collection('partners')
+          .where('partnerId', '==', partnerId)
+          .limit(1)
+          .get();
+        if (!snap.empty) {
+          partnerRef = snap.docs[0].ref;
+          doc = snap.docs[0];
+        } else {
+          return res.status(404).json({ error: 'Partner profile not found' });
+        }
+      }
+
+      // Convert flat fields to nested structures if present
+      if (updates.websiteUrl !== undefined && updates.website === undefined) {
+        updates.website = updates.websiteUrl;
+        delete updates.websiteUrl;
+      }
+
+      if (updates.galleryImages !== undefined && updates.galleryUrls === undefined) {
+        updates.galleryUrls = updates.galleryImages;
+        delete updates.galleryImages;
+      }
+
+      // Map location fields
+      const hasLocationFields = updates.address !== undefined || updates.city !== undefined || updates.state !== undefined || updates.country !== undefined;
+      if (hasLocationFields && !updates.location) {
+        const existingLocation = doc.data().location || { address: '', city: '', state: '', country: 'India' };
+        updates.location = {
+          address: updates.address !== undefined ? updates.address : existingLocation.address,
+          city: updates.city !== undefined ? updates.city : existingLocation.city,
+          state: updates.state !== undefined ? updates.state : existingLocation.state,
+          country: updates.country !== undefined ? updates.country : existingLocation.country
+        };
+        delete updates.address;
+        delete updates.city;
+        delete updates.state;
+        delete updates.country;
+      }
+
+      // Map social link fields
+      const hasSocialFields = updates.linkedinUrl !== undefined || updates.twitterUrl !== undefined || updates.facebookUrl !== undefined || updates.instagramUrl !== undefined;
+      if (hasSocialFields && !updates.socialLinks) {
+        const existingSocial = doc.data().socialLinks || { linkedin: '', twitter: '', facebook: '', instagram: '' };
+        updates.socialLinks = {
+          linkedin: updates.linkedinUrl !== undefined ? updates.linkedinUrl : existingSocial.linkedin,
+          twitter: updates.twitterUrl !== undefined ? updates.twitterUrl : existingSocial.twitter,
+          facebook: updates.facebookUrl !== undefined ? updates.facebookUrl : existingSocial.facebook,
+          instagram: updates.instagramUrl !== undefined ? updates.instagramUrl : existingSocial.instagram
+        };
+        delete updates.linkedinUrl;
+        delete updates.twitterUrl;
+        delete updates.facebookUrl;
+        delete updates.instagramUrl;
+      }
+
+      if (updates.partnershipStartDate) {
+        const parsed = new Date(updates.partnershipStartDate);
+        if (!isNaN(parsed.getTime())) {
+          updates.partnershipStartDate = admin.firestore.Timestamp.fromDate(parsed);
+        } else {
+          delete updates.partnershipStartDate;
+        }
       }
 
       if (updates.name && updates.name !== doc.data().name) {
@@ -169,20 +295,29 @@ const partnersController = {
     try {
       const { partnerId } = req.params;
 
-      const partnerRef = db.collection('partners').doc(partnerId);
-      const doc = await partnerRef.get();
+      // First try direct Firestore doc ID lookup
+      let partnerRef = db.collection('partners').doc(partnerId);
+      let doc = await partnerRef.get();
+
+      // Fallback: query by partnerId field (for seeded/legacy data)
       if (!doc.exists) {
-        return res.status(404).json({ error: 'Partner profile not found' });
+        const snap = await db.collection('partners')
+          .where('partnerId', '==', partnerId)
+          .limit(1)
+          .get();
+        if (!snap.empty) {
+          partnerRef = snap.docs[0].ref;
+          doc = snap.docs[0];
+        } else {
+          return res.status(404).json({ error: 'Partner profile not found' });
+        }
       }
 
-      await partnerRef.update({
-        isActive: false,
-        updatedAt: admin.firestore.Timestamp.fromDate(new Date())
-      });
+      await partnerRef.delete();
 
       return res.status(200).json({
         success: true,
-        message: 'Partner profile deactivated successfully'
+        message: 'Partner profile deleted successfully'
       });
     } catch (error) {
       next(error);

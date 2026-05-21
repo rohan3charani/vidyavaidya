@@ -82,12 +82,7 @@ export default function Navbar() {
 
           <button
             onClick={() => {
-              if (localStorage.getItem("vv_auth")) {
-                navigate("/join-community");
-              } else {
-                localStorage.setItem("vv_redirect", "/join-community");
-                navigate("/auth");
-              }
+              navigate("/join-community");
             }}
             className={location.pathname === "/join-community" ? "vv-nav-link vv-join-community active" : "vv-nav-link vv-join-community"}>
             Be A Part of Us
@@ -140,7 +135,7 @@ export default function Navbar() {
             }}
             className="vv-nav-link vv-join-community"
           >
-            Be aa Part of Us
+            Be a Part of Us
           </button>
           <button
             onClick={() => {

@@ -27,12 +27,15 @@ import GlobalHealthCare from "./pages/GlobalHealthCare";
 import SairamHospital from "./pages/SairamHospital";
 import TechForGood from "./pages/TechForGood";
 import CharaniInfotech from "./pages/CharaniInfotech";
+import PartnerDetail from "./pages/PartnerDetail";
 import PhotoGallery from "./pages/PhotoGallery";
 import VideoGallery from "./pages/VideoGallery";
 import News from "./pages/News";
 import Publishings from "./pages/Publishings";
 import Contact from "./pages/Contact";
 import OurVolunteers from "./pages/OurVolunteers";
+import EducationSupport from "./pages/EducationSupport";
+import NGO from "./pages/NGO";
 import Home from "./Components/Hero";
 
 function LandingPage() {
@@ -101,15 +104,18 @@ export default function App() {
         <Route path="/mission" element={<OurMission />} />
         <Route path="/partners" element={<Partners />} />
         <Route path="/partners/global-health-care" element={<GlobalHealthCare />} />
-        <Route path="/partners/sairam-hospital" element={<SairamHospital />} />
+        <Route path="/partners/sairam-hospital" element={<PartnerDetail />} />
         <Route path="/partners/tech-for-good" element={<TechForGood />} />
-        <Route path="/partners/charani-infotech" element={<CharaniInfotech />} />
+        <Route path="/partners/charani-infotech" element={<PartnerDetail />} />
+        <Route path="/partners/:slug" element={<PartnerDetail />} />
         <Route path="/PhotoGallery" element={<PhotoGallery />} />
         <Route path="/VideoGallery" element={<VideoGallery />} />
         <Route path="/news" element={<News />} />
         <Route path="/publishings" element={<Publishings />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/Ourvolunteers" element={<OurVolunteers />} />
+        <Route path="/EducationSupport" element={<EducationSupport />} />
+        <Route path="/NGO" element={<NGO />} />
 
         {/* ── Admin Routes ── */}
         <Route path="/admin" element={<AdminLogin />} />
@@ -122,47 +128,12 @@ export default function App() {
           }
         />
         
-        {/* Community Routes - Protected */}
-        <Route 
-          path="/join-community" 
-          element={
-            <ProtectedRoute>
-              <JoinCommunity />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/join/volunteer" 
-          element={
-            <ProtectedRoute>
-              <VolunteerForm />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/join/donor" 
-          element={
-            <ProtectedRoute>
-              <DonorForm />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/join/corporate" 
-          element={
-            <ProtectedRoute>
-              <CorporateForm />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/join/hospital" 
-          element={
-            <ProtectedRoute>
-              <HospitalForm />
-            </ProtectedRoute>
-          } 
-        />
+        {/* Community Routes */}
+        <Route path="/join-community" element={<JoinCommunity />} />
+        <Route path="/join/volunteer" element={<VolunteerForm />} />
+        <Route path="/join/donor" element={<DonorForm />} />
+        <Route path="/join/corporate" element={<CorporateForm />} />
+        <Route path="/join/hospital" element={<HospitalForm />} />
       </Routes>
     </>
   );

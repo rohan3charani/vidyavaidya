@@ -255,6 +255,64 @@ const emailService = {
     const userHtml = getBaseTemplate("Application Received", userContent, `${process.env.FRONTEND_URL || 'http://localhost:5173'}/dashboard`, 'Check Application Status');
     await this.sendMail({ to: app.applicantEmail, subject: `Community Application [${app.type.toUpperCase()}] Received | Vidyavaidya`, html: userHtml });
 
+    let detailsHtml = '';
+    if (app.type === 'volunteer' && app.volunteerDetails) {
+      const v = app.volunteerDetails;
+      detailsHtml = `
+        <h4 style="margin-top: 20px; color: ${BRAND_COLORS.primary};">📋 Application Details:</h4>
+        <table cellpadding="6" cellspacing="0" border="1" style="border-collapse: collapse; border-color: #dddddd; width: 100%;">
+          <tr><td><strong>Name</strong></td><td>${v.name || app.applicantName}</td></tr>
+          <tr><td><strong>Email</strong></td><td>${v.email || app.applicantEmail}</td></tr>
+          <tr><td><strong>Phone</strong></td><td>${v.phone || app.applicantPhone}</td></tr>
+          <tr><td><strong>Location</strong></td><td>${v.location || 'Not Provided'}</td></tr>
+          <tr><td><strong>Skills</strong></td><td>${Array.isArray(v.skills) ? v.skills.join(', ') : (v.skills || 'Not Provided')}</td></tr>
+          <tr><td><strong>Availability</strong></td><td>${v.availability || 'Not Provided'}</td></tr>
+          <tr><td><strong>Experience/Interest</strong></td><td>${v.experience || 'Not Provided'}</td></tr>
+          <tr><td><strong>Motivation</strong></td><td>${v.motivation || 'Not Provided'}</td></tr>
+        </table>
+      `;
+    } else if (app.type === 'donor' && app.donorDetails) {
+      const d = app.donorDetails;
+      detailsHtml = `
+        <h4 style="margin-top: 20px; color: ${BRAND_COLORS.primary};">📋 Application Details:</h4>
+        <table cellpadding="6" cellspacing="0" border="1" style="border-collapse: collapse; border-color: #dddddd; width: 100%;">
+          <tr><td><strong>Name/Organization</strong></td><td>${d.name || app.applicantName}</td></tr>
+          <tr><td><strong>Email</strong></td><td>${d.email || app.applicantEmail}</td></tr>
+          <tr><td><strong>Phone</strong></td><td>${d.phone || app.applicantPhone}</td></tr>
+          <tr><td><strong>Location</strong></td><td>${d.location || 'Not Provided'}</td></tr>
+          <tr><td><strong>Donation Type</strong></td><td>${d.donationType || 'Not Provided'}</td></tr>
+          <tr><td><strong>Preferred Cause</strong></td><td>${d.preferredCause || 'Not Provided'}</td></tr>
+          <tr><td><strong>Alumni Info</strong></td><td>${d.alumniInfo || 'Not Provided'}</td></tr>
+          <tr><td><strong>Motivation</strong></td><td>${d.motivation || 'Not Provided'}</td></tr>
+        </table>
+      `;
+    } else if (app.type === 'corporate' && app.corporateDetails) {
+      const c = app.corporateDetails;
+      detailsHtml = `
+        <h4 style="margin-top: 20px; color: ${BRAND_COLORS.primary};">📋 Application Details:</h4>
+        <table cellpadding="6" cellspacing="0" border="1" style="border-collapse: collapse; border-color: #dddddd; width: 100%;">
+          <tr><td><strong>Company Name</strong></td><td>${c.companyName || 'Not Provided'}</td></tr>
+          <tr><td><strong>Designation</strong></td><td>${c.designation || 'Not Provided'}</td></tr>
+          <tr><td><strong>Employee Count</strong></td><td>${c.employeeCount || 'Not Provided'}</td></tr>
+          <tr><td><strong>CSR Budget</strong></td><td>${c.csrBudget || 'Not Provided'}</td></tr>
+          <tr><td><strong>Collaboration Type</strong></td><td>${c.collaborationType || 'Not Provided'}</td></tr>
+          <tr><td><strong>GSTIN</strong></td><td>${c.gstNumber || 'Not Provided'}</td></tr>
+        </table>
+      `;
+    } else if (app.type === 'hospital' && app.hospitalDetails) {
+      const h = app.hospitalDetails;
+      detailsHtml = `
+        <h4 style="margin-top: 20px; color: ${BRAND_COLORS.primary};">📋 Application Details:</h4>
+        <table cellpadding="6" cellspacing="0" border="1" style="border-collapse: collapse; border-color: #dddddd; width: 100%;">
+          <tr><td><strong>Hospital Name</strong></td><td>${h.hospitalName || 'Not Provided'}</td></tr>
+          <tr><td><strong>Registration Number</strong></td><td>${h.registrationNumber || 'Not Provided'}</td></tr>
+          <tr><td><strong>Specializations</strong></td><td>${Array.isArray(h.specializations) ? h.specializations.join(', ') : (h.specializations || 'Not Provided')}</td></tr>
+          <tr><td><strong>Bed Count</strong></td><td>${h.bedCount || 'Not Provided'}</td></tr>
+          <tr><td><strong>Contact Person</strong></td><td>${h.contactPerson || 'Not Provided'}</td></tr>
+        </table>
+      `;
+    }
+
     const adminContent = `
       <h3>🌍 New Community Application Submitted</h3>
       <p>A new partnership application has been filed on the Vidyavaidya platform:</p>
@@ -263,7 +321,8 @@ const emailService = {
         <li><strong>Application Type:</strong> ${app.type.toUpperCase()}</li>
         <li><strong>Status:</strong> Pending Review</li>
       </ul>
-      <p>Please navigate to the admin portal applications console to approve or reject this request.</p>
+      ${detailsHtml}
+      <p style="margin-top: 20px;">Please navigate to the admin portal applications console to approve or reject this request.</p>
     `;
     const adminHtml = getBaseTemplate("New Community Application", adminContent);
     await this.sendMail({

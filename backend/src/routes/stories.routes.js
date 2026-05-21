@@ -15,6 +15,7 @@ router.get('/:slug', storiesController.getStoryBySlug);
 
 // Admin-Only Media Storage Upload Route
 router.post('/gallery/upload-url', authMiddleware, adminMiddleware, storiesController.getUploadUrl);
+router.post('/gallery/upload-base64', authMiddleware, adminMiddleware, storiesController.uploadBase64);
 
 // Admin-Only Article CRUD
 router.post('/', authMiddleware, adminMiddleware, storiesController.createStory);

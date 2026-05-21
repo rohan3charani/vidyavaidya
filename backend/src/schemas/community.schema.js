@@ -12,6 +12,9 @@ const applySchema = Joi.object({
   applicantPhone: Joi.string().optional(),
   
   volunteerDetails: Joi.object({
+    name: Joi.string().allow('', null).optional(),
+    email: Joi.string().email().allow('', null).optional(),
+    phone: Joi.string().allow('', null).optional(),
     skills: Joi.array().items(Joi.string()).min(1).required().messages({
       'any.required': 'At least one skill is required'
     }),
@@ -44,6 +47,9 @@ const applySchema = Joi.object({
   }).when('type', { is: 'hospital', then: Joi.required(), otherwise: Joi.optional() }),
 
   donorDetails: Joi.object({
+    name: Joi.string().allow('', null).optional(),
+    email: Joi.string().email().allow('', null).optional(),
+    phone: Joi.string().allow('', null).optional(),
     donationType: Joi.string().required().messages({ 'any.required': 'Donation type is required' }),
     preferredCause: Joi.string().required().messages({ 'any.required': 'Preferred cause is required' }),
     location: Joi.string().required().messages({ 'any.required': 'Location is required' }),

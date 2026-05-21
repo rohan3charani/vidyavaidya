@@ -104,43 +104,65 @@ export default function Donate() {
 
         const draftDetails = sessionStorage.getItem("draft_donor_details");
         const pendingDetails = localStorage.getItem("pending_donor_details");
+        const userProfile = localStorage.getItem("vv_user_profile");
         
-        // Priority 1: Restore mid-page refresh state from active session draft
-        if (draftDetails) {
-            try {
-                const profile = JSON.parse(draftDetails);
-                setForm(prev => ({
-                    ...prev,
-                    ...profile
-                }));
-                return;
-            } catch (e) {
-                console.error("Failed to parse draft details:", e);
-            }
-        }
+        let profileToSet = null;
 
-        // Priority 2: Restore from a pending transaction that was canceled or navigated back from
-        if (pendingDetails) {
+        // Base: Logged-in profile
+        if (userProfile) {
             try {
-                const profile = JSON.parse(pendingDetails);
-                setForm(prev => ({
-                    ...prev,
+                const profile = JSON.parse(userProfile);
+                profileToSet = {
                     fullName: profile.fullName || "",
                     email: profile.email || "",
                     mobile: (profile.phone && profile.phone.replace(/^\+91/, '')) || profile.mobile || "",
                     isAlumni: profile.isAlumni || false,
                     alumniId: profile.alumniId || "",
-                    yearOfGrad: profile.yearOfGrad || "",
-                    address: profile.address?.line || "",
-                    city: profile.address?.city || "",
-                    state: profile.address?.state || "",
-                    country: profile.address?.country || "India",
-                    pincode: profile.address?.pincode || ""
-                }));
-                return;
-            } catch (e) {
-                console.error("Failed to parse pending donor details:", e);
-            }
+                    yearOfGrad: profile.gradYear || profile.yearOfGraduation || "",
+                    address: profile.address?.line || profile.address || "",
+                    city: profile.address?.city || profile.city || "",
+                    state: profile.address?.state || profile.state || "",
+                    country: profile.address?.country || profile.country || "India",
+                    pincode: profile.address?.pincode || profile.pincode || ""
+                };
+            } catch (e) {}
+        }
+
+        // Overlay draft only if it has meaningful data (prevents empty drafts from wiping profile)
+        if (draftDetails) {
+            try {
+                const draft = JSON.parse(draftDetails);
+                if (draft.fullName || draft.email || !profileToSet) {
+                    profileToSet = { ...profileToSet, ...draft };
+                }
+            } catch (e) {}
+        }
+
+        // Overlay pending
+        if (pendingDetails) {
+            try {
+                const pending = JSON.parse(pendingDetails);
+                if (pending.fullName || pending.email || !profileToSet) {
+                    profileToSet = {
+                        ...profileToSet,
+                        fullName: pending.fullName || profileToSet?.fullName || "",
+                        email: pending.email || profileToSet?.email || "",
+                        mobile: (pending.phone && pending.phone.replace(/^\+91/, '')) || pending.mobile || profileToSet?.mobile || "",
+                        isAlumni: pending.isAlumni ?? profileToSet?.isAlumni ?? false,
+                        alumniId: pending.alumniId || profileToSet?.alumniId || "",
+                        yearOfGrad: pending.yearOfGrad || profileToSet?.yearOfGrad || "",
+                        address: pending.address?.line ?? pending.address ?? profileToSet?.address ?? "",
+                        city: pending.address?.city ?? profileToSet?.city ?? "",
+                        state: pending.address?.state ?? profileToSet?.state ?? "",
+                        country: pending.address?.country ?? profileToSet?.country ?? "India",
+                        pincode: pending.address?.pincode ?? profileToSet?.pincode ?? ""
+                    };
+                }
+            } catch (e) {}
+        }
+
+        if (profileToSet) {
+            setForm(prev => ({ ...prev, ...profileToSet }));
         }
     }, []);
 

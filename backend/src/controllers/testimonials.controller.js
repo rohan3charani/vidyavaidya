@@ -92,7 +92,7 @@ const testimonialsController = {
         isPublished: !!isPublished,
         displayOrder: Number(displayOrder),
         category,
-        createdBy: req.user.uid,
+        createdBy: (req.user && req.user.uid) || 'admin',
         createdAt: timestamp,
         updatedAt: timestamp
       };

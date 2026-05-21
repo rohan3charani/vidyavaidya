@@ -28,16 +28,23 @@ const eventsController = {
       snap.forEach(doc => {
         events.push({ id: doc.id, ...doc.data() });
       });
-      // Filter in memory
-      if (category) events = events.filter(e => e.category === category);
-      if (status) events = events.filter(e => e.status === status);
-      if (featured === 'true') events = events.filter(e => e.isFeatured === true);
+
+      // Filter in-memory
+      if (category && category !== 'All') {
+        events = events.filter(e => e.category === category);
+      }
+      if (status) {
+        events = events.filter(e => e.status === status);
+      }
+      if (featured === 'true') {
+        events = events.filter(e => e.isFeatured === true);
+      }
 
       // Sort in-memory to prevent composite index requirements
       events.sort((a, b) => {
         const dateA = a.startDate ? (a.startDate._seconds ? a.startDate._seconds * 1000 : new Date(a.startDate).getTime()) : 0;
         const dateB = b.startDate ? (b.startDate._seconds ? b.startDate._seconds * 1000 : new Date(b.startDate).getTime()) : 0;
-        return dateA - dateB;
+        return dateB - dateA; // Sort newest first (descending)
       });
 
       const total = events.length;
@@ -94,7 +101,7 @@ const eventsController = {
    */
   async createEvent(req, res, next) {
     try {
-      const { title, description, shortDescription, category, status = 'upcoming', thumbnailUrl, galleryUrls = [], videoUrl = '', location, startDate, endDate, registrationDeadline, totalSeats = 100, isFeatured = false, organizer = 'Vidyavaidya Foundation', speakers = [], tags = [] } = req.body;
+      const { title, description, shortDescription, category, status = 'upcoming', thumbnailUrl, galleryUrls = [], galleryImages = [], videoUrl = '', location, startDate, endDate, registrationDeadline, totalSeats = 100, isFeatured = false, organizer = 'Vidyavaidya Foundation', speakers = [], tags = [], eventType = 'photo' } = req.body;
 
       const slug = slugify(title);
       
@@ -106,31 +113,41 @@ const eventsController = {
       }
 
       const timestamp = admin.firestore.Timestamp.fromDate(new Date());
+
+      const parseTimestamp = (dateVal) => {
+        if (!dateVal) return timestamp;
+        const parsed = new Date(dateVal);
+        return isNaN(parsed.getTime()) ? timestamp : admin.firestore.Timestamp.fromDate(parsed);
+      };
+
+      const finalGalleryUrls = (galleryUrls && galleryUrls.length > 0) ? galleryUrls : (galleryImages || []);
+
       const eventRef = db.collection('events').doc();
       
       const newEvent = {
         eventId: eventRef.id,
         title,
         slug: uniqueSlug,
-        description,
+        description: description || shortDescription || '',
         shortDescription: shortDescription || (description ? description.slice(0, 150) + '...' : ''),
-        category,
+        category: category || 'General',
         status,
         thumbnailUrl: thumbnailUrl || '',
-        galleryUrls,
+        galleryUrls: finalGalleryUrls,
         videoUrl,
-        location,
-        startDate: admin.firestore.Timestamp.fromDate(new Date(startDate)),
-        endDate: admin.firestore.Timestamp.fromDate(new Date(endDate)),
-        registrationDeadline: admin.firestore.Timestamp.fromDate(new Date(registrationDeadline)),
+        location: location || 'Nellore',
+        startDate: parseTimestamp(startDate),
+        endDate: parseTimestamp(endDate || startDate),
+        registrationDeadline: parseTimestamp(registrationDeadline || startDate),
         totalSeats: Number(totalSeats),
         registeredCount: 0,
         isRegistrationOpen: true,
-        isFeatured,
+        isFeatured: !!isFeatured,
         organizer,
         speakers,
         tags,
-        createdBy: req.user.uid,
+        eventType,
+        createdBy: (req.user && req.user.uid) || 'admin',
         createdAt: timestamp,
         updatedAt: timestamp,
         publishedAt: timestamp
@@ -162,14 +179,38 @@ const eventsController = {
         return res.status(404).json({ error: 'Event not found' });
       }
 
+      if (updates.galleryImages !== undefined && updates.galleryUrls === undefined) {
+        updates.galleryUrls = updates.galleryImages;
+        delete updates.galleryImages;
+      }
+
       if (updates.title && updates.title !== eventDoc.data().title) {
         updates.slug = slugify(updates.title);
       }
 
-      if (updates.startDate) updates.startDate = admin.firestore.Timestamp.fromDate(new Date(updates.startDate));
-      if (updates.endDate) updates.endDate = admin.firestore.Timestamp.fromDate(new Date(updates.endDate));
-      if (updates.registrationDeadline) updates.registrationDeadline = admin.firestore.Timestamp.fromDate(new Date(updates.registrationDeadline));
-      if (updates.totalSeats) updates.totalSeats = Number(updates.totalSeats);
+      const parseTimestamp = (dateVal) => {
+        const parsed = new Date(dateVal);
+        return isNaN(parsed.getTime()) ? null : admin.firestore.Timestamp.fromDate(parsed);
+      };
+
+      if (updates.startDate) {
+        const ts = parseTimestamp(updates.startDate);
+        if (ts) updates.startDate = ts;
+        else delete updates.startDate;
+      }
+      if (updates.endDate) {
+        const ts = parseTimestamp(updates.endDate);
+        if (ts) updates.endDate = ts;
+        else delete updates.endDate;
+      }
+      if (updates.registrationDeadline) {
+        const ts = parseTimestamp(updates.registrationDeadline);
+        if (ts) updates.registrationDeadline = ts;
+        else delete updates.registrationDeadline;
+      }
+      if (updates.totalSeats !== undefined) {
+        updates.totalSeats = Number(updates.totalSeats);
+      }
 
       updates.updatedAt = admin.firestore.Timestamp.fromDate(new Date());
 
