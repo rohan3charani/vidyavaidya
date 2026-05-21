@@ -587,6 +587,7 @@ export function PartnersSection({ showToast }) {
   });
 
   const watchedGalleryImages = watch("galleryImages") || [];
+  const selectedType = watch("type");
 
   const fetchPartners = async () => {
     setLoading(true);
@@ -1098,50 +1099,58 @@ export function PartnersSection({ showToast }) {
                 </div>
 
                 {/* Form Tab Navigation (Clicking Disabled to Enforce Step Progress) */}
-                <div className="px-6 py-2.5 bg-white border-b border-slate-100 flex gap-2">
-                  {[
-                    { name: "1. Basic Info", fields: ["name", "type", "shortBio", "description"] },
-                    { name: "2. Contact & Location", fields: ["city", "state", "websiteUrl", "contactEmail", "contactPhone", "address", "country"] },
-                    { name: "3. Partnership & Socials", fields: ["partnershipStartDate", "displayOrder", "linkedinUrl", "twitterUrl", "facebookUrl", "instagramUrl"] },
-                    { name: "4. Message & Highlights", fields: ["supportQuote", "supportQuoteAuthor", "galleryImages"] }
-                  ].map((t, idx) => {
-                    const hasErrors = t.fields.some(f => !!errors[f]);
-                    return (
-                      <div
-                        key={idx}
-                        className={`px-3 py-1.5 text-[11px] font-bold rounded-xl transition-all flex items-center gap-1.5 select-none ${activeFormTab === idx
-                          ? "bg-teal-600 text-white shadow-md shadow-teal-600/10"
-                          : "bg-slate-50 text-slate-400"
-                          } ${hasErrors ? "ring-2 ring-rose-500/30 text-rose-600 bg-rose-50" : ""}`}
-                      >
-                        {t.name}
-                        {hasErrors && <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />}
-                      </div>
-                    );
-                  })}
-                </div>
+                {selectedType === "government" ? (
+                  <div className="px-6 py-2.5 bg-white border-b border-slate-100 flex gap-2">
+                    <div className="px-3 py-1.5 text-[11px] font-bold rounded-xl bg-teal-600 text-white shadow-md shadow-teal-600/10 flex items-center gap-1.5 select-none">
+                      Volunteer Network Details
+                    </div>
+                  </div>
+                ) : (
+                  <div className="px-6 py-2.5 bg-white border-b border-slate-100 flex gap-2">
+                    {[
+                      { name: "1. Basic Info", fields: ["name", "type", "shortBio", "description"] },
+                      { name: "2. Contact & Location", fields: ["city", "state", "websiteUrl", "contactEmail", "contactPhone", "address", "country"] },
+                      { name: "3. Partnership & Socials", fields: ["partnershipStartDate", "displayOrder", "linkedinUrl", "twitterUrl", "facebookUrl", "instagramUrl"] },
+                      { name: "4. Message & Highlights", fields: ["supportQuote", "supportQuoteAuthor", "galleryImages"] }
+                    ].map((t, idx) => {
+                      const hasErrors = t.fields.some(f => !!errors[f]);
+                      return (
+                        <div
+                          key={idx}
+                          className={`px-3 py-1.5 text-[11px] font-bold rounded-xl transition-all flex items-center gap-1.5 select-none ${activeFormTab === idx
+                            ? "bg-teal-600 text-white shadow-md shadow-teal-600/10"
+                            : "bg-slate-50 text-slate-400"
+                            } ${hasErrors ? "ring-2 ring-rose-500/30 text-rose-600 bg-rose-50" : ""}`}
+                        >
+                          {t.name}
+                          {hasErrors && <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
 
                 {/* Modal Body - Fixed, perfectly sized, no outer scrollbar for the modal */}
                 <div className="p-4 md:p-5 flex-1 overflow-hidden flex flex-col min-h-0 justify-between">
                   <form className="space-y-3.5 flex-1 overflow-y-auto pr-1 custom-scrollbar min-h-0">
-                    {activeFormTab === 0 && (
+                    {selectedType === "government" ? (
                       <div className="space-y-3.5">
                         {/* Basic Info Section Card */}
                         <div className="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-sm space-y-3">
                           <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
                             <FileText className="w-4.5 h-4.5 text-teal-600" />
-                            <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Basic Info</h4>
+                            <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Volunteer Info</h4>
                           </div>
 
                           {isFromHeader ? (
                             <div className="grid grid-cols-2 gap-4">
                               <div className="flex flex-col gap-1">
-                                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Partner Name *</label>
+                                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Volunteer Name *</label>
                                 <input
                                   type="text"
                                   {...register("name")}
                                   className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-semibold"
-                                  placeholder="Hospital/Company/Organization Name"
+                                  placeholder="Volunteer / Community Group Name"
                                 />
                                 {errors.name && <span className="text-rose-500 text-[11px] font-bold mt-0.5">{errors.name.message}</span>}
                               </div>
@@ -1163,365 +1172,468 @@ export function PartnersSection({ showToast }) {
                             </div>
                           ) : (
                             <div className="flex flex-col gap-1">
-                              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Partner Name *</label>
+                              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Volunteer Name *</label>
                               <input
                                 type="text"
                                 {...register("name")}
                                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-semibold"
-                                placeholder="Hospital/Company/Organization Name"
+                                placeholder="Volunteer / Community Group Name"
                               />
                               {errors.name && <span className="text-rose-500 text-[11px] font-bold mt-0.5">{errors.name.message}</span>}
                             </div>
                           )}
-
-                          <div className="flex flex-col gap-1">
-                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Contact Person & Short Bio (max 150 chars)</label>
-                            <textarea
-                              {...register("shortBio")}
-                              maxLength={150}
-                              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-1.5 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-medium"
-                              placeholder="e.g. Dr. A. K. Sharma (Medical Chief) — Delivering pediatric support campaigns."
-                              rows={2}
-                            />
-                            <span className="text-[10px] text-right font-bold text-slate-400">{(watch("shortBio") || "").length}/150</span>
-                          </div>
-
-                          <div className="flex flex-col gap-1">
-                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Full Collaboration Description</label>
-                            <textarea
-                              {...register("description")}
-                              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-medium"
-                              placeholder="Detail the collaborative partnership scope, goals, and key accomplishments..."
-                              rows={2}
-                            />
-                          </div>
                         </div>
 
                         {/* Media Uploads Section Card */}
                         <div className="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-sm space-y-3">
                           <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
                             <Building2 className="w-4.5 h-4.5 text-teal-600" />
-                            <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Media Uploads</h4>
+                            <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Volunteer Photo Upload</h4>
                           </div>
 
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div className="grid grid-cols-1 gap-6">
                             <ImageUrlWithUpload
-                              label="Partner Logo URL / Image Upload"
+                              label="Volunteer Photo URL / Image Upload"
                               value={watch("logoUrl")}
                               onChange={(url) => setValue("logoUrl", url, { shouldValidate: true })}
                               onUploadError={(err) => showToast(err, "error")}
                             />
-                            <ImageUrlWithUpload
-                              label="Cover Banner URL / Image Upload"
-                              value={watch("coverImageUrl")}
-                              onChange={(url) => setValue("coverImageUrl", url, { shouldValidate: true })}
-                              onUploadError={(err) => showToast(err, "error")}
-                            />
                           </div>
                         </div>
                       </div>
-                    )}
-
-                    {activeFormTab === 1 && (
-                      <div className="space-y-4">
-                        {/* Contact Details Card */}
-                        <div className="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-sm space-y-3">
-                          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-                            <Phone className="w-4.5 h-4.5 text-teal-600" />
-                            <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Contact Details</h4>
-                          </div>
-
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div className="flex flex-col gap-1">
-                              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Website URL</label>
-                              <input
-                                type="text"
-                                {...register("websiteUrl")}
-                                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-medium"
-                                placeholder="https://example.com"
-                              />
-                              {errors.websiteUrl && <span className="text-rose-500 text-[11px] font-bold mt-0.5">{errors.websiteUrl.message}</span>}
-                            </div>
-                            <div className="flex flex-col gap-1">
-                              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Contact Email</label>
-                              <input
-                                type="email"
-                                {...register("contactEmail")}
-                                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-medium"
-                                placeholder="partner@example.com"
-                              />
-                              {errors.contactEmail && <span className="text-rose-500 text-[11px] font-bold mt-0.5">{errors.contactEmail.message}</span>}
-                            </div>
-                            <div className="flex flex-col gap-1">
-                              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Contact Phone</label>
-                              <input
-                                type="text"
-                                {...register("contactPhone")}
-                                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-medium"
-                                placeholder="9876543210"
-                              />
-                              {errors.contactPhone && <span className="text-rose-500 text-[11px] font-bold mt-0.5">{errors.contactPhone.message}</span>}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Location Details Card */}
-                        <div className="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-sm space-y-3">
-                          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-                            <MapPin className="w-4.5 h-4.5 text-teal-600" />
-                            <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Location Details</h4>
-                          </div>
-
-                          <div className="flex flex-col gap-1">
-                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Street Address</label>
-                            <input
-                              type="text"
-                              {...register("address")}
-                              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-medium"
-                              placeholder="Building, Street, Area"
-                            />
-                            {errors.address && <span className="text-rose-500 text-[11px] font-bold mt-0.5">{errors.address.message}</span>}
-                          </div>
-
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div className="flex flex-col gap-1">
-                              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">City *</label>
-                              <input
-                                type="text"
-                                {...register("city")}
-                                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-semibold"
-                                placeholder="e.g. Nellore"
-                              />
-                              {errors.city && <span className="text-rose-500 text-[11px] font-bold mt-0.5">{errors.city.message}</span>}
-                            </div>
-                            <div className="flex flex-col gap-1">
-                              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">State *</label>
-                              <input
-                                type="text"
-                                {...register("state")}
-                                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-semibold"
-                                placeholder="e.g. Andhra Pradesh"
-                              />
-                              {errors.state && <span className="text-rose-500 text-[11px] font-bold mt-0.5">{errors.state.message}</span>}
-                            </div>
-                            <div className="flex flex-col gap-1">
-                              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Country *</label>
-                              <input
-                                type="text"
-                                {...register("country")}
-                                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-semibold"
-                                placeholder="India"
-                              />
-                              {errors.country && <span className="text-rose-500 text-[11px] font-bold mt-0.5">{errors.country.message}</span>}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {activeFormTab === 2 && (
-                      <div className="space-y-4">
-                        {/* Partnership Details Card */}
-                        <div className="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-sm space-y-3">
-                          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-                            <Handshake className="w-4.5 h-4.5 text-teal-600" />
-                            <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Partnership Details</h4>
-                          </div>
-
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="flex flex-col gap-1">
-                              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Partnership Start Date</label>
-                              <input
-                                type="date"
-                                {...register("partnershipStartDate")}
-                                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-semibold"
-                              />
-                              {errors.partnershipStartDate && <span className="text-rose-500 text-[11px] font-bold mt-0.5">{errors.partnershipStartDate.message}</span>}
-                            </div>
-                            <div className="flex flex-col gap-1">
-                              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Display Order (Priority) *</label>
-                              <input
-                                type="number"
-                                {...register("displayOrder")}
-                                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-semibold"
-                                placeholder="10"
-                              />
-                              {errors.displayOrder && <span className="text-rose-500 text-[11px] font-bold mt-0.5">{errors.displayOrder.message}</span>}
-                            </div>
-                          </div>
-
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-1">
-                            <label className="flex items-center justify-between p-2.5 rounded-xl border border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors">
-                              <span className="text-xs font-bold text-slate-600">Featured Placement</span>
-                              <div className="relative inline-flex items-center cursor-pointer">
-                                <input
-                                  type="checkbox"
-                                  {...register("isFeatured")}
-                                  className="sr-only peer"
-                                />
-                                <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-teal-600"></div>
+                    ) : (
+                      <>
+                        {activeFormTab === 0 && (
+                          <div className="space-y-3.5">
+                            {/* Basic Info Section Card */}
+                            <div className="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-sm space-y-3">
+                              <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+                                <FileText className="w-4.5 h-4.5 text-teal-600" />
+                                <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Basic Info</h4>
                               </div>
-                            </label>
 
-                            <label className="flex items-center justify-between p-2.5 rounded-xl border border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors">
-                              <span className="text-xs font-bold text-slate-600">Active status</span>
-                              <div className="relative inline-flex items-center cursor-pointer">
-                                <input
-                                  type="checkbox"
-                                  {...register("isActive")}
-                                  className="sr-only peer"
+                              {isFromHeader ? (
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div className="flex flex-col gap-1">
+                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Partner Name *</label>
+                                    <input
+                                      type="text"
+                                      {...register("name")}
+                                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-semibold"
+                                      placeholder="Hospital/Company/Organization Name"
+                                    />
+                                    {errors.name && <span className="text-rose-500 text-[11px] font-bold mt-0.5">{errors.name.message}</span>}
+                                  </div>
+
+                                  <div className="flex flex-col gap-1">
+                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Partner Type *</label>
+                                    <select
+                                      {...register("type")}
+                                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-bold text-slate-700 cursor-pointer"
+                                    >
+                                      <option value="hospital">Hospital</option>
+                                      <option value="ngo">NGO</option>
+                                      <option value="educational">Educational Institution</option>
+                                      <option value="corporate">Corporate</option>
+                                      <option value="government">Volunteer Network</option>
+                                    </select>
+                                    {errors.type && <span className="text-rose-500 text-[11px] font-bold mt-0.5">{errors.type.message}</span>}
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="flex flex-col gap-1">
+                                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Partner Name *</label>
+                                  <input
+                                    type="text"
+                                    {...register("name")}
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-semibold"
+                                    placeholder="Hospital/Company/Organization Name"
+                                  />
+                                  {errors.name && <span className="text-rose-500 text-[11px] font-bold mt-0.5">{errors.name.message}</span>}
+                                </div>
+                              )}
+
+                              <div className="flex flex-col gap-1">
+                                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Contact Person & Short Bio (max 150 chars)</label>
+                                <textarea
+                                  {...register("shortBio")}
+                                  maxLength={150}
+                                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-1.5 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-medium"
+                                  placeholder="e.g. Dr. A. K. Sharma (Medical Chief) — Delivering pediatric support campaigns."
+                                  rows={2}
                                 />
-                                <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-teal-600"></div>
+                                <span className="text-[10px] text-right font-bold text-slate-400">{(watch("shortBio") || "").length}/150</span>
                               </div>
-                            </label>
-                          </div>
-                        </div>
 
-                        {/* Social Links Card */}
-                        <div className="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-sm space-y-3">
-                          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-                            <Globe className="w-4.5 h-4.5 text-teal-600" />
-                            <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Social Links</h4>
-                          </div>
+                              <div className="flex flex-col gap-1">
+                                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Full Collaboration Description</label>
+                                <textarea
+                                  {...register("description")}
+                                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-medium"
+                                  placeholder="Detail the collaborative partnership scope, goals, and key accomplishments..."
+                                  rows={2}
+                                />
+                              </div>
+                            </div>
 
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="flex flex-col gap-1">
-                              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">LinkedIn URL</label>
-                              <input
-                                type="text"
-                                {...register("linkedinUrl")}
-                                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-medium text-slate-700"
-                                placeholder="https://linkedin.com/company/..."
-                              />
-                            </div>
-                            <div className="flex flex-col gap-1">
-                              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Twitter URL</label>
-                              <input
-                                type="text"
-                                {...register("twitterUrl")}
-                                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-medium text-slate-700"
-                                placeholder="https://twitter.com/..."
-                              />
-                            </div>
-                          </div>
+                            {/* Media Uploads Section Card */}
+                            <div className="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-sm space-y-3">
+                              <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+                                <Building2 className="w-4.5 h-4.5 text-teal-600" />
+                                <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Media Uploads</h4>
+                              </div>
 
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="flex flex-col gap-1">
-                              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Facebook URL</label>
-                              <input
-                                type="text"
-                                {...register("facebookUrl")}
-                                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-medium text-slate-700"
-                                placeholder="https://facebook.com/..."
-                              />
-                            </div>
-                            <div className="flex flex-col gap-1">
-                              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Instagram URL</label>
-                              <input
-                                type="text"
-                                {...register("instagramUrl")}
-                                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-medium text-slate-700"
-                                placeholder="https://instagram.com/..."
-                              />
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <ImageUrlWithUpload
+                                  label="Partner Logo URL / Image Upload"
+                                  value={watch("logoUrl")}
+                                  onChange={(url) => setValue("logoUrl", url, { shouldValidate: true })}
+                                  onUploadError={(err) => showToast(err, "error")}
+                                />
+                                <ImageUrlWithUpload
+                                  label="Cover Banner URL / Image Upload"
+                                  value={watch("coverImageUrl")}
+                                  onChange={(url) => setValue("coverImageUrl", url, { shouldValidate: true })}
+                                  onUploadError={(err) => showToast(err, "error")}
+                                />
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </div>
-                    )}
+                        )}
 
-                    {activeFormTab === 3 && (
-                      <div className="space-y-4">
-                        {/* Support Quote Card */}
-                        <div className="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-sm space-y-3">
-                          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-                            <MessageSquareQuote className="w-4.5 h-4.5 text-teal-600" />
-                            <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">A Message of Support</h4>
+                        {activeFormTab === 1 && (
+                          <div className="space-y-4">
+                            {/* Contact Details Card */}
+                            <div className="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-sm space-y-3">
+                              <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+                                <Phone className="w-4.5 h-4.5 text-teal-600" />
+                                <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Contact Details</h4>
+                              </div>
+
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div className="flex flex-col gap-1">
+                                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Website URL</label>
+                                  <input
+                                    type="text"
+                                    {...register("websiteUrl")}
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-medium"
+                                    placeholder="https://example.com"
+                                  />
+                                  {errors.websiteUrl && <span className="text-rose-500 text-[11px] font-bold mt-0.5">{errors.websiteUrl.message}</span>}
+                                </div>
+                                <div className="flex flex-col gap-1">
+                                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Contact Email</label>
+                                  <input
+                                    type="email"
+                                    {...register("contactEmail")}
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-medium"
+                                    placeholder="partner@example.com"
+                                  />
+                                  {errors.contactEmail && <span className="text-rose-500 text-[11px] font-bold mt-0.5">{errors.contactEmail.message}</span>}
+                                </div>
+                                <div className="flex flex-col gap-1">
+                                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Contact Phone</label>
+                                  <input
+                                    type="text"
+                                    {...register("contactPhone")}
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-medium"
+                                    placeholder="9876543210"
+                                  />
+                                  {errors.contactPhone && <span className="text-rose-500 text-[11px] font-bold mt-0.5">{errors.contactPhone.message}</span>}
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Location Details Card */}
+                            <div className="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-sm space-y-3">
+                              <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+                                <MapPin className="w-4.5 h-4.5 text-teal-600" />
+                                <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Location Details</h4>
+                              </div>
+
+                              <div className="flex flex-col gap-1">
+                                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Street Address</label>
+                                <input
+                                  type="text"
+                                  {...register("address")}
+                                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-medium"
+                                  placeholder="Building, Street, Area"
+                                />
+                                {errors.address && <span className="text-rose-500 text-[11px] font-bold mt-0.5">{errors.address.message}</span>}
+                              </div>
+
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div className="flex flex-col gap-1">
+                                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">City *</label>
+                                  <input
+                                    type="text"
+                                    {...register("city")}
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-semibold"
+                                    placeholder="e.g. Nellore"
+                                  />
+                                  {errors.city && <span className="text-rose-500 text-[11px] font-bold mt-0.5">{errors.city.message}</span>}
+                                </div>
+                                <div className="flex flex-col gap-1">
+                                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">State *</label>
+                                  <input
+                                    type="text"
+                                    {...register("state")}
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-semibold"
+                                    placeholder="e.g. Andhra Pradesh"
+                                  />
+                                  {errors.state && <span className="text-rose-500 text-[11px] font-bold mt-0.5">{errors.state.message}</span>}
+                                </div>
+                                <div className="flex flex-col gap-1">
+                                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Country *</label>
+                                  <input
+                                    type="text"
+                                    {...register("country")}
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-semibold"
+                                    placeholder="India"
+                                  />
+                                  {errors.country && <span className="text-rose-500 text-[11px] font-bold mt-0.5">{errors.country.message}</span>}
+                                </div>
+                              </div>
+                            </div>
                           </div>
+                        )}
 
-                          <div className="flex flex-col gap-1">
-                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Quote / Message of Support</label>
-                            <textarea
-                              {...register("supportQuote")}
-                              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-medium"
-                              placeholder="e.g. 'VidyaVaidya Trust has been doing phenomenal work...'"
-                              rows={3}
-                            />
+                        {activeFormTab === 2 && (
+                          <div className="space-y-4">
+                            {/* Partnership Details Card */}
+                            <div className="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-sm space-y-3">
+                              <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+                                <Handshake className="w-4.5 h-4.5 text-teal-600" />
+                                <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Partnership Details</h4>
+                              </div>
+
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="flex flex-col gap-1">
+                                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Partnership Start Date</label>
+                                  <input
+                                    type="date"
+                                    {...register("partnershipStartDate")}
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-semibold"
+                                  />
+                                  {errors.partnershipStartDate && <span className="text-rose-500 text-[11px] font-bold mt-0.5">{errors.partnershipStartDate.message}</span>}
+                                </div>
+                                <div className="flex flex-col gap-1">
+                                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Display Order (Priority) *</label>
+                                  <input
+                                    type="number"
+                                    {...register("displayOrder")}
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-semibold"
+                                    placeholder="10"
+                                  />
+                                  {errors.displayOrder && <span className="text-rose-500 text-[11px] font-bold mt-0.5">{errors.displayOrder.message}</span>}
+                                </div>
+                              </div>
+
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-1">
+                                <label className="flex items-center justify-between p-2.5 rounded-xl border border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors">
+                                  <span className="text-xs font-bold text-slate-600">Featured Placement</span>
+                                  <div className="relative inline-flex items-center cursor-pointer">
+                                    <input
+                                      type="checkbox"
+                                      {...register("isFeatured")}
+                                      className="sr-only peer"
+                                    />
+                                    <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-teal-600"></div>
+                                  </div>
+                                </label>
+
+                                <label className="flex items-center justify-between p-2.5 rounded-xl border border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors">
+                                  <span className="text-xs font-bold text-slate-600">Active status</span>
+                                  <div className="relative inline-flex items-center cursor-pointer">
+                                    <input
+                                      type="checkbox"
+                                      {...register("isActive")}
+                                      className="sr-only peer"
+                                    />
+                                    <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-teal-600"></div>
+                                  </div>
+                                </label>
+                              </div>
+                            </div>
+
+                            {/* Social Links Card */}
+                            <div className="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-sm space-y-3">
+                              <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+                                <Globe className="w-4.5 h-4.5 text-teal-600" />
+                                <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Social Links</h4>
+                              </div>
+
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="flex flex-col gap-1">
+                                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">LinkedIn URL</label>
+                                  <input
+                                    type="text"
+                                    {...register("linkedinUrl")}
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-medium text-slate-700"
+                                    placeholder="https://linkedin.com/company/..."
+                                  />
+                                </div>
+                                <div className="flex flex-col gap-1">
+                                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Twitter URL</label>
+                                  <input
+                                    type="text"
+                                    {...register("twitterUrl")}
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-medium text-slate-700"
+                                    placeholder="https://twitter.com/..."
+                                  />
+                                </div>
+                              </div>
+
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="flex flex-col gap-1">
+                                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Facebook URL</label>
+                                  <input
+                                    type="text"
+                                    {...register("facebookUrl")}
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-medium text-slate-700"
+                                    placeholder="https://facebook.com/..."
+                                  />
+                                </div>
+                                <div className="flex flex-col gap-1">
+                                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Instagram URL</label>
+                                  <input
+                                    type="text"
+                                    {...register("instagramUrl")}
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-medium text-slate-700"
+                                    placeholder="https://instagram.com/..."
+                                  />
+                                </div>
+                              </div>
+                            </div>
                           </div>
+                        )}
 
-                          <div className="flex flex-col gap-1">
-                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Founders / Speaker Byline</label>
-                            <input
-                              type="text"
-                              {...register("supportQuoteAuthor")}
-                              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-semibold"
-                              placeholder="e.g. Dr. C. Satish Reddy & Dr. K. Lalitha Shirdisa"
-                            />
+                        {activeFormTab === 3 && (
+                          <div className="space-y-4">
+                            {/* Support Quote Card */}
+                            <div className="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-sm space-y-3">
+                              <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+                                <MessageSquareQuote className="w-4.5 h-4.5 text-teal-600" />
+                                <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">A Message of Support</h4>
+                              </div>
+
+                              <div className="flex flex-col gap-1">
+                                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Quote / Message of Support</label>
+                                <textarea
+                                  {...register("supportQuote")}
+                                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-medium"
+                                  placeholder="e.g. 'VidyaVaidya Trust has been doing phenomenal work...'"
+                                  rows={3}
+                                />
+                              </div>
+
+                              <div className="flex flex-col gap-1">
+                                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Founders / Speaker Byline</label>
+                                <input
+                                  type="text"
+                                  {...register("supportQuoteAuthor")}
+                                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-semibold"
+                                  placeholder="e.g. Dr. C. Satish Reddy & Dr. K. Lalitha Shirdisa"
+                                />
+                              </div>
+                            </div>
+
+                            {/* Partner Highlights Gallery Card */}
+                            <div className="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-sm space-y-3">
+                              <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+                                <Images className="w-4.5 h-4.5 text-teal-600" />
+                                <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Partner Highlights Gallery</h4>
+                              </div>
+
+                              <MultiImageInput
+                                value={watchedGalleryImages}
+                                onChange={(newList) => setValue("galleryImages", newList, { shouldValidate: true, shouldDirty: true })}
+                                showToast={showToast}
+                              />
+                            </div>
                           </div>
-                        </div>
-
-                        {/* Partner Highlights Gallery Card */}
-                        <div className="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-sm space-y-3">
-                          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-                            <Images className="w-4.5 h-4.5 text-teal-600" />
-                            <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Partner Highlights Gallery</h4>
-                          </div>
-
-                          <MultiImageInput
-                            value={watchedGalleryImages}
-                            onChange={(newList) => setValue("galleryImages", newList, { shouldValidate: true, shouldDirty: true })}
-                            showToast={showToast}
-                          />
-                        </div>
-                      </div>
+                        )}
+                      </>
                     )}
                   </form>
                 </div>
 
                 {/* Modal Footer */}
                 <div className="px-6 py-3.5 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
-                  {Object.keys(errors).length > 0 ? (
-                    <div className="flex items-center gap-1.5 text-rose-500 text-xs font-semibold">
-                      <AlertCircle className="w-4 h-4 animate-bounce" /> Please fix validation errors.
-                    </div>
+                  {selectedType === "government" ? (
+                    <>
+                      {Object.keys(errors).length > 0 ? (
+                        <div className="flex items-center gap-1.5 text-rose-500 text-xs font-semibold">
+                          <AlertCircle className="w-4 h-4 animate-bounce" /> Please fix validation errors.
+                        </div>
+                      ) : (
+                        <span className="text-xs text-slate-400 font-semibold">Volunteer Network Profile</span>
+                      )}
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          className="px-4 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold text-xs transition-colors"
+                          onClick={() => setDrawerOpen(false)}
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="button"
+                          className="px-5 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs transition-colors shadow-lg shadow-teal-600/15"
+                          onClick={handleSubmit(onSubmit)}
+                          disabled={saving}
+                        >
+                          {saving ? "Saving..." : "Save Partner"}
+                        </button>
+                      </div>
+                    </>
                   ) : (
-                    <span className="text-xs text-slate-400 font-semibold">Step {activeFormTab + 1} of 4</span>
+                    <>
+                      {Object.keys(errors).length > 0 ? (
+                        <div className="flex items-center gap-1.5 text-rose-500 text-xs font-semibold">
+                          <AlertCircle className="w-4 h-4 animate-bounce" /> Please fix validation errors.
+                        </div>
+                      ) : (
+                        <span className="text-xs text-slate-400 font-semibold">Step {activeFormTab + 1} of 4</span>
+                      )}
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          className="px-4 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold text-xs transition-colors"
+                          onClick={() => setDrawerOpen(false)}
+                        >
+                          Cancel
+                        </button>
+                        {activeFormTab > 0 && (
+                          <button
+                            type="button"
+                            className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs transition-colors"
+                            onClick={() => setActiveFormTab(activeFormTab - 1)}
+                          >
+                            Previous
+                          </button>
+                        )}
+                        {activeFormTab < 3 ? (
+                          <button
+                            type="button"
+                            className="px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs transition-colors"
+                            onClick={handleNextStep}
+                          >
+                            Next
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            className="px-5 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs transition-colors shadow-lg shadow-teal-600/15"
+                            onClick={handleSubmit(onSubmit)}
+                            disabled={saving}
+                          >
+                            {saving ? "Saving Changes..." : "Save Partner"}
+                          </button>
+                        )}
+                      </div>
+                    </>
                   )}
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      className="px-4 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold text-xs transition-colors"
-                      onClick={() => setDrawerOpen(false)}
-                    >
-                      Cancel
-                    </button>
-                    {activeFormTab > 0 && (
-                      <button
-                        type="button"
-                        className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs transition-colors"
-                        onClick={() => setActiveFormTab(activeFormTab - 1)}
-                      >
-                        Previous
-                      </button>
-                    )}
-                    {activeFormTab < 3 ? (
-                      <button
-                        type="button"
-                        className="px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs transition-colors"
-                        onClick={handleNextStep}
-                      >
-                        Next
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        className="px-5 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs transition-colors shadow-lg shadow-teal-600/15"
-                        onClick={handleSubmit(onSubmit)}
-                        disabled={saving}
-                      >
-                        {saving ? "Saving Changes..." : "Save Partner"}
-                      </button>
-                    )}
-                  </div>
                 </div>
               </motion.div>
             </div>
