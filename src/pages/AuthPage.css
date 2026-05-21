@@ -94,23 +94,32 @@
 .input-wrap {
   display: flex;
   align-items: center;
-  gap: 10px;
-  border: 1px solid #d2dee8;
-  border-radius: 10px;
-  padding: 10px 12px;
-  color: #466178;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  gap: 12px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 12px 16px;
+  color: #64748b;
+  background: #ffffff;
+  box-shadow: 0 2px 4px rgba(11, 60, 93, 0.02);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.input-wrap:focus-within,
-.code-wrap:focus-within {
-  border-color: #1565c0;
-  box-shadow: 0 0 0 3px rgba(21, 101, 192, 0.14);
+.input-wrap:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 8px rgba(11, 60, 93, 0.04);
+}
+
+.input-wrap:focus-within {
+  border-color: #1abc9c;
+  color: #1abc9c;
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(26, 188, 156, 0.15), 0 4px 10px rgba(11, 60, 93, 0.03);
 }
 
 .input-wrap.input-error {
-  border-color: #e5484d;
-  box-shadow: 0 0 0 3px rgba(229, 72, 77, 0.12);
+  border-color: #ef4444;
+  color: #ef4444;
+  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.12), 0 4px 10px rgba(239, 68, 68, 0.02);
 }
 
 .input-wrap input,
@@ -121,11 +130,13 @@
   font-size: 0.95rem;
   color: #1f3446;
   background: transparent;
+  font-weight: 500;
+  letter-spacing: 0.2px;
 }
 
 .phone-group {
   display: grid;
-  grid-template-columns: 110px 1fr;
+  grid-template-columns: 90px 1fr;
   gap: 10px;
 }
 
@@ -133,11 +144,20 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  border: 1px solid #d2dee8;
-  border-radius: 10px;
-  padding: 10px 10px;
-  color: #466178;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 12px 12px;
+  color: #64748b;
+  background: #f8fafc;
+  box-shadow: 0 2px 4px rgba(11, 60, 93, 0.02);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.code-wrap:focus-within {
+  border-color: #1abc9c;
+  color: #1abc9c;
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(26, 188, 156, 0.15);
 }
 
 .auth-primary-btn {

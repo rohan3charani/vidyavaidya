@@ -29,14 +29,29 @@ const loginSchema = Joi.object({
 });
 
 const sendOtpSchema = Joi.object({
-  email: Joi.string().email().required().messages({
-    'string.email': 'Please enter a valid email address',
-    'any.required': 'Email is required to send OTP'
+  email: Joi.string().custom((value, helpers) => {
+    const cleanVal = value.trim();
+    const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanVal);
+    const isPhone = /^(\+?[1-9]\d{1,14}|\d{10})$/.test(cleanVal.replace(/[-\s()]/g, ''));
+    if (!isEmail && !isPhone) {
+      return helpers.message('Please enter a valid email address / phone number');
+    }
+    return cleanVal;
+  }).required().messages({
+    'any.required': 'Email address / Phone number is required to send OTP'
   })
 });
 
 const verifyOtpSchema = Joi.object({
-  email: Joi.string().email().required(),
+  email: Joi.string().custom((value, helpers) => {
+    const cleanVal = value.trim();
+    const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanVal);
+    const isPhone = /^(\+?[1-9]\d{1,14}|\d{10})$/.test(cleanVal.replace(/[-\s()]/g, ''));
+    if (!isEmail && !isPhone) {
+      return helpers.message('Please enter a valid email address / phone number');
+    }
+    return cleanVal;
+  }).required(),
   otp: Joi.string().length(6).pattern(/^\d{6}$/).required().messages({
     'string.length': 'OTP must be exactly 6 digits',
     'string.pattern.base': 'OTP must contain only numbers',

@@ -186,21 +186,43 @@ const authController = {
     try {
       const { email } = req.body;
       if (!email) {
-        return res.status(400).json({ error: 'Email address is required' });
+        return res.status(400).json({ error: 'Email address or phone number is required' });
       }
 
-      const normalizedEmail = email.trim().toLowerCase();
+      let normalizedEmail = email.trim().toLowerCase();
+      let targetUserDoc = null;
 
-      // Check if user exists in Firestore
-      const userSnap = await db.collection('users')
-        .where('email', '==', normalizedEmail)
-        .limit(1)
-        .get();
+      // Detect phone number input (digits only or optional country code)
+      const isPhone = /^(\+?\d{1,4})?\d{10}$/.test(normalizedEmail.replace(/[-\s()]/g, ''));
+      if (isPhone) {
+        const rawDigits = normalizedEmail.replace(/\D/g, '');
+        const normalizedPhone = normalizedEmail.startsWith('+') ? `+${rawDigits}` : `+91${rawDigits.slice(-10)}`;
 
-      if (userSnap.empty) {
-        return res.status(404).json({
-          error: 'This email address is not registered. Please register first.'
-        });
+        const userSnap = await db.collection('users')
+          .where('phone', '==', normalizedPhone)
+          .limit(1)
+          .get();
+
+        if (userSnap.empty) {
+          return res.status(404).json({
+            error: 'This phone number is not registered. Please register first.'
+          });
+        }
+        targetUserDoc = userSnap.docs[0];
+        normalizedEmail = targetUserDoc.data().email;
+      } else {
+        // Check if user exists in Firestore
+        const userSnap = await db.collection('users')
+          .where('email', '==', normalizedEmail)
+          .limit(1)
+          .get();
+
+        if (userSnap.empty) {
+          return res.status(404).json({
+            error: 'This email address is not registered. Please register first.'
+          });
+        }
+        targetUserDoc = userSnap.docs[0];
       }
 
       // Rate-limit: allow resend only after 60 seconds
@@ -219,6 +241,7 @@ const authController = {
 
       return res.status(200).json({
         success: true,
+        email: normalizedEmail,
         message: `OTP sent to ${normalizedEmail}. Valid for 10 minutes.`
       });
     } catch (error) {
@@ -238,7 +261,26 @@ const authController = {
         return res.status(400).json({ error: 'Email and OTP are required' });
       }
 
-      const normalizedEmail = email.trim().toLowerCase();
+      let normalizedEmail = email.trim().toLowerCase();
+
+      // Support phone-to-email resolution in case the phone identifier was passed directly
+      const isPhone = /^(\+?\d{1,4})?\d{10}$/.test(normalizedEmail.replace(/[-\s()]/g, ''));
+      if (isPhone) {
+        const rawDigits = normalizedEmail.replace(/\D/g, '');
+        const normalizedPhone = normalizedEmail.startsWith('+') ? `+${rawDigits}` : `+91${rawDigits.slice(-10)}`;
+
+        const userSnap = await db.collection('users')
+          .where('phone', '==', normalizedPhone)
+          .limit(1)
+          .get();
+
+        if (userSnap.empty) {
+          return res.status(401).json({
+            error: 'This phone number is not registered. Please sign up first.'
+          });
+        }
+        normalizedEmail = userSnap.docs[0].data().email;
+      }
 
       // Verify the OTP (throws on failure)
       await otpService.verifyOtp(normalizedEmail, otp);
