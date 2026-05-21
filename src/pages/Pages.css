@@ -372,13 +372,13 @@
 }
 
 .hex-icon-g {
-  transform: translate(-24px, -24px);
+  transform: translate(-24px, -24px) scale(1.22);
   transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   transform-origin: 24px 24px;
 }
 
 .hex-group:hover .hex-icon-g {
-  transform: translate(-24px, -24px) scale(1.18) !important;
+  transform: translate(-24px, -24px) scale(1.4) !important;
 }
 
 /* Floating sparkle icon micro-animations */
@@ -404,11 +404,37 @@
 }
 .hub-dash-ring {
   transform-origin: 500px 110px;
-  animation: none;
+  animation: spin-slow 20s linear infinite;
 }
 .hub-dash-ring-outer {
   transform-origin: 500px 110px;
-  animation: none;
+  animation: spin-slow 35s linear infinite reverse;
+}
+
+/* Animated Connecting Lines & Moving Dots */
+.mission-connecting-line {
+  stroke-dasharray: 2 10;
+  animation: flow-dots 1.2s linear infinite;
+}
+
+@keyframes flow-dots {
+  to {
+    stroke-dashoffset: -24;
+  }
+}
+
+/* Specific glows for each connection line */
+path[stroke="url(#line-grad-green)"] {
+  --theme-color-glow: rgba(16, 185, 129, 0.85);
+  filter: drop-shadow(0 0 4px var(--theme-color-glow));
+}
+path[stroke="url(#line-grad-blue)"] {
+  --theme-color-glow: rgba(59, 130, 246, 0.85);
+  filter: drop-shadow(0 0 4px var(--theme-color-glow));
+}
+path[stroke="url(#line-grad-purple)"] {
+  --theme-color-glow: rgba(168, 85, 247, 0.85);
+  filter: drop-shadow(0 0 4px var(--theme-color-glow));
 }
 
 /* Glowing path nodes */
@@ -613,6 +639,15 @@
     display: flex;
     justify-content: center;
     align-items: center;
+  }
+  
+  .mobile-hex-icon-g {
+    transform: translate(76px, 76px) scale(1.22);
+    transform-origin: 24px 24px;
+    transition: transform var(--transition);
+  }
+  .mobile-mission-card:hover .mobile-hex-icon-g {
+    transform: translate(76px, 76px) scale(1.35);
   }
   
   .mobile-mission-card .mission-badge {
