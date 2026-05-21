@@ -355,6 +355,43 @@
   gap: 6px;
 }
 
+.profile-actions {
+  margin-left: auto;
+  position: relative;
+  z-index: 1;
+}
+
+.donate-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #ff4b4b 0%, #dc2626 100%);
+  color: #fff;
+  padding: 10px 28px;
+  border-radius: 50px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(220, 38, 38, 0.35);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+}
+
+.donate-action-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(220, 38, 38, 0.5);
+  background: linear-gradient(135deg, #ff6b6b 0%, #b91c1c 100%);
+}
+
+.donate-action-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 10px rgba(220, 38, 38, 0.3);
+}
+
 /* ============================================================
    STATS GRID — Clean icon-free cards with accent top strip
    ============================================================ */
@@ -1147,6 +1184,15 @@
   .dashboard-container { padding: 14px; gap: 14px; }
   .profile-card { flex-direction: column; align-items: flex-start; gap: 14px; padding: 20px 20px; }
   .profile-main h1 { font-size: 1.55rem; }
+  .profile-actions {
+    margin-left: 0;
+    width: 100%;
+    margin-top: 8px;
+  }
+  .donate-action-btn {
+    width: 100%;
+    padding: 12px 24px;
+  }
   .stats-grid { grid-template-columns: 1fr 1fr; }
   .filters-row { grid-template-columns: 1fr; }
   .table-header { display: none; }
