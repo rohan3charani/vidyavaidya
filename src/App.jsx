@@ -128,47 +128,12 @@ export default function App() {
           }
         />
         
-        {/* Community Routes - Protected */}
-        <Route 
-          path="/join-community" 
-          element={
-            <ProtectedRoute>
-              <JoinCommunity />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/join/volunteer" 
-          element={
-            <ProtectedRoute>
-              <VolunteerForm />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/join/donor" 
-          element={
-            <ProtectedRoute>
-              <DonorForm />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/join/corporate" 
-          element={
-            <ProtectedRoute>
-              <CorporateForm />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/join/hospital" 
-          element={
-            <ProtectedRoute>
-              <HospitalForm />
-            </ProtectedRoute>
-          } 
-        />
+        {/* Community Routes */}
+        <Route path="/join-community" element={<JoinCommunity />} />
+        <Route path="/join/volunteer" element={<VolunteerForm />} />
+        <Route path="/join/donor" element={<DonorForm />} />
+        <Route path="/join/corporate" element={<CorporateForm />} />
+        <Route path="/join/hospital" element={<HospitalForm />} />
       </Routes>
     </>
   );
