@@ -39,10 +39,20 @@ export default function AuthPage() {
 
   const goToOtp = async () => {
     const nextErrors = {};
-    if (!loginEmail.trim()) {
-      nextErrors.loginEmail = "Email is required";
-    } else if (!isValidEmail(loginEmail.trim())) {
-      nextErrors.loginEmail = "Enter a valid email address";
+    const value = loginEmail.trim();
+    const isPhone = /^\+?\d/.test(value);
+
+    if (!value) {
+      nextErrors.loginEmail = "Email address / Phone number is required";
+    } else if (isPhone) {
+      const cleanPhone = value.replace(/[-\s()]/g, "");
+      if (!/^(\+?\d{1,4})?\d{10}$/.test(cleanPhone)) {
+        nextErrors.loginEmail = "Enter a valid 10-digit phone number";
+      }
+    } else {
+      if (!isValidEmail(value)) {
+        nextErrors.loginEmail = "Enter a valid email address";
+      }
     }
     setErrors(nextErrors);
 
@@ -51,11 +61,12 @@ export default function AuthPage() {
     setLoading(true);
     try {
       // Request OTP from the backend
-      await api.auth.sendOtp(loginEmail.trim());
+      const res = await api.auth.sendOtp(value);
 
-      navigate("/otp", { state: { email: loginEmail.trim() } });
+      const targetEmail = res.email || value;
+      navigate("/otp", { state: { email: targetEmail } });
     } catch (err) {
-      setErrorMessage(err.message || "This email is not registered. Please register first.");
+      setErrorMessage(err.message || "This account is not registered. Please register first.");
       setShowErrorPopup(true);
       setErrors({ loginEmail: err.message || "Failed to contact authorization server" });
     } finally {
@@ -96,7 +107,7 @@ export default function AuthPage() {
       setTimeout(() => {
         setActiveTab("login");
         setLoginEmail(signupEmail.trim());
-        setSignupNotice("Account created successfully in Firestore! Please login to continue.");
+        setSignupNotice("Account created");
         setSignupEmail("");
         setFullName("");
         setPhone("");
@@ -107,7 +118,7 @@ export default function AuthPage() {
           state: {
             tab: "login",
             email: signupEmail.trim(),
-            notice: "Account created successfully in Firestore! Please login to continue.",
+            notice: "Account created",
           },
         });
       }, 2000);
@@ -191,12 +202,12 @@ export default function AuthPage() {
 
             {activeTab === "login" ? (
               <div className="auth-form">
-                <label>Email Address *</label>
+                <label>Email Address / Phone Number *</label>
                 <div className={`input-wrap ${errors.loginEmail ? "input-error" : ""}`}>
-                  <Mail size={16} />
+                  {/^\+?\d/.test(loginEmail.trim()) ? <Phone size={16} /> : <Mail size={16} />}
                   <input
-                    type="email"
-                    placeholder="Enter Your Registered Email"
+                    type="text"
+                    placeholder="Enter your registered email / phone number"
                     value={loginEmail}
                     onChange={(e) => {
                       setLoginEmail(e.target.value);
@@ -207,7 +218,7 @@ export default function AuthPage() {
                 {errors.loginEmail && <p className="field-error">{errors.loginEmail}</p>}
                 {signupNotice && <p className="success-note">{signupNotice}</p>}
                 <button type="button" className="auth-primary-btn" onClick={goToOtp} disabled={loading}>
-                  {loading ? "Sending OTP..." : "Continue with Email"} <ArrowRight size={16} />
+                  {loading ? "Sending OTP..." : "Continue"} <ArrowRight size={16} />
                 </button>
                 <p className="auth-footer">
                   Don't have an account?{" "}

@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect } from "react";
-import { CircleCheckBig, Mail, AlertCircle, Loader2 } from "lucide-react";
+import { CircleCheckBig, Mail, Phone, AlertCircle, Loader2 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import api from "../services/api";
 import vidyaLogo from "../assets/Vidya1.png";
@@ -10,11 +10,11 @@ export default function OtpPage() {
   const { state } = useLocation();
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
 
-  const email = useMemo(() => state?.email || "your email", [state?.email]);
+  const email = useMemo(() => state?.email || "your email or phone", [state?.email]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [countdown, setCountdown] = useState(60);
-  const [resendStatus, setResendStatus] = useState("OTP Sent! Check your inbox.");
+  const [resendStatus, setResendStatus] = useState("OTP Sent! Check your email or SMS messages.");
 
   useEffect(() => {
     let timer;
@@ -69,7 +69,7 @@ export default function OtpPage() {
       setResendStatus("Sending...");
       await api.auth.sendOtp(email);
       setCountdown(60);
-      setResendStatus("New OTP Sent! Check your inbox.");
+      setResendStatus("New OTP Sent! Check your email or SMS messages.");
       setError(null);
     } catch (err) {
       setResendStatus("");
@@ -103,6 +103,8 @@ export default function OtpPage() {
     }
   };
 
+  const isEmailFormat = useMemo(() => email.includes("@"), [email]);
+
   return (
     <section className="otp-layout">
       <div className="otp-left-pane">
@@ -119,13 +121,13 @@ export default function OtpPage() {
 
       <div className="otp-right-pane">
         <div className="auth-card otp-card">
-          <h2>Verify Your Email</h2>
-          <p className="otp-subtitle">Enter the 6-digit code sent to your email</p>
+          <h2>Verify Your Account</h2>
+          <p className="otp-subtitle">Enter the 6-digit OTP sent to your email address and mobile number</p>
 
           <div className="otp-email-pill">
-            <Mail size={15} />
+            {isEmailFormat ? <Mail size={15} /> : <Phone size={15} />}
             <div>
-              <p>OTP sent to your email</p>
+              <p>OTP sent to your registered email and mobile number</p>
               <strong>{email}</strong>
             </div>
             <button
@@ -185,8 +187,7 @@ export default function OtpPage() {
           </button>
 
           <p className="otp-info">
-            Vidyavaidya Trust ensures secure access to your account to continue helping those in
-            need.
+            Vidyavaidya Trust ensures secure access to your account through email and mobile OTP verification.
           </p>
 
           {resendStatus && !error && (

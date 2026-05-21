@@ -1,14 +1,11 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import vidyaLogo from "../assets/Vidya1.png";
 import {
-  CalendarDays,
   CircleUserRound,
-  IndianRupee,
   Mail,
   Phone,
   RefreshCw,
-  Search,
   TrendingUp,
   FileText,
   LogOut,
@@ -16,7 +13,8 @@ import {
   Building2,
   User,
   ArrowLeft,
-  Check
+  Check,
+  Camera
 } from "lucide-react";
 import api from "../services/api";
 import "./Dashboard.css";
@@ -50,6 +48,34 @@ export default function Dashboard() {
   const [isEditing, setIsEditing] = useState(false);
   const [editProfile, setEditProfile] = useState({ ...profile });
   const [showSaveSuccess, setShowSaveSuccess] = useState(false);
+
+  // Profile photo — stored as base64 in localStorage
+  const [profileImage, setProfileImage] = useState(
+    () => localStorage.getItem("vv_profile_image") || null
+  );
+  const fileInputRef = useRef(null);
+
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      alert("Please select a valid image file (JPG, PNG, GIF, WEBP).");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      alert("Image must be smaller than 5 MB.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const dataUrl = ev.target.result;
+      setProfileImage(dataUrl);
+      localStorage.setItem("vv_profile_image", dataUrl);
+    };
+    reader.readAsDataURL(file);
+    // reset so same file can be re-selected
+    e.target.value = "";
+  };
 
   const [currentView, setCurrentView] = useState("dashboard"); // "dashboard" | "profile"
   const [showDropdown, setShowDropdown] = useState(false);
@@ -258,7 +284,10 @@ export default function Dashboard() {
               title="User Menu"
             >
               <div className="dash-avatar-circle">
-                {initial}
+                {profileImage
+                  ? <img src={profileImage} alt="Profile" className="dash-avatar-img" />
+                  : initial
+                }
               </div>
             </button>
 
@@ -313,7 +342,12 @@ export default function Dashboard() {
           /* ================= DASHBOARD VIEW ================= */
           <>
             <article className="profile-card">
-              <div className="avatar">{initial}</div>
+              <div className="avatar">
+                {profileImage
+                  ? <img src={profileImage} alt="Profile" className="banner-avatar-img" />
+                  : initial
+                }
+              </div>
               <div className="profile-main">
                 <span className="greeting">{greeting}</span>
                 <h1>{profile.fullName}</h1>
@@ -329,13 +363,8 @@ export default function Dashboard() {
             </article>
 
             <section className="stats-grid">
-              <article className="stat-card">
-                <div className="stat-top">
-                  <p>TOTAL DONATED</p>
-                  <span className="stat-icon">
-                    <IndianRupee size={15} />
-                  </span>
-                </div>
+              <article className="stat-card stat-donated">
+                <p className="stat-label">TOTAL DONATED</p>
                 <h2>₹{stats?.totalDonated || 0}</h2>
                 <div className="stat-bottom">
                   <span>{stats?.contributionsCount || 0} Contributions</span>
@@ -343,11 +372,8 @@ export default function Dashboard() {
                 </div>
               </article>
 
-              <article className="stat-card">
-                <div className="stat-top">
-                  <p>FAILED</p>
-                  <span className="stat-icon">✕</span>
-                </div>
+              <article className="stat-card stat-failed">
+                <p className="stat-label">FAILED</p>
                 <h2>{stats?.failedCount || 0}</h2>
                 <div className="stat-bottom">
                   <span>of {donations.length} Total</span>
@@ -355,13 +381,8 @@ export default function Dashboard() {
                 </div>
               </article>
 
-              <article className="stat-card">
-                <div className="stat-top">
-                  <p>RECURRING</p>
-                  <span className="stat-icon">
-                    <RefreshCw size={14} />
-                  </span>
-                </div>
+              <article className="stat-card stat-recurring">
+                <p className="stat-label">RECURRING</p>
                 <h2>{stats?.recurringCount || 0}</h2>
                 <div className="stat-bottom">
                   <span>Monthly</span>
@@ -369,11 +390,8 @@ export default function Dashboard() {
                 </div>
               </article>
 
-              <article className="stat-card">
-                <div className="stat-top">
-                  <p>ONE-TIME</p>
-                  <span className="stat-icon">⚡</span>
-                </div>
+              <article className="stat-card stat-onetime">
+                <p className="stat-label">ONE-TIME</p>
                 <h2>{stats?.oneTimeCount || 0}</h2>
                 <div className="stat-bottom">
                   <span>One-time</span>
@@ -389,7 +407,6 @@ export default function Dashboard() {
               </div>
               <div className="filters-row">
                 <div className="search-wrap">
-                  <Search size={14} />
                   <input
                     type="text"
                     placeholder="Search ID, category..."
@@ -478,7 +495,6 @@ export default function Dashboard() {
                   </div>
                 ) : (
                   <div className="table-empty">
-                    <CalendarDays size={18} />
                     <p>No transactions found</p>
                   </div>
                 )}
@@ -491,9 +507,6 @@ export default function Dashboard() {
                   <h3>Month Wise Contributions</h3>
                   <p>Total amount donated per month</p>
                 </div>
-                <span className="panel-icon">
-                  <IndianRupee size={16} />
-                </span>
               </div>
               {monthlyChart && monthlyChart.length > 0 ? (
                 <div className="monthly-chart-container">
@@ -527,9 +540,6 @@ export default function Dashboard() {
                     <h3>Payment Frequency</h3>
                     <p>Payments per month - count shown above each bar</p>
                   </div>
-                  <span className="panel-icon">
-                    <TrendingUp size={15} />
-                  </span>
                 </div>
                 {monthlyFrequency && monthlyFrequency.length > 0 ? (
                   <div className="frequency-chart-container">
@@ -609,7 +619,32 @@ export default function Dashboard() {
               {/* Left Column: summary */}
               <div className="profile-summary-side">
                 <div className="profile-summary-avatar-card">
-                  <div className="profile-summary-avatar">{initial}</div>
+                  {/* Hidden file input */}
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="avatar-file-input"
+                    onChange={handleImageUpload}
+                  />
+                  {/* Avatar with upload overlay */}
+                  <div className="avatar-upload-wrapper" onClick={() => fileInputRef.current?.click()}>
+                    <div className="profile-summary-avatar">
+                      {profileImage
+                        ? <img src={profileImage} alt="Profile" className="profile-avatar-img" />
+                        : <span className="avatar-initial">{initial}</span>
+                      }
+                    </div>
+                    {/* Dark overlay with camera — on hover */}
+                    <div className="avatar-upload-overlay">
+                      <Camera size={18} />
+                      <span>Change Photo</span>
+                    </div>
+                    {/* Small always-visible camera badge */}
+                    <div className="avatar-camera-badge">
+                      <Camera size={11} />
+                    </div>
+                  </div>
                   <h3>{profile?.fullName || activeUser.name}</h3>
                   <p className="profile-summary-email">{profile?.email || activeUser.email}</p>
                   <div className="profile-summary-badges">
