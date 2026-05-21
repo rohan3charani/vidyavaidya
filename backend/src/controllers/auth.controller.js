@@ -370,52 +370,54 @@ const authController = {
   },
 
   /**
-   * Admin Login support (handles both static credentials for demo and real claim token checking)
+   * Admin Login support — checks stored scrypt hash first, falls back to static credential
    */
   async adminLogin(req, res, next) {
     try {
       const { email, password } = req.body;
-      
-      // Support demo credentials specified in AdminLogin.jsx
-      if ((email === 'admin' || email === 'admin@vidyavaidya.org') && password === 'vidyavaidya@2024') {
-        const token = generateJWT({
-          uid: 'static-demo-admin-uid',
-          email: 'admin@vidyavaidya.org',
-          role: 'admin'
-        });
-        return res.status(200).json({
-          success: true,
-          uid: 'static-demo-admin-uid',
-          email: 'admin@vidyavaidya.org',
-          role: 'admin',
-          token
-        });
-      }
 
-      // In a strict production system, we call Firebase REST auth:
-      // Since this requires an API key, we will search for an admin user in our database matching this email.
-      // In production, administrators will authenticate via standard Firebase Login on client-side,
-      // and their custom claims are set up. This endpoint will serve as verification.
-      const usersSnap = await db.collection('users')
-        .where('email', '==', email.toLowerCase())
-        .where('role', '==', 'admin')
-        .limit(1)
-        .get();
+      const STATIC_EMAIL    = 'admin@vidyavaidya.org';
+      const STATIC_PASSWORD = process.env.ADMIN_PASSWORD || 'vidyavaidya@2024';
 
-      if (usersSnap.empty) {
+      // Only allow known admin email identifiers
+      const isAdminEmail = (email === 'admin' || email === STATIC_EMAIL);
+      if (!isAdminEmail) {
         return res.status(403).json({ error: 'Access denied: Admin privileges are required' });
       }
 
-      const adminUserDoc = usersSnap.docs[0];
-      const adminData = adminUserDoc.data();
+      // Check if a custom password hash has been stored in Firestore
+      let passwordValid = false;
+      try {
+        const configDoc = await db.collection('admin_config').doc('main').get();
+        if (configDoc.exists && configDoc.data().passwordHash) {
+          // Verify against stored scrypt hash (set via change-password endpoint)
+          const { _verifyPassword } = require('./admin-profile.controller');
+          passwordValid = _verifyPassword(password, configDoc.data().passwordHash);
+        } else {
+          // No custom hash yet — fall back to static credential
+          passwordValid = (password === STATIC_PASSWORD);
+        }
+      } catch (firestoreErr) {
+        console.warn('⚠️  Could not fetch admin_config for password check, using static fallback:', firestoreErr.message);
+        passwordValid = (password === STATIC_PASSWORD);
+      }
 
-      // Return details. The token check will happen client-side through standard ID Token.
+      if (!passwordValid) {
+        return res.status(401).json({ error: 'Invalid admin credentials. Please check your password.' });
+      }
+
+      const token = generateJWT({
+        uid:   'static-demo-admin-uid',
+        email: STATIC_EMAIL,
+        role:  'admin'
+      });
+
       return res.status(200).json({
         success: true,
-        uid: adminData.uid,
-        email: adminData.email,
-        role: 'admin',
-        token: 'firebase-admin-authorized'
+        uid:   'static-demo-admin-uid',
+        email: STATIC_EMAIL,
+        role:  'admin',
+        token
       });
     } catch (error) {
       next(error);

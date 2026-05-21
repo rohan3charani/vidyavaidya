@@ -137,10 +137,67 @@ const foreignDonorsController = {
       }
 
       await donorRef.delete();
+ 
+       return res.status(200).json({
+         success: true,
+         message: 'Foreign donor record deleted successfully'
+       });
+     } catch (error) {
+       next(error);
+     }
+   },
+
+  /**
+   * Admin-Only: Respond to a Foreign Donor query and send email
+   */
+  async respondDonor(req, res, next) {
+    try {
+      const { id } = req.params;
+      const { adminResponse, status } = req.body;
+
+      if (!adminResponse || !adminResponse.trim()) {
+        return res.status(400).json({ error: 'Response message must be provided' });
+      }
+
+      const donorRef = db.collection('foreign_donors').doc(id);
+      const doc = await donorRef.get();
+
+      if (!doc.exists) {
+        return res.status(404).json({ error: 'Foreign donor record not found' });
+      }
+
+      const donorData = doc.data();
+
+      // Update in Firestore
+      const updateData = {
+        adminResponse: sanitizeInput(adminResponse),
+        status: status || 'Solved',
+        repliedAt: admin.firestore.Timestamp.fromDate(new Date()),
+        updatedAt: admin.firestore.Timestamp.fromDate(new Date())
+      };
+
+      await donorRef.update(updateData);
+
+      // Import email service dynamically
+      const emailService = require('../services/email.service');
+      
+      // Send the email response
+      await emailService.sendForeignDonorResponseEmail(
+        donorData.email,
+        donorData.firstName,
+        donorData.lastName,
+        donorData.queryType,
+        donorData.message,
+        updateData.adminResponse
+      );
 
       return res.status(200).json({
         success: true,
-        message: 'Foreign donor record deleted successfully'
+        message: 'Response submitted and email sent to donor successfully',
+        donor: {
+          ...donorData,
+          ...updateData
+        }
       });
     } catch (error) {
       next(error);

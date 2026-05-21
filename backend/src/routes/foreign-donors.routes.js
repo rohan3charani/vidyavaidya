@@ -11,6 +11,7 @@ router.post('/', foreignDonorsController.createDonor);
 // Admin-Only routes
 router.get('/', authMiddleware, adminMiddleware, foreignDonorsController.listDonors);
 router.put('/:id/status', authMiddleware, adminMiddleware, foreignDonorsController.updateDonorStatus);
+router.post('/:id/respond', authMiddleware, adminMiddleware, foreignDonorsController.respondDonor);
 router.delete('/:id', authMiddleware, adminMiddleware, foreignDonorsController.deleteDonor);
 
 module.exports = router;
