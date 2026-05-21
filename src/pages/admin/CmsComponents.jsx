@@ -30,7 +30,7 @@ export const generateSlug = (text) => {
 
 export const fmtDate = (dStr) => {
   if (!dStr) return "—";
-  
+
   // Handle Firestore Timestamp objects gracefully
   if (typeof dStr === 'object' && dStr._seconds) {
     const d = new Date(dStr._seconds * 1000);
@@ -46,25 +46,83 @@ export const fmtDate = (dStr) => {
   }
 };
 
-export const handleFileUpload = async (file, onUrlChange) => {
-  try {
-    const response = await api.stories.getUploadUrl(file.name, file.type);
-    const { uploadUrl, publicUrl } = response;
-    
-    await fetch(uploadUrl, {
-      method: 'PUT',
-      body: file,
-      headers: {
-        'Content-Type': file.type
-      }
-    });
+export const compressImage = (base64Str, maxWidth = 1024, maxHeight = 1024) => {
+  return new Promise((resolve) => {
+    if (typeof window === "undefined") {
+      resolve(base64Str);
+      return;
+    }
+    const img = new window.Image();
+    img.src = base64Str;
+    img.onload = () => {
+      let width = img.width;
+      let height = img.height;
 
-    onUrlChange(publicUrl);
-  } catch (error) {
-    console.error("File upload failed:", error);
-    throw error;
-  }
+      if (width > height) {
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+      } else {
+        if (height > maxHeight) {
+          width = Math.round((width * maxHeight) / height);
+          height = maxHeight;
+        }
+      }
+
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        resolve(base64Str);
+        return;
+      }
+      ctx.drawImage(img, 0, 0, width, height);
+
+      // Output as compressed JPEG
+      const compressedBase64 = canvas.toDataURL("image/jpeg", 0.7);
+      resolve(compressedBase64);
+    };
+    img.onerror = () => {
+      resolve(base64Str);
+    };
+  });
 };
+
+export const handleFileUpload = async (file, onUrlChange) => {
+  return new Promise((resolve, reject) => {
+    // Validate file size (max 5MB for logos/images stored as base64 in Firestore)
+    const maxSizeMB = 5;
+    if (file.size > maxSizeMB * 1024 * 1024) {
+      const err = new Error(`File too large. Maximum allowed size is ${maxSizeMB}MB.`);
+      console.error('File upload failed:', err.message);
+      reject(err);
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async () => {
+      // Store the base64 data URL directly — no Firebase Storage needed
+      const base64DataUrl = reader.result;
+      try {
+        const compressedBase64 = await compressImage(base64DataUrl);
+        onUrlChange(compressedBase64);
+        resolve(compressedBase64);
+      } catch (err) {
+        onUrlChange(base64DataUrl);
+        resolve(base64DataUrl);
+      }
+    };
+    reader.onerror = (error) => {
+      console.error('File upload failed:', error);
+      reject(error);
+    };
+    reader.readAsDataURL(file);
+  });
+};
+
 
 /* ══════════════════════════════════════════════
    SHARED CMS UI COMPONENTS
@@ -95,7 +153,8 @@ export function LiveImagePreview({ url }) {
       setIsValid(false);
       return;
     }
-    const img = new Image();
+    const img = typeof window !== "undefined" ? new window.Image() : null;
+    if (!img) return;
     img.src = url;
     img.onload = () => setIsValid(true);
     img.onerror = () => setIsValid(false);
@@ -118,8 +177,10 @@ export function LiveImagePreview({ url }) {
 
 export function ImageUrlWithUpload({ label, value, onChange, onUploadError }) {
   const [uploading, setUploading] = useState(false);
+  const fileInputRef = React.useRef(null);
 
   const onFileChange = async (e) => {
+    e.preventDefault();
     const file = e.target.files[0];
     if (!file) return;
     setUploading(true);
@@ -129,6 +190,14 @@ export function ImageUrlWithUpload({ label, value, onChange, onUploadError }) {
       if (onUploadError) onUploadError(err.message || "Upload failed");
     } finally {
       setUploading(false);
+    }
+  };
+
+  const handleButtonClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
     }
   };
 
@@ -145,16 +214,22 @@ export function ImageUrlWithUpload({ label, value, onChange, onUploadError }) {
             placeholder="Paste URL or upload file..."
           />
           <div className="flex items-center gap-2">
-            <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-teal-50 hover:bg-teal-100 border border-teal-100/60 text-teal-700 font-extrabold text-[10px] transition-all cursor-pointer select-none">
+            <button
+              type="button"
+              onClick={handleButtonClick}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-teal-50 hover:bg-teal-100 border border-teal-100/60 text-teal-700 font-extrabold text-[10px] transition-all cursor-pointer select-none"
+              disabled={uploading}
+            >
               {uploading ? "Uploading..." : "Upload File"}
-              <input
-                type="file"
-                accept="image/*"
-                onChange={onFileChange}
-                className="hidden"
-                disabled={uploading}
-              />
-            </label>
+            </button>
+            <input
+              type="file"
+              ref={fileInputRef}
+              accept="image/*"
+              onChange={onFileChange}
+              className="hidden"
+              disabled={uploading}
+            />
             {value && <span className="text-[10px] text-emerald-600 font-bold flex items-center gap-0.5">✓ Loaded</span>}
           </div>
         </div>
@@ -166,7 +241,7 @@ export function ImageUrlWithUpload({ label, value, onChange, onUploadError }) {
 
 export function TagInput({ tags = [], onChange, placeholder = "Type and press Enter..." }) {
   const [input, setInput] = useState("");
-  
+
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' || e.key === ',') {
       e.preventDefault();
@@ -275,67 +350,147 @@ export function SharedDrawer({ isOpen, onClose, title, children, footer }) {
 }
 
 export function MultiImageInput({ value = [], onChange, showToast }) {
-  const [input, setInput] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadCount, setUploadCount] = useState({ done: 0, total: 0 });
+  const fileInputRef = React.useRef(null);
 
-  const handleAdd = () => {
-    const url = input.trim();
-    if (url && !value.includes(url)) {
-      onChange([...value, url]);
-    }
-    setInput("");
-  };
+  const imgList = Array.isArray(value) ? value : [];
 
   const handleFileChange = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+    e.preventDefault();
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+
     setUploading(true);
-    try {
-      await handleFileUpload(file, (url) => {
-        onChange([...value, url]);
-      });
-    } catch (err) {
-      showToast(err.message || "Upload failed", "error");
-    } finally {
-      setUploading(false);
+    setUploadCount({ done: 0, total: files.length });
+    setUploadProgress(0);
+
+    const newUrls = [];
+    for (let i = 0; i < files.length; i++) {
+      try {
+        let uploadedUrl = null;
+        await handleFileUpload(files[i], (url) => { uploadedUrl = url; });
+        if (uploadedUrl) newUrls.push(uploadedUrl);
+      } catch (err) {
+        if (showToast) showToast(`Failed: "${files[i].name}" — ${err.message || "Upload error"}`, "error");
+      }
+      const done = i + 1;
+      setUploadCount({ done, total: files.length });
+      setUploadProgress(Math.round((done / files.length) * 100));
+    }
+
+    if (newUrls.length > 0) {
+      onChange([...imgList, ...newUrls]);
+      if (showToast) showToast(`${newUrls.length} image${newUrls.length > 1 ? "s" : ""} uploaded successfully!`, "success");
+    }
+
+    setUploading(false);
+    setUploadProgress(0);
+    setUploadCount({ done: 0, total: 0 });
+    e.target.value = "";
+  };
+
+  const handleZoneClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!uploading && fileInputRef.current) {
+      fileInputRef.current.click();
     }
   };
 
-  const handleRemove = (urlToRemove) => {
-    onChange(value.filter((url) => url !== urlToRemove));
+  const handleRemove = (urlToRemove, e) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+    onChange(imgList.filter((url) => url !== urlToRemove));
   };
 
   return (
-    <div className="adm-form-group">
-      <label>Gallery Images</label>
-      <div style={{ display: 'flex', gap: '8px' }}>
-        <input
-          type="text"
-          placeholder="Paste URL or select file..."
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          style={{ flex: 1 }}
-        />
-        <button type="button" className="adm-btn adm-btn-primary" style={{ height: '42px' }} onClick={handleAdd}>Add</button>
-        <label className="adm-btn adm-btn-ghost" style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', height: '42px' }}>
-          {uploading ? "..." : "Upload"}
-          <input type="file" accept="image/*" onChange={handleFileChange} style={{ display: 'none' }} disabled={uploading} />
-        </label>
-      </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '10px', marginTop: '10px' }}>
-        {value.map((url, i) => (
-          <div key={i} style={{ position: 'relative', width: '80px', height: '80px', border: '1px dashed var(--ad-border-color)', borderRadius: '8px', overflow: 'hidden' }}>
-            <img src={url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Gallery preview" />
-            <button
-              type="button"
-              onClick={() => handleRemove(url)}
-              style={{ position: 'absolute', top: '2px', right: '2px', background: 'rgba(231,76,60,0.9)', border: 'none', color: '#fff', borderRadius: '50%', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', cursor: 'pointer', fontWeight: 'bold' }}
-            >
-              ×
-            </button>
+    <div className="flex flex-col gap-3 w-full">
+      <label className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+        Gallery Images
+        <span className="text-teal-500 normal-case font-semibold tracking-normal text-[10px]">
+          — select multiple images at once
+        </span>
+      </label>
+
+      {/* Upload Drop Zone */}
+      <div
+        onClick={handleZoneClick}
+        className={`relative flex flex-col items-center justify-center w-full min-h-[120px] border-2 border-dashed rounded-2xl cursor-pointer transition-all duration-300 select-none group ${uploading
+          ? "border-teal-400 bg-teal-50/60 cursor-not-allowed"
+          : "border-slate-200 bg-slate-50 hover:border-teal-400 hover:bg-teal-50/30 active:scale-[0.99]"
+          }`}
+      >
+        {uploading ? (
+          <div className="flex flex-col items-center gap-2 p-6 w-full">
+            <div className="w-8 h-8 border-[3px] border-teal-400 border-t-transparent rounded-full animate-spin" />
+            <span className="text-xs font-bold text-teal-700">
+              Uploading {uploadCount.done} / {uploadCount.total} image{uploadCount.total > 1 ? "s" : ""}...
+            </span>
+            <div className="w-52 h-2 bg-slate-200 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-teal-500 to-emerald-500 rounded-full transition-all duration-300"
+                style={{ width: `${uploadProgress}%` }}
+              />
+            </div>
+            <span className="text-[10px] font-bold text-slate-400">{uploadProgress}% complete</span>
           </div>
-        ))}
+        ) : (
+          <div className="flex flex-col items-center gap-2 p-6">
+            <div className="w-11 h-11 rounded-xl bg-teal-50 border border-teal-100 flex items-center justify-center mb-1 group-hover:scale-110 transition-transform duration-300">
+              <Images className="w-5 h-5 text-teal-600" />
+            </div>
+            <span className="text-xs font-bold text-slate-600">Click to upload images</span>
+            <span className="text-[10px] text-slate-400 font-semibold">Hold Ctrl / ⌘ to select multiple files at once</span>
+            <span className="text-[10px] text-slate-300 font-medium">PNG, JPG, WEBP supported</span>
+          </div>
+        )}
       </div>
+
+      <input
+        type="file"
+        ref={fileInputRef}
+        accept="image/*"
+        multiple
+        onChange={handleFileChange}
+        onClick={(e) => e.stopPropagation()}
+        className="hidden"
+        disabled={uploading}
+      />
+
+      {/* Thumbnail Grid Preview */}
+      {imgList.length > 0 && (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5 mt-1">
+          {imgList.map((url, i) => (
+            <div
+              key={`${url}-${i}`}
+              className="group relative aspect-square rounded-xl border border-slate-200 bg-slate-50 overflow-hidden shadow-sm hover:shadow-md transition-all duration-300"
+            >
+              <img src={url} className="w-full h-full object-cover" alt={`Gallery ${i + 1}`} />
+              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
+                <button
+                  type="button"
+                  onClick={(e) => handleRemove(url, e)}
+                  className="p-1.5 rounded-full bg-rose-600 hover:bg-rose-700 text-white shadow-lg transform scale-90 group-hover:scale-100 transition-all duration-300"
+                  title="Remove Image"
+                >
+                  <Trash2 className="w-3 h-3" />
+                </button>
+              </div>
+              <span className="absolute bottom-1 left-1.5 bg-black/60 text-white text-[8px] font-bold px-1 py-0.5 rounded">
+                {i + 1}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {imgList.length === 0 && !uploading && (
+        <p className="text-[10px] text-slate-400 font-semibold text-center mt-1">
+          No images added yet. Upload images using the zone above.
+        </p>
+      )}
     </div>
   );
 }
@@ -349,25 +504,28 @@ const optStr = () => z.string().optional().default("");
 const partnerSchema = z.object({
   name: z.string().min(2, { message: "Partner Name must be at least 2 characters" }),
   type: z.enum(["hospital", "ngo", "educational", "corporate", "government"]),
-  city:                optStr(),
-  state:               optStr(),
-  description:         optStr(),
-  shortBio:            optStr(),
-  logoUrl:             optStr(),
-  coverImageUrl:       optStr(),
-  websiteUrl:          optStr(),
-  contactEmail:        optStr(),
-  contactPhone:        optStr(),
+  city: optStr(),
+  state: optStr(),
+  description: optStr(),
+  shortBio: optStr(),
+  logoUrl: optStr(),
+  coverImageUrl: optStr(),
+  websiteUrl: optStr(),
+  contactEmail: optStr(),
+  contactPhone: optStr(),
   partnershipStartDate: optStr(),
-  displayOrder:        z.coerce.number().int().optional().default(10),
-  isFeatured:          z.boolean().optional().default(false),
-  isActive:            z.boolean().optional().default(true),
-  address:             optStr(),
-  country:             optStr(),
-  linkedinUrl:         optStr(),
-  twitterUrl:          optStr(),
-  facebookUrl:         optStr(),
-  instagramUrl:        optStr()
+  displayOrder: z.coerce.number().int().optional().default(10),
+  isFeatured: z.boolean().optional().default(false),
+  isActive: z.boolean().optional().default(true),
+  address: optStr(),
+  country: optStr(),
+  linkedinUrl: optStr(),
+  twitterUrl: optStr(),
+  facebookUrl: optStr(),
+  instagramUrl: optStr(),
+  supportQuote: optStr(),
+  supportQuoteAuthor: optStr(),
+  galleryImages: z.array(z.string()).optional().default([])
 });
 
 export function PartnersSection({ showToast }) {
@@ -398,7 +556,7 @@ export function PartnersSection({ showToast }) {
     };
   }, [drawerOpen, viewDrawerOpen, deleteModalOpen]);
 
-  const { register, handleSubmit, reset, setValue, watch, trigger, formState: { errors } } = useForm({
+  const { register, handleSubmit, reset, setValue, watch, trigger, control, formState: { errors } } = useForm({
     resolver: zodResolver(partnerSchema),
     defaultValues: {
       name: "",
@@ -421,14 +579,20 @@ export function PartnersSection({ showToast }) {
       linkedinUrl: "",
       twitterUrl: "",
       facebookUrl: "",
-      instagramUrl: ""
+      instagramUrl: "",
+      supportQuote: "",
+      supportQuoteAuthor: "",
+      galleryImages: []
     }
   });
+
+  const watchedGalleryImages = watch("galleryImages") || [];
+
   const fetchPartners = async () => {
     setLoading(true);
     try {
-      const data = await api.partners.list();
-      setPartners(data.partners || []);
+      const data = await api.partners.list({ all: true });
+      setPartners(Array.isArray(data) ? data : (data.partners || []));
     } catch (err) {
       showToast(err.message || "Failed to load partners", "error");
     } finally {
@@ -523,7 +687,10 @@ export function PartnersSection({ showToast }) {
       linkedinUrl: "",
       twitterUrl: "",
       facebookUrl: "",
-      instagramUrl: ""
+      instagramUrl: "",
+      supportQuote: "",
+      supportQuoteAuthor: "",
+      galleryImages: []
     });
     setDrawerOpen(true);
   };
@@ -553,7 +720,10 @@ export function PartnersSection({ showToast }) {
       linkedinUrl: partner.linkedinUrl || "",
       twitterUrl: partner.twitterUrl || "",
       facebookUrl: partner.facebookUrl || "",
-      instagramUrl: partner.instagramUrl || ""
+      instagramUrl: partner.instagramUrl || "",
+      supportQuote: partner.supportQuote || "",
+      supportQuoteAuthor: partner.supportQuoteAuthor || "",
+      galleryImages: partner.galleryImages || partner.galleryUrls || []
     });
     setDrawerOpen(true);
   };
@@ -634,15 +804,15 @@ export function PartnersSection({ showToast }) {
   const paged = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
   return (
-    <div className="adm-section">
-      
+    <div className="adm-section bg-slate-50/50 p-6 rounded-3xl border border-slate-100">
+
       {/* Header Panel */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div className="adm-section-header">
           <h2>Partners</h2>
           <p>Manage VidyaVaidya collaborations, medical networks, and CSR alignments</p>
         </div>
-        <button 
+        <button
           className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-3 rounded-2xl transition-all duration-300 shadow-lg shadow-emerald-600/20 flex items-center gap-2 border-none text-sm"
           onClick={() => handleOpenAdd("hospital", true)}
         >
@@ -703,29 +873,27 @@ export function PartnersSection({ showToast }) {
                 setTypeFilter(isSelected ? "All" : pt.type);
                 setPage(1);
               }}
-              className={`group relative p-6 rounded-2xl border-2 transition-all duration-300 cursor-pointer flex flex-col items-center justify-center text-center min-h-[170px] ${
-                isSelected
-                  ? "border-teal-600 bg-white shadow-lg shadow-teal-600/5 ring-1 ring-teal-600"
-                  : "border-slate-200 bg-white shadow-sm hover:border-slate-300"
-              }`}
+              className={`group relative p-6 rounded-2xl border-2 transition-all duration-300 cursor-pointer flex flex-col items-center justify-center text-center min-h-[170px] ${isSelected
+                ? "border-teal-600 bg-white shadow-lg shadow-teal-600/5 ring-1 ring-teal-600"
+                : "border-slate-200 bg-white shadow-sm hover:border-slate-300"
+                }`}
             >
               {isSelected && (
                 <span className="absolute top-3 right-3 w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
               )}
-              
+
               {/* Centered Glowing Glassmorphism Icon with CSS transitions */}
-              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 shadow-md mb-4 border ${
-                pt.type === 'hospital' ? 'text-teal-600 shadow-teal-500/10 border-teal-100 bg-teal-50/50' :
+              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 shadow-md mb-4 border ${pt.type === 'hospital' ? 'text-teal-600 shadow-teal-500/10 border-teal-100 bg-teal-50/50' :
                 pt.type === 'ngo' ? 'text-orange-600 shadow-orange-500/10 border-orange-100 bg-orange-50/50' :
-                pt.type === 'educational' ? 'text-blue-600 shadow-blue-500/10 border-blue-100 bg-blue-50/50' :
-                pt.type === 'corporate' ? 'text-purple-600 shadow-purple-500/10 border-purple-100 bg-purple-50/50' :
-                'text-rose-600 shadow-rose-500/10 border-rose-100 bg-rose-50/50'
-              }`}>
+                  pt.type === 'educational' ? 'text-blue-600 shadow-blue-500/10 border-blue-100 bg-blue-50/50' :
+                    pt.type === 'corporate' ? 'text-purple-600 shadow-purple-500/10 border-purple-100 bg-purple-50/50' :
+                      'text-rose-600 shadow-rose-500/10 border-rose-100 bg-rose-50/50'
+                }`}>
                 <Icon className="w-6 h-6 stroke-[2.2]" />
               </div>
 
               <h4 className="font-extrabold text-slate-800 text-sm leading-snug mb-3">{pt.title}</h4>
-              
+
               <div className="flex flex-col items-center gap-2 w-full mt-auto">
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                   {partners.filter(p => p.type === pt.type).length} Active
@@ -752,22 +920,19 @@ export function PartnersSection({ showToast }) {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-50/50 border-b border-slate-100 text-slate-400 text-xs font-bold uppercase tracking-wider">
-                <th className="py-4 px-6">Logo / Partner</th>
-                <th className="py-4 px-6">Type</th>
-                <th className="py-4 px-6">City</th>
-                <th className="py-4 px-6">Display Order</th>
-                <th className="py-4 px-6">Featured</th>
-                <th className="py-4 px-6">Status</th>
-                <th className="py-4 px-6">Established</th>
-                <th className="py-4 px-6 text-right">Actions</th>
+                <th className="py-4 px-5 min-w-[220px]">Logo / Partner</th>
+                <th className="py-4 px-4">Type</th>
+                <th className="py-4 px-4">City</th>
+                <th className="py-4 px-4">Status</th>
+                <th className="py-4 px-4 text-center">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
               {loading ? (
-                <SkeletonRows cols={8} />
+                <SkeletonRows cols={5} />
               ) : paged.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-12 text-center">
+                  <td colSpan={5} className="py-12 text-center">
                     <div className="flex flex-col items-center justify-center max-w-md mx-auto space-y-4 p-6 bg-slate-50/50 rounded-2xl border border-slate-100 shadow-sm">
                       <div className="p-3 bg-teal-50 text-teal-600 rounded-xl">
                         <Handshake className="w-8 h-8" />
@@ -788,69 +953,71 @@ export function PartnersSection({ showToast }) {
                 </tr>
               ) : (
                 paged.map((p) => (
-                  <tr key={p.id} className="hover:bg-slate-50/30 transition-colors text-slate-600 text-sm">
-                    <td className="py-4 px-6">
+                  <tr key={p.id} className="hover:bg-slate-50/40 transition-all text-slate-600 text-sm group">
+                    {/* Logo / Partner */}
+                    <td className="py-4 px-5">
                       <div className="flex items-center gap-3">
                         {p.logoUrl ? (
-                          <img src={p.logoUrl} className="w-10 h-10 rounded-xl object-cover border border-slate-100 shadow-sm" alt={p.name} />
+                          <img src={p.logoUrl} className="w-10 h-10 rounded-xl object-cover border border-slate-100 shadow-sm flex-shrink-0" alt={p.name} />
                         ) : (
-                          <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-lg shadow-sm">🤝</div>
+                          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-50 to-teal-100 border border-teal-200 flex items-center justify-center text-lg shadow-sm flex-shrink-0">🤝</div>
                         )}
-                        <div>
-                          <p className="font-bold text-slate-800 text-base">{p.name}</p>
-                          <p className="text-xs text-slate-400 max-w-[200px] truncate">{p.shortBio || "No overview provided"}</p>
+                        <div className="min-w-0">
+                          <p className="font-bold text-slate-800 text-sm leading-tight">{p.name}</p>
+                          <p className="text-xs text-slate-400 truncate max-w-[170px] mt-0.5">{p.shortBio || p.city || "No overview provided"}</p>
                         </div>
                       </div>
                     </td>
-                    <td className="py-4 px-6">
-                      <span className={`inline-flex px-3 py-1 rounded-full text-xs font-bold capitalize border ${
-                        p.type === 'hospital' ? 'bg-teal-50 text-teal-700 border-teal-100' :
-                        p.type === 'ngo' ? 'bg-orange-50 text-orange-700 border-orange-100' :
-                        p.type === 'educational' ? 'bg-blue-50 text-blue-700 border-blue-100' :
-                        p.type === 'corporate' ? 'bg-purple-50 text-purple-700 border-purple-100' :
-                        'bg-rose-50 text-rose-700 border-rose-100'
-                      }`}>
+
+                    {/* Type */}
+                    <td className="py-4 px-4">
+                      <span className={`inline-flex px-2.5 py-1 rounded-full text-[11px] font-bold capitalize ${p.type === 'hospital' ? 'bg-teal-50 text-teal-700' :
+                        p.type === 'ngo' ? 'bg-orange-50 text-orange-700' :
+                          p.type === 'educational' ? 'bg-blue-50 text-blue-700' :
+                            p.type === 'corporate' ? 'bg-purple-50 text-purple-700' :
+                              'bg-rose-50 text-rose-700'
+                        }`}>
                         {p.type}
                       </span>
                     </td>
-                    <td className="py-4 px-6 font-semibold text-slate-700">{p.city || "—"}</td>
-                    <td className="py-4 px-6 font-bold text-slate-800">{p.displayOrder ?? 10}</td>
-                    <td className="py-4 px-6">
-                      {p.isFeatured ? (
-                        <span className="inline-flex px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-100">Featured</span>
-                      ) : (
-                        <span className="text-slate-300">—</span>
-                      )}
+
+                    {/* City */}
+                    <td className="py-4 px-4 text-xs font-semibold text-slate-600">
+                      {p.city || p.location?.city || "—"}
                     </td>
-                    <td className="py-4 px-6">
+
+                    {/* Status Toggle */}
+                    <td className="py-4 px-4">
                       <button
                         onClick={() => handleToggleActive(p)}
-                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border transition-colors ${
-                          p.isActive
-                            ? 'bg-emerald-50 text-emerald-700 border-emerald-100 hover:bg-emerald-100'
-                            : 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100'
-                        }`}
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border transition-all ${p.isActive
+                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
+                          : 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100'
+                          }`}
                       >
                         <span className={`w-1.5 h-1.5 rounded-full ${p.isActive ? 'bg-emerald-500' : 'bg-slate-400'}`} />
                         {p.isActive ? "Active" : "Inactive"}
                       </button>
                     </td>
-                    <td className="py-4 px-6 text-xs text-slate-400 font-semibold">{fmtDate(p.created_at || p.createdAt)}</td>
-                    <td className="py-4 px-6 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <button 
-                          className="p-2 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-100 transition-colors"
+
+                    {/* Actions – Edit & Delete – always visible */}
+                    <td className="py-4 px-4">
+                      <div className="flex items-center justify-center gap-2">
+                        <button
                           title="Edit Partner"
                           onClick={() => handleOpenEdit(p)}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-100 text-xs font-bold transition-all hover:shadow-sm"
                         >
-                          <Pencil className="w-4 h-4" />
+                          <Pencil className="w-3.5 h-3.5" />
+                          Edit
                         </button>
-                        <button 
-                          className="p-2 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-100 transition-colors"
+                        <button
                           title="Delete Partner"
                           onClick={() => handleDeleteClick(p)}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-100 text-xs font-bold transition-all hover:shadow-sm"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-3.5 h-3.5" />
+                          Delete
                         </button>
                       </div>
                     </td>
@@ -866,7 +1033,7 @@ export function PartnersSection({ showToast }) {
           <div className="flex items-center justify-between px-6 py-4 bg-slate-50/50 border-t border-slate-100">
             <span className="text-xs text-slate-400 font-bold">Page {page} of {totalPages}</span>
             <div className="flex gap-2">
-              <button 
+              <button
                 disabled={page === 1}
                 onClick={() => setPage(p => p - 1)}
                 className="px-3.5 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 transition-colors"
@@ -876,17 +1043,16 @@ export function PartnersSection({ showToast }) {
               {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
                 <button
                   key={p}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-colors ${
-                    page === p
-                      ? "bg-slate-800 text-white border-slate-800"
-                      : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
-                  }`}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-colors ${page === p
+                    ? "bg-slate-800 text-white border-slate-800"
+                    : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+                    }`}
                   onClick={() => setPage(p)}
                 >
                   {p}
                 </button>
               ))}
-              <button 
+              <button
                 disabled={page === totalPages}
                 onClick={() => setPage(p => p + 1)}
                 className="px-3.5 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 transition-colors"
@@ -902,7 +1068,7 @@ export function PartnersSection({ showToast }) {
       {typeof window !== "undefined" && document.body && createPortal(
         <AnimatePresence>
           {drawerOpen && (
-            <div 
+            <div
               className="fixed inset-0 z-[1500] flex items-center justify-center bg-slate-900/60 backdrop-blur-md p-4"
               onClick={() => setDrawerOpen(false)}
             >
@@ -914,61 +1080,88 @@ export function PartnersSection({ showToast }) {
                 className="bg-white rounded-3xl w-full max-w-4xl shadow-2xl border border-slate-100 flex flex-col overflow-hidden h-full max-h-[85vh] md:max-h-[90vh]"
                 onClick={(e) => e.stopPropagation()}
               >
-              {/* Modal Header */}
-              <div className="px-6 py-3.5 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
-                <div>
-                  <h3 className="text-lg font-bold text-slate-800">
-                    {editPartner ? "Edit Partner Alignment" : "Add Partner Alignment"}
-                  </h3>
-                  <p className="text-[11px] text-slate-400 mt-0.5">Define collaboration profile and digital credentials</p>
+                {/* Modal Header */}
+                <div className="px-6 py-3.5 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg font-bold text-slate-800">
+                      {editPartner ? "Edit Partner Alignment" : "Add Partner Alignment"}
+                    </h3>
+                    <p className="text-[11px] text-slate-400 mt-0.5">Define collaboration profile and digital credentials</p>
+                  </div>
+                  <button
+                    type="button"
+                    className="p-1.5 rounded-xl hover:bg-slate-200 text-slate-400 hover:text-slate-600 transition-colors"
+                    onClick={() => setDrawerOpen(false)}
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  className="p-1.5 rounded-xl hover:bg-slate-200 text-slate-400 hover:text-slate-600 transition-colors"
-                  onClick={() => setDrawerOpen(false)}
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
 
-              {/* Form Tab Navigation (Clicking Disabled to Enforce Step Progress) */}
-              <div className="px-6 py-2.5 bg-white border-b border-slate-100 flex gap-2">
-                {[
-                  { name: "1. Basic Info", fields: ["name", "type", "shortBio", "description"] },
-                  { name: "2. Contact & Location", fields: ["city", "state", "websiteUrl", "contactEmail", "contactPhone", "address", "country"] },
-                  { name: "3. Partnership & Socials", fields: ["partnershipStartDate", "displayOrder", "linkedinUrl", "twitterUrl", "facebookUrl", "instagramUrl"] }
-                ].map((t, idx) => {
-                  const hasErrors = t.fields.some(f => !!errors[f]);
-                  return (
-                    <div
-                      key={idx}
-                      className={`px-3 py-1.5 text-[11px] font-bold rounded-xl transition-all flex items-center gap-1.5 select-none ${
-                        activeFormTab === idx
+                {/* Form Tab Navigation (Clicking Disabled to Enforce Step Progress) */}
+                <div className="px-6 py-2.5 bg-white border-b border-slate-100 flex gap-2">
+                  {[
+                    { name: "1. Basic Info", fields: ["name", "type", "shortBio", "description"] },
+                    { name: "2. Contact & Location", fields: ["city", "state", "websiteUrl", "contactEmail", "contactPhone", "address", "country"] },
+                    { name: "3. Partnership & Socials", fields: ["partnershipStartDate", "displayOrder", "linkedinUrl", "twitterUrl", "facebookUrl", "instagramUrl"] },
+                    { name: "4. Message & Highlights", fields: ["supportQuote", "supportQuoteAuthor", "galleryImages"] }
+                  ].map((t, idx) => {
+                    const hasErrors = t.fields.some(f => !!errors[f]);
+                    return (
+                      <div
+                        key={idx}
+                        className={`px-3 py-1.5 text-[11px] font-bold rounded-xl transition-all flex items-center gap-1.5 select-none ${activeFormTab === idx
                           ? "bg-teal-600 text-white shadow-md shadow-teal-600/10"
                           : "bg-slate-50 text-slate-400"
-                      } ${hasErrors ? "ring-2 ring-rose-500/30 text-rose-600 bg-rose-50" : ""}`}
-                    >
-                      {t.name}
-                      {hasErrors && <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />}
-                    </div>
-                  );
-                })}
-              </div>
+                          } ${hasErrors ? "ring-2 ring-rose-500/30 text-rose-600 bg-rose-50" : ""}`}
+                      >
+                        {t.name}
+                        {hasErrors && <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />}
+                      </div>
+                    );
+                  })}
+                </div>
 
-              {/* Modal Body - Fixed, perfectly sized, no outer scrollbar for the modal */}
-              <div className="p-4 md:p-5 flex-1 overflow-hidden flex flex-col min-h-0 justify-between">
-                <form className="space-y-3.5 flex-1 overflow-y-auto pr-1 custom-scrollbar min-h-0">
-                  {activeFormTab === 0 && (
-                    <div className="space-y-3.5">
-                      {/* Basic Info Section Card */}
-                      <div className="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-sm space-y-3">
-                        <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-                          <FileText className="w-4.5 h-4.5 text-teal-600" />
-                          <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Basic Info</h4>
-                        </div>
-                        
-                        {isFromHeader ? (
-                          <div className="grid grid-cols-2 gap-4">
+                {/* Modal Body - Fixed, perfectly sized, no outer scrollbar for the modal */}
+                <div className="p-4 md:p-5 flex-1 overflow-hidden flex flex-col min-h-0 justify-between">
+                  <form className="space-y-3.5 flex-1 overflow-y-auto pr-1 custom-scrollbar min-h-0">
+                    {activeFormTab === 0 && (
+                      <div className="space-y-3.5">
+                        {/* Basic Info Section Card */}
+                        <div className="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-sm space-y-3">
+                          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+                            <FileText className="w-4.5 h-4.5 text-teal-600" />
+                            <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Basic Info</h4>
+                          </div>
+
+                          {isFromHeader ? (
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className="flex flex-col gap-1">
+                                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Partner Name *</label>
+                                <input
+                                  type="text"
+                                  {...register("name")}
+                                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-semibold"
+                                  placeholder="Hospital/Company/Organization Name"
+                                />
+                                {errors.name && <span className="text-rose-500 text-[11px] font-bold mt-0.5">{errors.name.message}</span>}
+                              </div>
+
+                              <div className="flex flex-col gap-1">
+                                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Partner Type *</label>
+                                <select
+                                  {...register("type")}
+                                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-bold text-slate-700 cursor-pointer"
+                                >
+                                  <option value="hospital">Hospital</option>
+                                  <option value="ngo">NGO</option>
+                                  <option value="educational">Educational Institution</option>
+                                  <option value="corporate">Corporate</option>
+                                  <option value="government">Volunteer Network</option>
+                                </select>
+                                {errors.type && <span className="text-rose-500 text-[11px] font-bold mt-0.5">{errors.type.message}</span>}
+                              </div>
+                            </div>
+                          ) : (
                             <div className="flex flex-col gap-1">
                               <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Partner Name *</label>
                               <input
@@ -979,344 +1172,363 @@ export function PartnersSection({ showToast }) {
                               />
                               {errors.name && <span className="text-rose-500 text-[11px] font-bold mt-0.5">{errors.name.message}</span>}
                             </div>
+                          )}
 
+                          <div className="flex flex-col gap-1">
+                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Contact Person & Short Bio (max 150 chars)</label>
+                            <textarea
+                              {...register("shortBio")}
+                              maxLength={150}
+                              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-1.5 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-medium"
+                              placeholder="e.g. Dr. A. K. Sharma (Medical Chief) — Delivering pediatric support campaigns."
+                              rows={2}
+                            />
+                            <span className="text-[10px] text-right font-bold text-slate-400">{(watch("shortBio") || "").length}/150</span>
+                          </div>
+
+                          <div className="flex flex-col gap-1">
+                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Full Collaboration Description</label>
+                            <textarea
+                              {...register("description")}
+                              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-medium"
+                              placeholder="Detail the collaborative partnership scope, goals, and key accomplishments..."
+                              rows={2}
+                            />
+                          </div>
+                        </div>
+
+                        {/* Media Uploads Section Card */}
+                        <div className="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-sm space-y-3">
+                          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+                            <Building2 className="w-4.5 h-4.5 text-teal-600" />
+                            <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Media Uploads</h4>
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <ImageUrlWithUpload
+                              label="Partner Logo URL / Image Upload"
+                              value={watch("logoUrl")}
+                              onChange={(url) => setValue("logoUrl", url, { shouldValidate: true })}
+                              onUploadError={(err) => showToast(err, "error")}
+                            />
+                            <ImageUrlWithUpload
+                              label="Cover Banner URL / Image Upload"
+                              value={watch("coverImageUrl")}
+                              onChange={(url) => setValue("coverImageUrl", url, { shouldValidate: true })}
+                              onUploadError={(err) => showToast(err, "error")}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {activeFormTab === 1 && (
+                      <div className="space-y-4">
+                        {/* Contact Details Card */}
+                        <div className="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-sm space-y-3">
+                          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+                            <Phone className="w-4.5 h-4.5 text-teal-600" />
+                            <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Contact Details</h4>
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div className="flex flex-col gap-1">
-                              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Partner Type *</label>
-                              <select
-                                {...register("type")}
-                                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-bold text-slate-700 cursor-pointer"
-                              >
-                                <option value="hospital">Hospital</option>
-                                <option value="ngo">NGO</option>
-                                <option value="educational">Educational Institution</option>
-                                <option value="corporate">Corporate</option>
-                                <option value="government">Volunteer Network</option>
-                              </select>
-                              {errors.type && <span className="text-rose-500 text-[11px] font-bold mt-0.5">{errors.type.message}</span>}
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="flex flex-col gap-1">
-                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Partner Name *</label>
-                            <input
-                              type="text"
-                              {...register("name")}
-                              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-semibold"
-                              placeholder="Hospital/Company/Organization Name"
-                            />
-                            {errors.name && <span className="text-rose-500 text-[11px] font-bold mt-0.5">{errors.name.message}</span>}
-                          </div>
-                        )}
-
-                        <div className="flex flex-col gap-1">
-                          <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Contact Person & Short Bio (max 150 chars)</label>
-                          <textarea
-                            {...register("shortBio")}
-                            maxLength={150}
-                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-1.5 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-medium"
-                            placeholder="e.g. Dr. A. K. Sharma (Medical Chief) — Delivering pediatric support campaigns."
-                            rows={2}
-                          />
-                          <span className="text-[10px] text-right font-bold text-slate-400">{(watch("shortBio") || "").length}/150</span>
-                        </div>
-
-                        <div className="flex flex-col gap-1">
-                          <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Full Collaboration Description</label>
-                          <textarea
-                            {...register("description")}
-                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-medium"
-                            placeholder="Detail the collaborative partnership scope, goals, and key accomplishments..."
-                            rows={2}
-                          />
-                        </div>
-                      </div>
-
-                      {/* Media Uploads Section Card */}
-                      <div className="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-sm space-y-3">
-                        <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-                          <Building2 className="w-4.5 h-4.5 text-teal-600" />
-                          <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Media Uploads</h4>
-                        </div>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          <ImageUrlWithUpload
-                            label="Partner Logo URL / Image Upload"
-                            value={watch("logoUrl")}
-                            onChange={(url) => setValue("logoUrl", url, { shouldValidate: true })}
-                            onUploadError={(err) => showToast(err, "error")}
-                          />
-                          <ImageUrlWithUpload
-                            label="Cover Banner URL / Image Upload"
-                            value={watch("coverImageUrl")}
-                            onChange={(url) => setValue("coverImageUrl", url, { shouldValidate: true })}
-                            onUploadError={(err) => showToast(err, "error")}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {activeFormTab === 1 && (
-                    <div className="space-y-4">
-                      {/* Contact Details Card */}
-                      <div className="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-sm space-y-3">
-                        <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-                          <Phone className="w-4.5 h-4.5 text-teal-600" />
-                          <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Contact Details</h4>
-                        </div>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                          <div className="flex flex-col gap-1">
-                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Website URL</label>
-                            <input
-                              type="text"
-                              {...register("websiteUrl")}
-                              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-medium"
-                              placeholder="https://example.com"
-                            />
-                            {errors.websiteUrl && <span className="text-rose-500 text-[11px] font-bold mt-0.5">{errors.websiteUrl.message}</span>}
-                          </div>
-                          <div className="flex flex-col gap-1">
-                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Contact Email</label>
-                            <input
-                              type="email"
-                              {...register("contactEmail")}
-                              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-medium"
-                              placeholder="partner@example.com"
-                            />
-                            {errors.contactEmail && <span className="text-rose-500 text-[11px] font-bold mt-0.5">{errors.contactEmail.message}</span>}
-                          </div>
-                          <div className="flex flex-col gap-1">
-                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Contact Phone</label>
-                            <input
-                              type="text"
-                              {...register("contactPhone")}
-                              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-medium"
-                              placeholder="9876543210"
-                            />
-                            {errors.contactPhone && <span className="text-rose-500 text-[11px] font-bold mt-0.5">{errors.contactPhone.message}</span>}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Location Details Card */}
-                      <div className="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-sm space-y-3">
-                        <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-                          <MapPin className="w-4.5 h-4.5 text-teal-600" />
-                          <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Location Details</h4>
-                        </div>
-                        
-                        <div className="flex flex-col gap-1">
-                          <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Street Address</label>
-                          <input
-                            type="text"
-                            {...register("address")}
-                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-medium"
-                            placeholder="Building, Street, Area"
-                          />
-                          {errors.address && <span className="text-rose-500 text-[11px] font-bold mt-0.5">{errors.address.message}</span>}
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                          <div className="flex flex-col gap-1">
-                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">City *</label>
-                            <input
-                              type="text"
-                              {...register("city")}
-                              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-semibold"
-                              placeholder="e.g. Nellore"
-                            />
-                            {errors.city && <span className="text-rose-500 text-[11px] font-bold mt-0.5">{errors.city.message}</span>}
-                          </div>
-                          <div className="flex flex-col gap-1">
-                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">State *</label>
-                            <input
-                              type="text"
-                              {...register("state")}
-                              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-semibold"
-                              placeholder="e.g. Andhra Pradesh"
-                            />
-                            {errors.state && <span className="text-rose-500 text-[11px] font-bold mt-0.5">{errors.state.message}</span>}
-                          </div>
-                          <div className="flex flex-col gap-1">
-                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Country *</label>
-                            <input
-                              type="text"
-                              {...register("country")}
-                              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-semibold"
-                              placeholder="India"
-                            />
-                            {errors.country && <span className="text-rose-500 text-[11px] font-bold mt-0.5">{errors.country.message}</span>}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {activeFormTab === 2 && (
-                    <div className="space-y-4">
-                      {/* Partnership Details Card */}
-                      <div className="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-sm space-y-3">
-                        <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-                          <Handshake className="w-4.5 h-4.5 text-teal-600" />
-                          <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Partnership Details</h4>
-                        </div>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="flex flex-col gap-1">
-                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Partnership Start Date</label>
-                            <input
-                              type="date"
-                              {...register("partnershipStartDate")}
-                              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-semibold"
-                            />
-                            {errors.partnershipStartDate && <span className="text-rose-500 text-[11px] font-bold mt-0.5">{errors.partnershipStartDate.message}</span>}
-                          </div>
-                          <div className="flex flex-col gap-1">
-                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Display Order (Priority) *</label>
-                            <input
-                              type="number"
-                              {...register("displayOrder")}
-                              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-semibold"
-                              placeholder="10"
-                            />
-                            {errors.displayOrder && <span className="text-rose-500 text-[11px] font-bold mt-0.5">{errors.displayOrder.message}</span>}
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-1">
-                          <label className="flex items-center justify-between p-2.5 rounded-xl border border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors">
-                            <span className="text-xs font-bold text-slate-600">Featured Placement</span>
-                            <div className="relative inline-flex items-center cursor-pointer">
+                              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Website URL</label>
                               <input
-                                type="checkbox"
-                                {...register("isFeatured")}
-                                className="sr-only peer"
+                                type="text"
+                                {...register("websiteUrl")}
+                                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-medium"
+                                placeholder="https://example.com"
                               />
-                              <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-teal-600"></div>
+                              {errors.websiteUrl && <span className="text-rose-500 text-[11px] font-bold mt-0.5">{errors.websiteUrl.message}</span>}
                             </div>
-                          </label>
-
-                          <label className="flex items-center justify-between p-2.5 rounded-xl border border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors">
-                            <span className="text-xs font-bold text-slate-600">Active status</span>
-                            <div className="relative inline-flex items-center cursor-pointer">
+                            <div className="flex flex-col gap-1">
+                              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Contact Email</label>
                               <input
-                                type="checkbox"
-                                {...register("isActive")}
-                                className="sr-only peer"
+                                type="email"
+                                {...register("contactEmail")}
+                                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-medium"
+                                placeholder="partner@example.com"
                               />
-                              <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-teal-600"></div>
+                              {errors.contactEmail && <span className="text-rose-500 text-[11px] font-bold mt-0.5">{errors.contactEmail.message}</span>}
                             </div>
-                          </label>
+                            <div className="flex flex-col gap-1">
+                              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Contact Phone</label>
+                              <input
+                                type="text"
+                                {...register("contactPhone")}
+                                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-medium"
+                                placeholder="9876543210"
+                              />
+                              {errors.contactPhone && <span className="text-rose-500 text-[11px] font-bold mt-0.5">{errors.contactPhone.message}</span>}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Location Details Card */}
+                        <div className="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-sm space-y-3">
+                          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+                            <MapPin className="w-4.5 h-4.5 text-teal-600" />
+                            <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Location Details</h4>
+                          </div>
+
+                          <div className="flex flex-col gap-1">
+                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Street Address</label>
+                            <input
+                              type="text"
+                              {...register("address")}
+                              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-medium"
+                              placeholder="Building, Street, Area"
+                            />
+                            {errors.address && <span className="text-rose-500 text-[11px] font-bold mt-0.5">{errors.address.message}</span>}
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="flex flex-col gap-1">
+                              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">City *</label>
+                              <input
+                                type="text"
+                                {...register("city")}
+                                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-semibold"
+                                placeholder="e.g. Nellore"
+                              />
+                              {errors.city && <span className="text-rose-500 text-[11px] font-bold mt-0.5">{errors.city.message}</span>}
+                            </div>
+                            <div className="flex flex-col gap-1">
+                              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">State *</label>
+                              <input
+                                type="text"
+                                {...register("state")}
+                                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-semibold"
+                                placeholder="e.g. Andhra Pradesh"
+                              />
+                              {errors.state && <span className="text-rose-500 text-[11px] font-bold mt-0.5">{errors.state.message}</span>}
+                            </div>
+                            <div className="flex flex-col gap-1">
+                              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Country *</label>
+                              <input
+                                type="text"
+                                {...register("country")}
+                                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-semibold"
+                                placeholder="India"
+                              />
+                              {errors.country && <span className="text-rose-500 text-[11px] font-bold mt-0.5">{errors.country.message}</span>}
+                            </div>
+                          </div>
                         </div>
                       </div>
+                    )}
 
-                      {/* Social Links Card */}
-                      <div className="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-sm space-y-3">
-                        <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-                          <Globe className="w-4.5 h-4.5 text-teal-600" />
-                          <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Social Links</h4>
-                        </div>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="flex flex-col gap-1">
-                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">LinkedIn URL</label>
-                            <input
-                              type="text"
-                              {...register("linkedinUrl")}
-                              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-medium text-slate-700"
-                              placeholder="https://linkedin.com/company/..."
-                            />
+                    {activeFormTab === 2 && (
+                      <div className="space-y-4">
+                        {/* Partnership Details Card */}
+                        <div className="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-sm space-y-3">
+                          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+                            <Handshake className="w-4.5 h-4.5 text-teal-600" />
+                            <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Partnership Details</h4>
                           </div>
-                          <div className="flex flex-col gap-1">
-                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Twitter URL</label>
-                            <input
-                              type="text"
-                              {...register("twitterUrl")}
-                              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-medium text-slate-700"
-                              placeholder="https://twitter.com/..."
-                            />
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="flex flex-col gap-1">
+                              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Partnership Start Date</label>
+                              <input
+                                type="date"
+                                {...register("partnershipStartDate")}
+                                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-semibold"
+                              />
+                              {errors.partnershipStartDate && <span className="text-rose-500 text-[11px] font-bold mt-0.5">{errors.partnershipStartDate.message}</span>}
+                            </div>
+                            <div className="flex flex-col gap-1">
+                              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Display Order (Priority) *</label>
+                              <input
+                                type="number"
+                                {...register("displayOrder")}
+                                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-semibold"
+                                placeholder="10"
+                              />
+                              {errors.displayOrder && <span className="text-rose-500 text-[11px] font-bold mt-0.5">{errors.displayOrder.message}</span>}
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-1">
+                            <label className="flex items-center justify-between p-2.5 rounded-xl border border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors">
+                              <span className="text-xs font-bold text-slate-600">Featured Placement</span>
+                              <div className="relative inline-flex items-center cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  {...register("isFeatured")}
+                                  className="sr-only peer"
+                                />
+                                <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-teal-600"></div>
+                              </div>
+                            </label>
+
+                            <label className="flex items-center justify-between p-2.5 rounded-xl border border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors">
+                              <span className="text-xs font-bold text-slate-600">Active status</span>
+                              <div className="relative inline-flex items-center cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  {...register("isActive")}
+                                  className="sr-only peer"
+                                />
+                                <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-teal-600"></div>
+                              </div>
+                            </label>
                           </div>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="flex flex-col gap-1">
-                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Facebook URL</label>
-                            <input
-                              type="text"
-                              {...register("facebookUrl")}
-                              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-medium text-slate-700"
-                              placeholder="https://facebook.com/..."
-                            />
+                        {/* Social Links Card */}
+                        <div className="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-sm space-y-3">
+                          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+                            <Globe className="w-4.5 h-4.5 text-teal-600" />
+                            <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Social Links</h4>
                           </div>
-                          <div className="flex flex-col gap-1">
-                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Instagram URL</label>
-                            <input
-                              type="text"
-                              {...register("instagramUrl")}
-                              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-medium text-slate-700"
-                              placeholder="https://instagram.com/..."
-                            />
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="flex flex-col gap-1">
+                              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">LinkedIn URL</label>
+                              <input
+                                type="text"
+                                {...register("linkedinUrl")}
+                                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-medium text-slate-700"
+                                placeholder="https://linkedin.com/company/..."
+                              />
+                            </div>
+                            <div className="flex flex-col gap-1">
+                              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Twitter URL</label>
+                              <input
+                                type="text"
+                                {...register("twitterUrl")}
+                                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-medium text-slate-700"
+                                placeholder="https://twitter.com/..."
+                              />
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="flex flex-col gap-1">
+                              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Facebook URL</label>
+                              <input
+                                type="text"
+                                {...register("facebookUrl")}
+                                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-medium text-slate-700"
+                                placeholder="https://facebook.com/..."
+                              />
+                            </div>
+                            <div className="flex flex-col gap-1">
+                              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Instagram URL</label>
+                              <input
+                                type="text"
+                                {...register("instagramUrl")}
+                                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-medium text-slate-700"
+                                placeholder="https://instagram.com/..."
+                              />
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  )}
-                </form>
-              </div>
+                    )}
 
-              {/* Modal Footer */}
-              <div className="px-6 py-3.5 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
-                {Object.keys(errors).length > 0 ? (
-                  <div className="flex items-center gap-1.5 text-rose-500 text-xs font-semibold">
-                    <AlertCircle className="w-4 h-4 animate-bounce" /> Please fix validation errors.
-                  </div>
-                ) : (
-                  <span className="text-xs text-slate-400 font-semibold">Step {activeFormTab + 1} of 3</span>
-                )}
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    className="px-4 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold text-xs transition-colors"
-                    onClick={() => setDrawerOpen(false)}
-                  >
-                    Cancel
-                  </button>
-                  {activeFormTab > 0 && (
-                    <button
-                      type="button"
-                      className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs transition-colors"
-                      onClick={() => setActiveFormTab(activeFormTab - 1)}
-                    >
-                      Previous
-                    </button>
-                  )}
-                  {activeFormTab < 2 ? (
-                    <button
-                      type="button"
-                      className="px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs transition-colors"
-                      onClick={handleNextStep}
-                    >
-                      Next
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      className="px-5 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs transition-colors shadow-lg shadow-teal-600/15"
-                      onClick={handleSubmit(onSubmit)}
-                      disabled={saving}
-                    >
-                      {saving ? "Saving Changes..." : "Save Partner"}
-                    </button>
-                  )}
+                    {activeFormTab === 3 && (
+                      <div className="space-y-4">
+                        {/* Support Quote Card */}
+                        <div className="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-sm space-y-3">
+                          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+                            <MessageSquareQuote className="w-4.5 h-4.5 text-teal-600" />
+                            <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">A Message of Support</h4>
+                          </div>
+
+                          <div className="flex flex-col gap-1">
+                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Quote / Message of Support</label>
+                            <textarea
+                              {...register("supportQuote")}
+                              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-medium"
+                              placeholder="e.g. 'VidyaVaidya Trust has been doing phenomenal work...'"
+                              rows={3}
+                            />
+                          </div>
+
+                          <div className="flex flex-col gap-1">
+                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Founders / Speaker Byline</label>
+                            <input
+                              type="text"
+                              {...register("supportQuoteAuthor")}
+                              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-semibold"
+                              placeholder="e.g. Dr. C. Satish Reddy & Dr. K. Lalitha Shirdisa"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Partner Highlights Gallery Card */}
+                        <div className="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-sm space-y-3">
+                          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+                            <Images className="w-4.5 h-4.5 text-teal-600" />
+                            <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Partner Highlights Gallery</h4>
+                          </div>
+
+                          <MultiImageInput
+                            value={watchedGalleryImages}
+                            onChange={(newList) => setValue("galleryImages", newList, { shouldValidate: true, shouldDirty: true })}
+                            showToast={showToast}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </form>
                 </div>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>,
-      document.body
-    )}
+
+                {/* Modal Footer */}
+                <div className="px-6 py-3.5 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+                  {Object.keys(errors).length > 0 ? (
+                    <div className="flex items-center gap-1.5 text-rose-500 text-xs font-semibold">
+                      <AlertCircle className="w-4 h-4 animate-bounce" /> Please fix validation errors.
+                    </div>
+                  ) : (
+                    <span className="text-xs text-slate-400 font-semibold">Step {activeFormTab + 1} of 4</span>
+                  )}
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      className="px-4 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold text-xs transition-colors"
+                      onClick={() => setDrawerOpen(false)}
+                    >
+                      Cancel
+                    </button>
+                    {activeFormTab > 0 && (
+                      <button
+                        type="button"
+                        className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs transition-colors"
+                        onClick={() => setActiveFormTab(activeFormTab - 1)}
+                      >
+                        Previous
+                      </button>
+                    )}
+                    {activeFormTab < 3 ? (
+                      <button
+                        type="button"
+                        className="px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs transition-colors"
+                        onClick={handleNextStep}
+                      >
+                        Next
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        className="px-5 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs transition-colors shadow-lg shadow-teal-600/15"
+                        onClick={handleSubmit(onSubmit)}
+                        disabled={saving}
+                      >
+                        {saving ? "Saving Changes..." : "Save Partner"}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
 
 
 
@@ -1405,7 +1617,7 @@ export function StoriesSection({ showToast }) {
   const [editStory, setEditStory] = useState(null);
   const [saving, setSaving] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  
+
   // Preview Modal States
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [previewStory, setPreviewStory] = useState(null);
@@ -1615,19 +1827,19 @@ export function StoriesSection({ showToast }) {
   const pagedStories = filteredStories.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
   return (
-    <div className="adm-section animate-fadeIn">
-      
+    <div className="adm-section bg-slate-50/50 p-6 rounded-3xl border border-slate-100 animate-fadeIn">
+
       {/* Redesigned Header Panel */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div className="adm-section-header">
           <h2>Stories</h2>
           <p>Publish and manage news content, media assets, announcements, and public stories</p>
         </div>
-        <button 
+        <button
           onClick={handleOpenAdd}
           className="bg-teal-600 hover:bg-teal-700 hover:-translate-y-0.5 text-white font-extrabold px-6 py-3 rounded-2xl transition-all duration-300 shadow-lg shadow-teal-600/10 flex items-center gap-2 border-none text-sm group"
         >
-          <Plus className="w-5 h-5 transition-transform duration-300 group-hover:rotate-90" /> 
+          <Plus className="w-5 h-5 transition-transform duration-300 group-hover:rotate-90" />
           Add Story
         </button>
       </div>
@@ -1730,7 +1942,7 @@ export function StoriesSection({ showToast }) {
                 onClick={() => setIsModalOpen(false)}
                 className="fixed inset-0 bg-transparent -z-10"
               />
-              
+
               {/* Modal Body container */}
               <motion.div
                 initial={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -1740,78 +1952,78 @@ export function StoriesSection({ showToast }) {
                 onClick={(e) => e.stopPropagation()}
                 className="relative bg-white w-full max-w-xl rounded-3xl shadow-2xl border border-slate-100 flex flex-col max-h-[90vh] overflow-hidden"
               >
-              
-              {/* Sticky Header */}
-              <div className="sticky top-0 z-10 flex items-center justify-between p-6 bg-slate-50/80 backdrop-blur-md border-b border-slate-100">
-                <div>
-                  <h3 className="text-xl font-extrabold text-slate-800">
-                    {editStory ? "Edit News Article" : "Create News Article"}
-                  </h3>
-                  <p className="text-xs text-slate-500 mt-1">
-                    Upload a high-quality featured cover image and provide a catchy headline.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all duration-200 border-none cursor-pointer"
-                >
-                  <X size={20} />
-                </button>
-              </div>
 
-              {/* Internal Scrollable Content Container */}
-              <div className="flex-1 p-6 overflow-y-auto custom-scrollbar space-y-6">
-                
-                {/* Minimal clean form layout */}
-                <div className="space-y-5">
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">Article Title *</label>
-                    <input
-                      type="text"
-                      {...register("title")}
-                      className="w-full bg-slate-50/50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs font-semibold text-slate-750 focus:outline-none focus:border-teal-500 focus:bg-white transition-all"
-                      placeholder="Enter article title"
-                    />
-                    {errors.title && <span className="text-[10px] text-rose-500 font-bold">{errors.title.message}</span>}
+                {/* Sticky Header */}
+                <div className="sticky top-0 z-10 flex items-center justify-between p-6 bg-slate-50/80 backdrop-blur-md border-b border-slate-100">
+                  <div>
+                    <h3 className="text-xl font-extrabold text-slate-800">
+                      {editStory ? "Edit News Article" : "Create News Article"}
+                    </h3>
+                    <p className="text-xs text-slate-500 mt-1">
+                      Upload a high-quality featured cover image and provide a catchy headline.
+                    </p>
                   </div>
-
-                  <div className="flex flex-col gap-1.5">
-                    <Controller
-                      control={control}
-                      name="coverImageUrl"
-                      render={({ field }) => (
-                        <ImageUrlWithUpload
-                          label="Upload Image *"
-                          value={field.value}
-                          onChange={field.onChange}
-                          onUploadError={(err) => showToast(err, "error")}
-                        />
-                      )}
-                    />
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setIsModalOpen(false)}
+                    className="p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all duration-200 border-none cursor-pointer"
+                  >
+                    <X size={20} />
+                  </button>
                 </div>
 
-              </div>
+                {/* Internal Scrollable Content Container */}
+                <div className="flex-1 p-6 overflow-y-auto custom-scrollbar space-y-6">
 
-              {/* Sticky Footer */}
-              <div className="sticky bottom-0 z-10 flex items-center justify-end gap-3 p-6 bg-slate-50/80 backdrop-blur-md border-t border-slate-100">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 font-bold text-xs transition-all duration-200"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  onClick={handleSubmit(onSubmit)}
-                  disabled={saving}
-                  className="px-6 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs transition-all duration-200 shadow-md shadow-teal-600/10 flex items-center gap-1.5"
-                >
-                  {saving ? "Saving Article..." : editStory ? "Save Changes" : "Publish Article"}
-                </button>
-              </div>
+                  {/* Minimal clean form layout */}
+                  <div className="space-y-5">
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">Article Title *</label>
+                      <input
+                        type="text"
+                        {...register("title")}
+                        className="w-full bg-slate-50/50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs font-semibold text-slate-750 focus:outline-none focus:border-teal-500 focus:bg-white transition-all"
+                        placeholder="Enter article title"
+                      />
+                      {errors.title && <span className="text-[10px] text-rose-500 font-bold">{errors.title.message}</span>}
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                      <Controller
+                        control={control}
+                        name="coverImageUrl"
+                        render={({ field }) => (
+                          <ImageUrlWithUpload
+                            label="Upload Image *"
+                            value={field.value}
+                            onChange={field.onChange}
+                            onUploadError={(err) => showToast(err, "error")}
+                          />
+                        )}
+                      />
+                    </div>
+                  </div>
+
+                </div>
+
+                {/* Sticky Footer */}
+                <div className="sticky bottom-0 z-10 flex items-center justify-end gap-3 p-6 bg-slate-50/80 backdrop-blur-md border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={() => setIsModalOpen(false)}
+                    className="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 font-bold text-xs transition-all duration-200"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    onClick={handleSubmit(onSubmit)}
+                    disabled={saving}
+                    className="px-6 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs transition-all duration-200 shadow-md shadow-teal-600/10 flex items-center gap-1.5"
+                  >
+                    {saving ? "Saving Article..." : editStory ? "Save Changes" : "Publish Article"}
+                  </button>
+                </div>
 
               </motion.div>
             </div>
@@ -1835,7 +2047,7 @@ export function StoriesSection({ showToast }) {
                 onClick={() => setIsPreviewOpen(false)}
                 className="fixed inset-0 bg-transparent -z-10"
               />
-              
+
               <motion.div
                 initial={{ opacity: 0, scale: 0.96, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -1843,162 +2055,162 @@ export function StoriesSection({ showToast }) {
                 onClick={(e) => e.stopPropagation()}
                 className="relative bg-white w-full max-w-3xl rounded-3xl shadow-2xl border border-slate-100 flex flex-col max-h-[90vh] overflow-hidden"
               >
-              {/* Header Image cover preview */}
-              <div className="relative h-60 w-full overflow-hidden bg-slate-900 flex-shrink-0">
-                {previewStory.coverImageUrl ? (
-                  <img src={previewStory.coverImageUrl} className="w-full h-full object-cover opacity-80" alt={previewStory.title} />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-teal-950 text-teal-300 font-extrabold text-2xl uppercase">
-                    📰 Vidyavaidya Media
-                  </div>
-                )}
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-900/30 to-transparent" />
-                
-                {/* Close Button */}
-                <button
-                  onClick={() => setIsPreviewOpen(false)}
-                  className="absolute top-4 right-4 p-2 bg-slate-900/50 hover:bg-slate-900/80 rounded-full text-white transition-all"
-                >
-                  <X size={18} />
-                </button>
-                
-                {/* Badges on image */}
-                <div className="absolute bottom-4 left-6 right-6 flex items-end justify-between">
-                  <div className="space-y-1">
-                    <h2 className="text-xl md:text-2xl font-extrabold text-white leading-tight tracking-tight mt-1">
-                      {previewStory.title}
-                    </h2>
-                  </div>
-                </div>
-              </div>
+                {/* Header Image cover preview */}
+                <div className="relative h-60 w-full overflow-hidden bg-slate-900 flex-shrink-0">
+                  {previewStory.coverImageUrl ? (
+                    <img src={previewStory.coverImageUrl} className="w-full h-full object-cover opacity-80" alt={previewStory.title} />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-teal-950 text-teal-300 font-extrabold text-2xl uppercase">
+                      📰 Vidyavaidya Media
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-900/30 to-transparent" />
 
-              {/* Read Only Scrollable Contents */}
-              <div className="flex-1 p-6 overflow-y-auto custom-scrollbar space-y-6">
-                
-                {/* Metadata strip */}
-                <div className="flex flex-wrap items-center justify-between gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-100 text-xs">
-                  <div className="flex items-center gap-4 text-slate-500">
-                    <div className="flex items-center gap-1">
-                      <User size={14} className="text-teal-600" />
-                      By <span className="font-bold text-slate-700">{previewStory.authorName || "Vidyavaidya Board"}</span>
+                  {/* Close Button */}
+                  <button
+                    onClick={() => setIsPreviewOpen(false)}
+                    className="absolute top-4 right-4 p-2 bg-slate-900/50 hover:bg-slate-900/80 rounded-full text-white transition-all"
+                  >
+                    <X size={18} />
+                  </button>
+
+                  {/* Badges on image */}
+                  <div className="absolute bottom-4 left-6 right-6 flex items-end justify-between">
+                    <div className="space-y-1">
+                      <h2 className="text-xl md:text-2xl font-extrabold text-white leading-tight tracking-tight mt-1">
+                        {previewStory.title}
+                      </h2>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <Calendar size={14} className="text-teal-600" />
-                      Published <span className="font-bold text-slate-700">{fmtDate(previewStory.publishedAt || previewStory.created_at)}</span>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-1 text-slate-500">
-                    <Eye size={14} className="text-teal-600" />
-                    <span className="font-bold text-slate-700">{previewStory.views ?? 0}</span> views recorded
                   </div>
                 </div>
 
-                {/* Excerpt */}
-                {previewStory.excerpt && (
-                  <div className="border-l-4 border-teal-500 pl-4 py-1 italic text-slate-600 text-sm font-medium leading-relaxed bg-teal-50/20 rounded-r-xl">
-                    {previewStory.excerpt}
-                  </div>
-                )}
+                {/* Read Only Scrollable Contents */}
+                <div className="flex-1 p-6 overflow-y-auto custom-scrollbar space-y-6">
 
-                {/* Full text content */}
-                {previewStory.content ? (
-                  <div className="text-slate-700 text-sm leading-relaxed whitespace-pre-wrap font-medium">
-                    {previewStory.content}
-                  </div>
-                ) : (
-                  previewStory.type !== "gallery_photo" && previewStory.type !== "gallery_video" && (
-                    <div className="text-slate-400 italic text-xs text-center py-6">
-                      No descriptive content has been recorded.
+                  {/* Metadata strip */}
+                  <div className="flex flex-wrap items-center justify-between gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-100 text-xs">
+                    <div className="flex items-center gap-4 text-slate-500">
+                      <div className="flex items-center gap-1">
+                        <User size={14} className="text-teal-600" />
+                        By <span className="font-bold text-slate-700">{previewStory.authorName || "Vidyavaidya Board"}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Calendar size={14} className="text-teal-600" />
+                        Published <span className="font-bold text-slate-700">{fmtDate(previewStory.publishedAt || previewStory.created_at)}</span>
+                      </div>
                     </div>
-                  )
-                )}
 
-                {/* Gallery photo items */}
-                {previewStory.type === "gallery_photo" && previewStory.galleryImages && previewStory.galleryImages.length > 0 && (
-                  <div className="space-y-3">
-                    <h4 className="font-extrabold text-xs text-slate-500 uppercase tracking-wider">Photo Gallery Asset List</h4>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                      {previewStory.galleryImages.map((img, i) => (
-                        <div key={i} className="aspect-square rounded-xl overflow-hidden border border-slate-100 shadow-sm bg-slate-50">
-                          <img src={img} className="w-full h-full object-cover hover:scale-105 transition-all animate-fadeIn" alt="Gallery item" />
-                        </div>
-                      ))}
+                    <div className="flex items-center gap-1 text-slate-500">
+                      <Eye size={14} className="text-teal-600" />
+                      <span className="font-bold text-slate-700">{previewStory.views ?? 0}</span> views recorded
                     </div>
                   </div>
-                )}
 
-                {/* Gallery video preview URL link */}
-                {previewStory.type === "gallery_video" && previewStory.videoUrl && (
-                  <div className="space-y-2">
-                    <h4 className="font-extrabold text-xs text-slate-500 uppercase tracking-wider">Video Attachment Details</h4>
-                    <div className="flex items-center justify-between p-4 rounded-xl border border-pink-100 bg-pink-50/20">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2.5 bg-pink-100 text-pink-600 rounded-xl"><Video size={18} /></div>
-                        <div>
-                          <p className="text-xs font-bold text-slate-800">Media Video Source</p>
-                          <p className="text-[10px] text-slate-400 mt-0.5 truncate max-w-xs">{previewStory.videoUrl}</p>
+                  {/* Excerpt */}
+                  {previewStory.excerpt && (
+                    <div className="border-l-4 border-teal-500 pl-4 py-1 italic text-slate-600 text-sm font-medium leading-relaxed bg-teal-50/20 rounded-r-xl">
+                      {previewStory.excerpt}
+                    </div>
+                  )}
+
+                  {/* Full text content */}
+                  {previewStory.content ? (
+                    <div className="text-slate-700 text-sm leading-relaxed whitespace-pre-wrap font-medium">
+                      {previewStory.content}
+                    </div>
+                  ) : (
+                    previewStory.type !== "gallery_photo" && previewStory.type !== "gallery_video" && (
+                      <div className="text-slate-400 italic text-xs text-center py-6">
+                        No descriptive content has been recorded.
+                      </div>
+                    )
+                  )}
+
+                  {/* Gallery photo items */}
+                  {previewStory.type === "gallery_photo" && previewStory.galleryImages && previewStory.galleryImages.length > 0 && (
+                    <div className="space-y-3">
+                      <h4 className="font-extrabold text-xs text-slate-500 uppercase tracking-wider">Photo Gallery Asset List</h4>
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        {previewStory.galleryImages.map((img, i) => (
+                          <div key={i} className="aspect-square rounded-xl overflow-hidden border border-slate-100 shadow-sm bg-slate-50">
+                            <img src={img} className="w-full h-full object-cover hover:scale-105 transition-all animate-fadeIn" alt="Gallery item" />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Gallery video preview URL link */}
+                  {previewStory.type === "gallery_video" && previewStory.videoUrl && (
+                    <div className="space-y-2">
+                      <h4 className="font-extrabold text-xs text-slate-500 uppercase tracking-wider">Video Attachment Details</h4>
+                      <div className="flex items-center justify-between p-4 rounded-xl border border-pink-100 bg-pink-50/20">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2.5 bg-pink-100 text-pink-600 rounded-xl"><Video size={18} /></div>
+                          <div>
+                            <p className="text-xs font-bold text-slate-800">Media Video Source</p>
+                            <p className="text-[10px] text-slate-400 mt-0.5 truncate max-w-xs">{previewStory.videoUrl}</p>
+                          </div>
                         </div>
+                        <a
+                          href={previewStory.videoUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="px-4 py-2 bg-white text-pink-700 border border-pink-200 hover:bg-pink-50 text-xs font-bold rounded-xl shadow-sm transition-all flex items-center gap-1"
+                        >
+                          Play Video <ExternalLink size={12} />
+                        </a>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Source or External Article Links */}
+                  {previewStory.externalUrl && (
+                    <div className="flex items-center justify-between p-4 rounded-xl border border-teal-100 bg-teal-50/25">
+                      <div className="flex items-center gap-2 text-xs font-semibold text-slate-700">
+                        <Globe size={14} className="text-teal-600" />
+                        Read the full press coverage directly on the original publishing site.
                       </div>
                       <a
-                        href={previewStory.videoUrl}
+                        href={previewStory.externalUrl}
                         target="_blank"
                         rel="noreferrer"
-                        className="px-4 py-2 bg-white text-pink-700 border border-pink-200 hover:bg-pink-50 text-xs font-bold rounded-xl shadow-sm transition-all flex items-center gap-1"
+                        className="px-4 py-2 bg-teal-600 text-white hover:bg-teal-700 text-xs font-bold rounded-xl shadow-md shadow-teal-600/10 transition-all flex items-center gap-1.5"
                       >
-                        Play Video <ExternalLink size={12} />
+                        Visit Article <ExternalLink size={12} />
                       </a>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {/* Source or External Article Links */}
-                {previewStory.externalUrl && (
-                  <div className="flex items-center justify-between p-4 rounded-xl border border-teal-100 bg-teal-50/25">
-                    <div className="flex items-center gap-2 text-xs font-semibold text-slate-700">
-                      <Globe size={14} className="text-teal-600" />
-                      Read the full press coverage directly on the original publishing site.
+                  {/* Tags mapping */}
+                  {previewStory.tags && previewStory.tags.length > 0 && (
+                    <div className="flex flex-wrap items-center gap-1.5 pt-3 border-t border-slate-100">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mr-1">Tagged:</span>
+                      {previewStory.tags.map((tag, i) => (
+                        <span key={i} className="text-[10px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md">
+                          #{tag}
+                        </span>
+                      ))}
                     </div>
-                    <a
-                      href={previewStory.externalUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="px-4 py-2 bg-teal-600 text-white hover:bg-teal-700 text-xs font-bold rounded-xl shadow-md shadow-teal-600/10 transition-all flex items-center gap-1.5"
-                    >
-                      Visit Article <ExternalLink size={12} />
-                    </a>
-                  </div>
-                )}
+                  )}
 
-                {/* Tags mapping */}
-                {previewStory.tags && previewStory.tags.length > 0 && (
-                  <div className="flex flex-wrap items-center gap-1.5 pt-3 border-t border-slate-100">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mr-1">Tagged:</span>
-                    {previewStory.tags.map((tag, i) => (
-                      <span key={i} className="text-[10px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md">
-                        #{tag}
-                      </span>
-                    ))}
-                  </div>
-                )}
+                </div>
 
-              </div>
-
-              {/* Sticky Footer */}
-              <div className="sticky bottom-0 z-10 flex justify-end p-5 bg-slate-50 border-t border-slate-100 flex-shrink-0">
-                <button
-                  onClick={() => setIsPreviewOpen(false)}
-                  className="px-6 py-2 bg-teal-600 hover:bg-teal-700 text-white font-extrabold text-xs rounded-xl shadow-md shadow-teal-600/10 transition-all"
-                >
-                  Got It
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>,
-      document.body
-    )}
+                {/* Sticky Footer */}
+                <div className="sticky bottom-0 z-10 flex justify-end p-5 bg-slate-50 border-t border-slate-100 flex-shrink-0">
+                  <button
+                    onClick={() => setIsPreviewOpen(false)}
+                    className="px-6 py-2 bg-teal-600 hover:bg-teal-700 text-white font-extrabold text-xs rounded-xl shadow-md shadow-teal-600/10 transition-all"
+                  >
+                    Got It
+                  </button>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
 
       {/* ──────────────────────────────────────────────
           CONFIRM DELETE MODAL
@@ -2015,7 +2227,7 @@ export function StoriesSection({ showToast }) {
                 onClick={() => setDeleteModalOpen(false)}
                 className="fixed inset-0 bg-transparent -z-10"
               />
-              
+
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -2023,33 +2235,33 @@ export function StoriesSection({ showToast }) {
                 onClick={(e) => e.stopPropagation()}
                 className="relative bg-white w-full max-w-md rounded-2xl shadow-xl p-6 border border-slate-150 z-10 text-center space-y-4"
               >
-              <div className="w-14 h-14 bg-rose-50 text-rose-600 border border-rose-100 rounded-full flex items-center justify-center mx-auto shadow-sm">
-                <Trash2 size={24} />
-              </div>
-              
-              <div className="space-y-1">
-                <h4 className="text-base font-extrabold text-slate-800">Unpublish & Remove Article?</h4>
-                <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
-                  Are you sure you want to delete <span className="font-bold text-slate-700">"{storyToDelete.title}"</span>? This will immediately remove it from public view and delete all associated media associations.
-                </p>
-              </div>
-              
-              <div className="flex items-center gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setDeleteModalOpen(false)}
-                  className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-bold text-xs hover:bg-slate-50 transition-all"
-                >
-                  No, Keep It
-                </button>
-                <button
-                  type="button"
-                  onClick={handleConfirmDelete}
-                  className="flex-1 px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs transition-colors shadow-lg shadow-rose-600/10"
-                >
-                  Yes, Remove
-                </button>
-              </div>
+                <div className="w-14 h-14 bg-rose-50 text-rose-600 border border-rose-100 rounded-full flex items-center justify-center mx-auto shadow-sm">
+                  <Trash2 size={24} />
+                </div>
+
+                <div className="space-y-1">
+                  <h4 className="text-base font-extrabold text-slate-800">Unpublish & Remove Article?</h4>
+                  <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
+                    Are you sure you want to delete <span className="font-bold text-slate-700">"{storyToDelete.title}"</span>? This will immediately remove it from public view and delete all associated media associations.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setDeleteModalOpen(false)}
+                    className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-bold text-xs hover:bg-slate-50 transition-all"
+                  >
+                    No, Keep It
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleConfirmDelete}
+                    className="flex-1 px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs transition-colors shadow-lg shadow-rose-600/10"
+                  >
+                    Yes, Remove
+                  </button>
+                </div>
               </motion.div>
             </div>
           )}
@@ -2131,7 +2343,7 @@ export function EventsSection({ showToast }) {
   const fetchEvents = async () => {
     setLoading(true);
     try {
-      const data = await api.events.list();
+      const data = await api.events.list({ limit: 1000 });
       setEvents(data?.events || (Array.isArray(data) ? data : []));
     } catch (err) {
       showToast(err.message || "Failed to load events", "error");
@@ -2205,11 +2417,11 @@ export function EventsSection({ showToast }) {
 
   const handleOpenEdit = (evt, type) => {
     setEditEvent(evt);
-    
+
     let formattedDate = "";
     if (evt.startDate) {
-      const dateObj = evt.startDate._seconds 
-        ? new Date(evt.startDate._seconds * 1000) 
+      const dateObj = evt.startDate._seconds
+        ? new Date(evt.startDate._seconds * 1000)
         : new Date(evt.startDate);
       if (!isNaN(dateObj.getTime())) {
         formattedDate = dateObj.toISOString().split("T")[0];
@@ -2255,7 +2467,7 @@ export function EventsSection({ showToast }) {
     e.preventDefault();
     if (!formData.title) return showToast("Title is required", "error");
     if (!formData.startDate) return showToast("Date is required", "error");
-    
+
     const finalDescription = type === "photo" ? (formData.description || formData.shortDescription || "Event photo gallery") : formData.description;
     if (!finalDescription) return showToast("Description is required", "error");
 
@@ -2269,6 +2481,7 @@ export function EventsSection({ showToast }) {
       galleryUrls: type === "photo" ? formData.galleryImages : [],
       galleryImages: type === "photo" ? formData.galleryImages : [],
       videoUrl: type === "video" ? formData.videoUrl : "",
+      thumbnailUrl: type === "photo" ? (formData.galleryImages[0] || "") : formData.thumbnailUrl,
       totalSeats: 100
     };
 
@@ -2328,9 +2541,8 @@ export function EventsSection({ showToast }) {
 
   const renderEmptyState = (type) => (
     <div className="flex flex-col items-center justify-center p-10 text-center bg-slate-50/30 rounded-3xl border-2 border-dashed border-slate-200 max-w-lg mx-auto my-4 transition-all duration-200 hover:border-slate-350/80 hover:shadow-lg hover:shadow-slate-100/50">
-      <div className={`w-14 h-14 mb-4 flex items-center justify-center rounded-2xl shadow-sm ${
-        type === "photo" ? "bg-teal-50 text-teal-600 shadow-teal-100/50" : "bg-indigo-50 text-indigo-600 shadow-indigo-100/50"
-      }`}>
+      <div className={`w-14 h-14 mb-4 flex items-center justify-center rounded-2xl shadow-sm ${type === "photo" ? "bg-teal-50 text-teal-600 shadow-teal-100/50" : "bg-indigo-50 text-indigo-600 shadow-indigo-100/50"
+        }`}>
         {type === "photo" ? <Images size={24} /> : <Clapperboard size={22} />}
       </div>
       <h3 className="font-extrabold text-slate-850 text-sm mb-1.5">
@@ -2339,13 +2551,12 @@ export function EventsSection({ showToast }) {
       <p className="text-slate-500 text-xs leading-relaxed max-w-sm mb-6">
         Begin showcasing your {type === "photo" ? "photo gallery collection" : "awareness video reels"} by setting up and uploading your first entry.
       </p>
-      <button 
+      <button
         onClick={() => handleOpenAdd(type)}
-        className={`flex items-center justify-center gap-2 h-10 px-5 rounded-2xl text-white font-extrabold text-xs shadow-md transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 cursor-pointer ${
-          type === "photo" 
-            ? "bg-teal-600 hover:bg-teal-700 shadow-teal-600/15" 
-            : "bg-indigo-600 hover:bg-indigo-700 shadow-indigo-600/15"
-        }`}
+        className={`flex items-center justify-center gap-2 h-10 px-5 rounded-2xl text-white font-extrabold text-xs shadow-md transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 cursor-pointer ${type === "photo"
+          ? "bg-teal-600 hover:bg-teal-700 shadow-teal-600/15"
+          : "bg-indigo-600 hover:bg-indigo-700 shadow-indigo-600/15"
+          }`}
       >
         <Plus size={14} strokeWidth={3} /> Add First {type === "photo" ? "Photo Gallery" : "Video"}
       </button>
@@ -2411,7 +2622,7 @@ export function EventsSection({ showToast }) {
 
       {/* PREMIUM UNIFIED EVENT MEDIA HUB CARD */}
       <div className="bg-white/80 backdrop-blur-md rounded-3xl border border-slate-200/60 shadow-xl shadow-slate-100/50 p-6 sm:p-8 space-y-8 relative overflow-hidden">
-        
+
         {/* Soft Background Gradient Glows */}
         <div className="absolute top-0 right-0 w-80 h-80 bg-gradient-to-br from-teal-500/5 to-emerald-500/5 rounded-full blur-3xl pointer-events-none -z-10" />
         <div className="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-indigo-500/5 to-purple-500/5 rounded-full blur-3xl pointer-events-none -z-10" />
@@ -2422,15 +2633,13 @@ export function EventsSection({ showToast }) {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <button
             onClick={() => setActiveTab("photo")}
-            className={`flex items-center gap-4 p-5 rounded-2xl border transition-all duration-350 relative group overflow-hidden cursor-pointer ${
-              activeTab === "photo" 
-                ? "bg-gradient-to-br from-teal-50/60 to-emerald-50/10 border-teal-500 shadow-xl shadow-teal-500/10 ring-1 ring-teal-500/30 scale-[1.01] font-black" 
-                : "bg-slate-50/50 hover:bg-slate-50 border-slate-200 hover:border-slate-350 hover:shadow-md hover:scale-[1.005]"
-            }`}
+            className={`flex items-center gap-4 p-5 rounded-2xl border transition-all duration-350 relative group overflow-hidden cursor-pointer ${activeTab === "photo"
+              ? "bg-gradient-to-br from-teal-50/60 to-emerald-50/10 border-teal-500 shadow-xl shadow-teal-500/10 ring-1 ring-teal-500/30 scale-[1.01] font-black"
+              : "bg-slate-50/50 hover:bg-slate-50 border-slate-200 hover:border-slate-350 hover:shadow-md hover:scale-[1.005]"
+              }`}
           >
-            <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all ${
-              activeTab === "photo" ? "bg-teal-600 text-white shadow-lg shadow-teal-600/25" : "bg-slate-200/60 text-slate-500 group-hover:bg-slate-200 transition-colors"
-            }`}>
+            <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all ${activeTab === "photo" ? "bg-teal-600 text-white shadow-lg shadow-teal-600/25" : "bg-slate-200/60 text-slate-500 group-hover:bg-slate-200 transition-colors"
+              }`}>
               <Images size={22} />
             </div>
             <div className="text-left">
@@ -2441,15 +2650,13 @@ export function EventsSection({ showToast }) {
 
           <button
             onClick={() => setActiveTab("video")}
-            className={`flex items-center gap-4 p-5 rounded-2xl border transition-all duration-350 relative group overflow-hidden cursor-pointer ${
-              activeTab === "video" 
-                ? "bg-gradient-to-br from-indigo-50/60 to-indigo-50/10 border-indigo-500 shadow-xl shadow-indigo-500/10 ring-1 ring-indigo-500/30 scale-[1.01] font-black" 
-                : "bg-slate-50/50 hover:bg-slate-50 border-slate-200 hover:border-slate-350 hover:shadow-md hover:scale-[1.005]"
-            }`}
+            className={`flex items-center gap-4 p-5 rounded-2xl border transition-all duration-350 relative group overflow-hidden cursor-pointer ${activeTab === "video"
+              ? "bg-gradient-to-br from-indigo-50/60 to-indigo-50/10 border-indigo-500 shadow-xl shadow-indigo-500/10 ring-1 ring-indigo-500/30 scale-[1.01] font-black"
+              : "bg-slate-50/50 hover:bg-slate-50 border-slate-200 hover:border-slate-350 hover:shadow-md hover:scale-[1.005]"
+              }`}
           >
-            <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all ${
-              activeTab === "video" ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/25" : "bg-slate-200/60 text-slate-500 group-hover:bg-slate-200 transition-colors"
-            }`}>
+            <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all ${activeTab === "video" ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/25" : "bg-slate-200/60 text-slate-500 group-hover:bg-slate-200 transition-colors"
+              }`}>
               <Clapperboard size={20} />
             </div>
             <div className="text-left">
@@ -2460,9 +2667,8 @@ export function EventsSection({ showToast }) {
         </div>
 
         {/* GLOBAL CATEGORY SWITCHER & ACTION CONTROLS */}
-        <div className={`flex flex-col sm:flex-row sm:items-center gap-4 pt-2 pb-4 border-b border-slate-150/70 ${
-          activeTab === "photo" ? "justify-between" : "justify-end"
-        }`}>
+        <div className={`flex flex-col sm:flex-row sm:items-center gap-4 pt-2 pb-4 border-b border-slate-150/70 ${activeTab === "photo" ? "justify-between" : "justify-end"
+          }`}>
           {activeTab === "photo" && (
             <div className="flex flex-wrap gap-2">
               {photoCategories.map((cat) => {
@@ -2471,11 +2677,10 @@ export function EventsSection({ showToast }) {
                   <button
                     key={cat}
                     onClick={() => setPhotoCategory(cat)}
-                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 border cursor-pointer ${
-                      isSelected
-                        ? "bg-teal-50/80 text-teal-700 border-teal-500 shadow-md shadow-teal-500/5 ring-1 ring-teal-500/20 scale-[1.03]"
-                        : "bg-white hover:bg-slate-50 text-slate-600 border-slate-200 hover:border-slate-350 hover:shadow-sm hover:-translate-y-0.5"
-                    }`}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 border cursor-pointer ${isSelected
+                      ? "bg-teal-50/80 text-teal-700 border-teal-500 shadow-md shadow-teal-500/5 ring-1 ring-teal-500/20 scale-[1.03]"
+                      : "bg-white hover:bg-slate-50 text-slate-600 border-slate-200 hover:border-slate-350 hover:shadow-sm hover:-translate-y-0.5"
+                      }`}
                   >
                     {cat}
                   </button>
@@ -2484,13 +2689,12 @@ export function EventsSection({ showToast }) {
             </div>
           )}
 
-          <button 
+          <button
             onClick={() => handleOpenAdd(activeTab)}
-            className={`flex items-center justify-center gap-2 h-10 px-5 rounded-2xl text-white font-extrabold text-xs shadow-lg transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 cursor-pointer ${
-              activeTab === "photo"
-                ? "bg-teal-600 hover:bg-teal-700 shadow-teal-600/15"
-                : "bg-indigo-600 hover:bg-indigo-700 shadow-indigo-600/15"
-            }`}
+            className={`flex items-center justify-center gap-2 h-10 px-5 rounded-2xl text-white font-extrabold text-xs shadow-lg transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 cursor-pointer ${activeTab === "photo"
+              ? "bg-teal-600 hover:bg-teal-700 shadow-teal-600/15"
+              : "bg-indigo-600 hover:bg-indigo-700 shadow-indigo-600/15"
+              }`}
           >
             <Plus size={14} strokeWidth={3} /> Add {activeTab === "photo" ? "Photo Gallery" : "Video Event"}
           </button>
@@ -2545,10 +2749,10 @@ export function EventsSection({ showToast }) {
                         {/* Image Cover */}
                         <div className="relative aspect-[16/10] overflow-hidden bg-slate-100">
                           {evt.thumbnailUrl ? (
-                            <img 
-                              src={evt.thumbnailUrl} 
-                              className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" 
-                              alt={evt.title} 
+                            <img
+                              src={evt.thumbnailUrl}
+                              className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                              alt={evt.title}
                             />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center text-slate-350 bg-slate-50">
@@ -2587,7 +2791,7 @@ export function EventsSection({ showToast }) {
                               <Images size={12} className="text-teal-500" />
                               {galleryUrls.length} Images
                             </span>
-                            
+
                             <div className="flex items-center gap-1.5">
                               <button
                                 onClick={() => handleOpenLightbox(galleryUrls, 0)}
@@ -2596,13 +2800,13 @@ export function EventsSection({ showToast }) {
                               >
                                 View Gallery
                               </button>
-                              <button 
+                              <button
                                 onClick={() => handleOpenEdit(evt, "photo")}
                                 className="p-1.5 rounded-lg text-slate-400 hover:text-teal-600 hover:bg-teal-50 transition-colors"
                               >
                                 <Pencil size={13} />
                               </button>
-                              <button 
+                              <button
                                 onClick={() => handleDelete(evt)}
                                 className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
                               >
@@ -2640,15 +2844,15 @@ export function EventsSection({ showToast }) {
                   {filteredVideoEvents.map((evt) => (
                     <div key={evt.id} className="group bg-white rounded-2xl border border-slate-150/85 overflow-hidden flex flex-col hover:shadow-2xl hover:shadow-slate-200/60 transition-all duration-350 relative">
                       {/* Image Cover */}
-                      <div 
+                      <div
                         className="relative aspect-[16/10] overflow-hidden bg-slate-900 cursor-pointer"
                         onClick={() => handlePlayVideo(evt.videoUrl)}
                       >
                         {evt.thumbnailUrl ? (
-                          <img 
-                            src={evt.thumbnailUrl} 
-                            className="w-full h-full object-cover opacity-85 group-hover:scale-105 group-hover:opacity-60 transition-all duration-500" 
-                            alt={evt.title} 
+                          <img
+                            src={evt.thumbnailUrl}
+                            className="w-full h-full object-cover opacity-85 group-hover:scale-105 group-hover:opacity-60 transition-all duration-500"
+                            alt={evt.title}
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-slate-500 bg-slate-950">
@@ -2695,7 +2899,7 @@ export function EventsSection({ showToast }) {
                             <Video size={12} className="text-indigo-500" />
                             Host: {evt.organizer || "Vidyavaidya"}
                           </span>
-                          
+
                           <div className="flex items-center gap-1.5">
                             <button
                               onClick={() => handlePlayVideo(evt.videoUrl)}
@@ -2703,13 +2907,13 @@ export function EventsSection({ showToast }) {
                             >
                               Watch Video
                             </button>
-                            <button 
+                            <button
                               onClick={() => handleOpenEdit(evt, "video")}
                               className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
                             >
                               <Pencil size={13} />
                             </button>
-                            <button 
+                            <button
                               onClick={() => handleDelete(evt)}
                               className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
                             >
@@ -2731,14 +2935,14 @@ export function EventsSection({ showToast }) {
       {createPortal(
         <AnimatePresence>
           {photoModalOpen && (
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md"
               onClick={() => setPhotoModalOpen(false)}
             >
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, scale: 0.95, y: 15 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 15 }}
@@ -2758,18 +2962,18 @@ export function EventsSection({ showToast }) {
                 </div>
 
                 {/* Form Wrapper */}
-                <form 
-                  onSubmit={(e) => handleSave(e, "photo")} 
+                <form
+                  onSubmit={(e) => handleSave(e, "photo")}
                   className="flex-1 flex flex-col min-h-0 overflow-hidden"
                 >
                   {/* Scrollable Body */}
                   <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4 pr-3">
                     <div className="adm-form-group">
                       <label>Event Title *</label>
-                      <input 
-                        type="text" 
-                        value={formData.title} 
-                        onChange={(e) => setFormData({ ...formData, title: e.target.value })} 
+                      <input
+                        type="text"
+                        value={formData.title}
+                        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                         placeholder="e.g. Rural Health Camp 2026"
                         className="w-full"
                         required
@@ -2779,8 +2983,8 @@ export function EventsSection({ showToast }) {
                     {photoCategory === "All" ? (
                       <div className="adm-form-group">
                         <label>Category *</label>
-                        <select 
-                          value={formData.category} 
+                        <select
+                          value={formData.category}
                           onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                           className="w-full rounded-xl border border-slate-200 p-2.5 text-xs font-semibold focus:border-teal-500 focus:outline-none"
                           required
@@ -2807,19 +3011,19 @@ export function EventsSection({ showToast }) {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="adm-form-group">
                         <label>Event Date *</label>
-                        <input 
-                          type="date" 
-                          value={formData.startDate} 
-                          onChange={(e) => setFormData({ ...formData, startDate: e.target.value })} 
+                        <input
+                          type="date"
+                          value={formData.startDate}
+                          onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
                           required
                         />
                       </div>
                       <div className="adm-form-group">
                         <label>Location *</label>
-                        <input 
-                          type="text" 
-                          value={formData.location} 
-                          onChange={(e) => setFormData({ ...formData, location: e.target.value })} 
+                        <input
+                          type="text"
+                          value={formData.location}
+                          onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                           placeholder="e.g. Village Hall, Sairam"
                           required
                         />
@@ -2828,10 +3032,10 @@ export function EventsSection({ showToast }) {
 
                     <div className="adm-form-group">
                       <label>Organizer Name *</label>
-                      <input 
-                        type="text" 
-                        value={formData.organizer} 
-                        onChange={(e) => setFormData({ ...formData, organizer: e.target.value })} 
+                      <input
+                        type="text"
+                        value={formData.organizer}
+                        onChange={(e) => setFormData({ ...formData, organizer: e.target.value })}
                         placeholder="e.g. Vidyavaidya Foundation"
                         required
                       />
@@ -2839,9 +3043,9 @@ export function EventsSection({ showToast }) {
 
                     <div className="adm-form-group">
                       <label>Short Description * (max 200 chars)</label>
-                      <textarea 
-                        value={formData.shortDescription} 
-                        onChange={(e) => setFormData({ ...formData, shortDescription: e.target.value })} 
+                      <textarea
+                        value={formData.shortDescription}
+                        onChange={(e) => setFormData({ ...formData, shortDescription: e.target.value })}
                         maxLength={200}
                         placeholder="Provide a quick summary of the event gallery..."
                         required
@@ -2849,14 +3053,7 @@ export function EventsSection({ showToast }) {
                       <span className="adm-char-counter">{(formData.shortDescription || "").length}/200</span>
                     </div>
 
-                    <ImageUrlWithUpload 
-                      label="Thumbnail Image URL"
-                      value={formData.thumbnailUrl}
-                      onChange={(url) => setFormData({ ...formData, thumbnailUrl: url })}
-                      onUploadError={(err) => showToast(err, "error")}
-                    />
-
-                    <MultiImageInput 
+                    <MultiImageInput
                       value={formData.galleryImages}
                       onChange={(urls) => setFormData({ ...formData, galleryImages: urls })}
                       showToast={showToast}
@@ -2866,10 +3063,10 @@ export function EventsSection({ showToast }) {
                       <label className="adm-toggle-label flex items-center justify-between">
                         <span className="text-slate-650 font-semibold text-xs">Promote as Featured Gallery?</span>
                         <div className="adm-switch-wrap">
-                          <input 
-                            type="checkbox" 
-                            checked={formData.isFeatured} 
-                            onChange={(e) => setFormData({ ...formData, isFeatured: e.target.checked })} 
+                          <input
+                            type="checkbox"
+                            checked={formData.isFeatured}
+                            onChange={(e) => setFormData({ ...formData, isFeatured: e.target.checked })}
                           />
                           <span className="adm-slider"></span>
                         </div>
@@ -2879,14 +3076,14 @@ export function EventsSection({ showToast }) {
 
                   {/* Sticky Footer */}
                   <div className="sticky bottom-0 bg-white border-t border-slate-100 px-6 py-4 flex items-center justify-end gap-3 z-10">
-                    <button 
+                    <button
                       type="button"
                       onClick={() => setPhotoModalOpen(false)}
                       className="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-550 font-extrabold text-xs hover:bg-slate-50 transition-colors"
                     >
                       Cancel
                     </button>
-                    <button 
+                    <button
                       type="submit"
                       disabled={saving}
                       className="px-5 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-extrabold text-xs shadow-lg shadow-teal-600/15 disabled:opacity-50 cursor-pointer"
@@ -2906,14 +3103,14 @@ export function EventsSection({ showToast }) {
       {createPortal(
         <AnimatePresence>
           {videoModalOpen && (
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md"
               onClick={() => setVideoModalOpen(false)}
             >
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, scale: 0.95, y: 15 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 15 }}
@@ -2933,18 +3130,18 @@ export function EventsSection({ showToast }) {
                 </div>
 
                 {/* Form Wrapper */}
-                <form 
-                  onSubmit={(e) => handleSave(e, "video")} 
+                <form
+                  onSubmit={(e) => handleSave(e, "video")}
                   className="flex-1 flex flex-col min-h-0 overflow-hidden"
                 >
                   {/* Scrollable Body */}
                   <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4 pr-3">
                     <div className="adm-form-group">
                       <label>Video Title *</label>
-                      <input 
-                        type="text" 
-                        value={formData.title} 
-                        onChange={(e) => setFormData({ ...formData, title: e.target.value })} 
+                      <input
+                        type="text"
+                        value={formData.title}
+                        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                         placeholder="e.g. Medical Mission Highlights 2026"
                         className="w-full"
                         required
@@ -2955,20 +3152,20 @@ export function EventsSection({ showToast }) {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="adm-form-group">
                         <label>Video Link / YouTube URL *</label>
-                        <input 
-                          type="url" 
-                          value={formData.videoUrl} 
-                          onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })} 
+                        <input
+                          type="url"
+                          value={formData.videoUrl}
+                          onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
                           placeholder="e.g. https://www.youtube.com/watch?v=..."
                           required
                         />
                       </div>
                       <div className="adm-form-group">
                         <label>Event Date *</label>
-                        <input 
-                          type="date" 
-                          value={formData.startDate} 
-                          onChange={(e) => setFormData({ ...formData, startDate: e.target.value })} 
+                        <input
+                          type="date"
+                          value={formData.startDate}
+                          onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
                           required
                         />
                       </div>
@@ -2976,25 +3173,25 @@ export function EventsSection({ showToast }) {
 
                     <div className="adm-form-group">
                       <label>Speaker / Host Name</label>
-                      <input 
-                        type="text" 
-                        value={formData.organizer} 
-                        onChange={(e) => setFormData({ ...formData, organizer: e.target.value })} 
+                      <input
+                        type="text"
+                        value={formData.organizer}
+                        onChange={(e) => setFormData({ ...formData, organizer: e.target.value })}
                         placeholder="e.g. Dr. Rohan (Adviser)"
                       />
                     </div>
 
                     <div className="adm-form-group">
                       <label>Description *</label>
-                      <textarea 
-                        value={formData.description} 
-                        onChange={(e) => setFormData({ ...formData, description: e.target.value })} 
+                      <textarea
+                        value={formData.description}
+                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                         placeholder="Describe the campaign drive, interview highlights, or volunteer efforts..."
                         required
                       />
                     </div>
 
-                    <ImageUrlWithUpload 
+                    <ImageUrlWithUpload
                       label="Video Thumbnail Image URL"
                       value={formData.thumbnailUrl}
                       onChange={(url) => setFormData({ ...formData, thumbnailUrl: url })}
@@ -3005,10 +3202,10 @@ export function EventsSection({ showToast }) {
                       <label className="adm-toggle-label flex items-center justify-between">
                         <span className="text-slate-650 font-semibold text-xs">Promote as Featured Video?</span>
                         <div className="adm-switch-wrap">
-                          <input 
-                            type="checkbox" 
-                            checked={formData.isFeatured} 
-                            onChange={(e) => setFormData({ ...formData, isFeatured: e.target.checked })} 
+                          <input
+                            type="checkbox"
+                            checked={formData.isFeatured}
+                            onChange={(e) => setFormData({ ...formData, isFeatured: e.target.checked })}
                           />
                           <span className="adm-slider"></span>
                         </div>
@@ -3018,14 +3215,14 @@ export function EventsSection({ showToast }) {
 
                   {/* Sticky Footer */}
                   <div className="sticky bottom-0 bg-white border-t border-slate-100 px-6 py-4 flex items-center justify-end gap-3 z-10">
-                    <button 
+                    <button
                       type="button"
                       onClick={() => setVideoModalOpen(false)}
                       className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-550 font-extrabold text-xs transition-colors"
                     >
                       Cancel
                     </button>
-                    <button 
+                    <button
                       type="submit"
                       disabled={saving}
                       className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs shadow-lg shadow-indigo-600/15 disabled:opacity-50 cursor-pointer"
@@ -3045,7 +3242,7 @@ export function EventsSection({ showToast }) {
       {createPortal(
         <AnimatePresence>
           {lightboxOpen && lightboxImages.length > 0 && (
-            <div 
+            <div
               className="fixed inset-0 z-[2000] flex flex-col justify-between bg-slate-950/98 backdrop-blur-md p-4 text-white animate-fade-in"
               onClick={() => setLightboxOpen(false)}
             >
@@ -3054,7 +3251,7 @@ export function EventsSection({ showToast }) {
                 <span className="text-xs font-bold tracking-widest text-slate-400 uppercase">
                   Image {lightboxIndex + 1} of {lightboxImages.length}
                 </span>
-                <button 
+                <button
                   onClick={() => setLightboxOpen(false)}
                   className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center hover:scale-105 transition-all"
                 >
@@ -3073,14 +3270,14 @@ export function EventsSection({ showToast }) {
                 </button>
 
                 {/* Slider image */}
-                <motion.img 
+                <motion.img
                   key={lightboxIndex}
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
-                  src={lightboxImages[lightboxIndex]} 
-                  className="max-w-[85%] max-h-[75vh] object-contain rounded-xl shadow-2xl border border-white/5" 
-                  alt="Lightbox preview" 
+                  src={lightboxImages[lightboxIndex]}
+                  className="max-w-[85%] max-h-[75vh] object-contain rounded-xl shadow-2xl border border-white/5"
+                  alt="Lightbox preview"
                 />
 
                 {/* Next Button */}
@@ -3098,9 +3295,8 @@ export function EventsSection({ showToast }) {
                   <button
                     key={i}
                     onClick={() => setLightboxIndex(i)}
-                    className={`w-14 h-14 rounded-lg overflow-hidden border-2 transition-all flex-shrink-0 ${
-                      lightboxIndex === i ? "border-teal-500 scale-105" : "border-transparent opacity-50 hover:opacity-100"
-                    }`}
+                    className={`w-14 h-14 rounded-lg overflow-hidden border-2 transition-all flex-shrink-0 ${lightboxIndex === i ? "border-teal-500 scale-105" : "border-transparent opacity-50 hover:opacity-100"
+                      }`}
                   >
                     <img src={imgUrl} className="w-full h-full object-cover" alt="" />
                   </button>
@@ -3116,18 +3312,18 @@ export function EventsSection({ showToast }) {
       {createPortal(
         <AnimatePresence>
           {videoPlayerOpen && activeVideoUrl && (
-            <div 
+            <div
               className="fixed inset-0 z-[2000] flex items-center justify-center p-4 bg-slate-950/95 backdrop-blur-md"
               onClick={() => setVideoPlayerOpen(false)}
             >
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 className="bg-black rounded-3xl w-full max-w-4xl overflow-hidden aspect-video shadow-2xl relative border border-slate-800"
                 onClick={(e) => e.stopPropagation()}
               >
-                <button 
+                <button
                   onClick={() => setVideoPlayerOpen(false)}
                   className="absolute top-4 right-4 z-50 w-8 h-8 rounded-full bg-black/60 hover:bg-black text-white flex items-center justify-center hover:scale-105 transition-all"
                 >
@@ -3135,17 +3331,17 @@ export function EventsSection({ showToast }) {
                 </button>
 
                 {activeVideoUrl.includes("youtube.com") || activeVideoUrl.includes("youtu.be") || activeVideoUrl.includes("vimeo.com") ? (
-                  <iframe 
+                  <iframe
                     src={getEmbedUrl(activeVideoUrl)}
                     className="w-full h-full border-none"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowFullScreen
                   />
                 ) : (
-                  <video 
-                    src={activeVideoUrl} 
-                    controls 
-                    autoPlay 
+                  <video
+                    src={activeVideoUrl}
+                    controls
+                    autoPlay
                     className="w-full h-full"
                   />
                 )}
@@ -3228,11 +3424,11 @@ export function TestimonialsSection({ showToast }) {
       setLoading(true);
       // Fetch all testimonials for admin panel
       const res = await api.get("/testimonials?published=all");
-      if (res.data && res.data.success) {
-        setTestimonials(res.data.testimonials || []);
+      if (res && res.success) {
+        setTestimonials(res.testimonials || []);
       }
     } catch (err) {
-      showToast(err.response?.data?.error || "Failed to load testimonials", "error");
+      showToast(err.message || "Failed to load testimonials", "error");
     } finally {
       setLoading(false);
     }
@@ -3299,7 +3495,7 @@ export function TestimonialsSection({ showToast }) {
       if (editTestimonial) {
         // Edit flow
         const res = await api.put(`/testimonials/${editTestimonial.id}`, data);
-        if (res.data && res.data.success) {
+        if (res && res.success) {
           showToast("Testimonial updated successfully", "success");
           setIsModalOpen(false);
           loadTestimonials();
@@ -3307,14 +3503,14 @@ export function TestimonialsSection({ showToast }) {
       } else {
         // Create flow
         const res = await api.post("/testimonials", data);
-        if (res.data && res.data.success) {
+        if (res && res.success) {
           showToast("Testimonial created successfully", "success");
           setIsModalOpen(false);
           loadTestimonials();
         }
       }
     } catch (err) {
-      showToast(err.response?.data?.error || "Failed to save testimonial", "error");
+      showToast(err.message || "Failed to save testimonial", "error");
     }
   };
 
@@ -3322,19 +3518,19 @@ export function TestimonialsSection({ showToast }) {
     if (!window.confirm(`Are you sure you want to delete ${t.name}'s testimonial?`)) return;
     try {
       const res = await api.delete(`/testimonials/${t.id}`);
-      if (res.data && res.data.success) {
+      if (res && res.success) {
         showToast("Testimonial deleted successfully", "success");
         loadTestimonials();
       }
     } catch (err) {
-      showToast(err.response?.data?.error || "Failed to delete testimonial", "error");
+      showToast(err.message || "Failed to delete testimonial", "error");
     }
   };
 
   const handleTogglePublished = async (t) => {
     try {
       const res = await api.put(`/testimonials/${t.id}`, { isPublished: !t.isPublished });
-      if (res.data && res.data.success) {
+      if (res && res.success) {
         showToast(`Testimonial ${!t.isPublished ? "published" : "hidden"} successfully`, "success");
         loadTestimonials();
       }
@@ -3346,7 +3542,7 @@ export function TestimonialsSection({ showToast }) {
   const handleToggleFeatured = async (t) => {
     try {
       const res = await api.put(`/testimonials/${t.id}`, { isFeatured: !t.isFeatured });
-      if (res.data && res.data.success) {
+      if (res && res.success) {
         showToast(`Testimonial ${!t.isFeatured ? "marked as featured" : "removed from featured"} successfully`, "success");
         loadTestimonials();
       }
@@ -3363,7 +3559,7 @@ export function TestimonialsSection({ showToast }) {
     }
     if (searchQuery.trim() !== "") {
       const query = searchQuery.toLowerCase();
-      result = result.filter(t => 
+      result = result.filter(t =>
         (t.name || "").toLowerCase().includes(query) ||
         (t.message || "").toLowerCase().includes(query) ||
         (t.role || "").toLowerCase().includes(query) ||
@@ -3383,7 +3579,7 @@ export function TestimonialsSection({ showToast }) {
 
       {/* 3. Main Dashboard section */}
       <div className="mt-8 bg-white border border-slate-150/80 rounded-3xl p-6 shadow-xl shadow-slate-100/50 space-y-6">
-        
+
         {/* Category filtering & add actions */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2 pb-4 border-b border-slate-150/70">
           <div className="flex flex-wrap gap-2">
@@ -3393,11 +3589,10 @@ export function TestimonialsSection({ showToast }) {
                 <button
                   key={cat}
                   onClick={() => setActiveCategory(cat)}
-                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 border cursor-pointer ${
-                    isSelected
-                      ? "bg-indigo-50/80 text-indigo-700 border-indigo-500 shadow-md shadow-indigo-500/5 ring-1 ring-indigo-500/20 scale-[1.03]"
-                      : "bg-white hover:bg-slate-50 text-slate-600 border-slate-200 hover:border-slate-350 hover:shadow-sm hover:-translate-y-0.5"
-                  }`}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 border cursor-pointer ${isSelected
+                    ? "bg-indigo-50/80 text-indigo-700 border-indigo-500 shadow-md shadow-indigo-500/5 ring-1 ring-indigo-500/20 scale-[1.03]"
+                    : "bg-white hover:bg-slate-50 text-slate-600 border-slate-200 hover:border-slate-350 hover:shadow-sm hover:-translate-y-0.5"
+                    }`}
                 >
                   {cat}
                 </button>
@@ -3406,7 +3601,7 @@ export function TestimonialsSection({ showToast }) {
           </div>
 
           <div className="flex items-center gap-3">
-            <button 
+            <button
               onClick={handleOpenAdd}
               className="flex items-center justify-center gap-2 h-10 px-5 rounded-2xl text-white font-extrabold text-xs shadow-lg transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 cursor-pointer bg-indigo-600 hover:bg-indigo-700 shadow-indigo-600/15"
             >
@@ -3428,8 +3623,8 @@ export function TestimonialsSection({ showToast }) {
             </div>
             <h4 className="font-extrabold text-slate-700 text-sm">No Testimonials Found</h4>
             <p className="text-xs text-slate-400 mt-1 max-w-sm">
-              {searchQuery 
-                ? "No matching testimonials match your search filter criteria." 
+              {searchQuery
+                ? "No matching testimonials match your search filter criteria."
                 : "Begin collecting public trust testimonials by manually adding your first entry now."}
             </p>
             {!searchQuery && (
@@ -3446,20 +3641,18 @@ export function TestimonialsSection({ showToast }) {
             {filteredTestimonials.map((t) => {
               const ratingStars = Array.from({ length: 5 }, (_, i) => i + 1);
               return (
-                <div 
+                <div
                   key={t.id}
-                  className={`bg-slate-50/40 hover:bg-white rounded-3xl border transition-all duration-300 p-5 flex flex-col justify-between group hover:shadow-xl relative overflow-hidden ${
-                    t.isFeatured ? "border-amber-350 shadow-md shadow-amber-500/5 bg-gradient-to-br from-amber-50/10 to-transparent" : "border-slate-150/70"
-                  }`}
+                  className={`bg-slate-50/40 hover:bg-white rounded-3xl border transition-all duration-300 p-5 flex flex-col justify-between group hover:shadow-xl relative overflow-hidden ${t.isFeatured ? "border-amber-350 shadow-md shadow-amber-500/5 bg-gradient-to-br from-amber-50/10 to-transparent" : "border-slate-150/70"
+                    }`}
                 >
                   {/* Category Badge */}
                   <div className="absolute top-4 right-4 flex items-center gap-1.5 z-10">
-                    <span className={`px-2.5 py-0.5 rounded-full font-black text-[9px] uppercase tracking-wider ${
-                      t.category === "Donor" ? "bg-emerald-50 text-emerald-600 border border-emerald-100" :
+                    <span className={`px-2.5 py-0.5 rounded-full font-black text-[9px] uppercase tracking-wider ${t.category === "Donor" ? "bg-emerald-50 text-emerald-600 border border-emerald-100" :
                       t.category === "Volunteer" ? "bg-teal-50 text-teal-600 border border-teal-100" :
-                      t.category === "Healthcare Partner" ? "bg-indigo-50 text-indigo-600 border border-indigo-100" :
-                      "bg-blue-50 text-blue-600 border border-blue-100"
-                    }`}>
+                        t.category === "Healthcare Partner" ? "bg-indigo-50 text-indigo-600 border border-indigo-100" :
+                          "bg-blue-50 text-blue-600 border border-blue-100"
+                      }`}>
                       {t.category}
                     </span>
                   </div>
@@ -3468,8 +3661,8 @@ export function TestimonialsSection({ showToast }) {
                     {/* Header: User Profile details */}
                     <div className="flex items-center gap-3.5 pb-4 border-b border-slate-100">
                       {t.avatarUrl ? (
-                        <img 
-                          src={t.avatarUrl} 
+                        <img
+                          src={t.avatarUrl}
                           alt={t.name}
                           className="w-12 h-12 rounded-xl object-cover border border-slate-200"
                         />
@@ -3493,9 +3686,9 @@ export function TestimonialsSection({ showToast }) {
                     <div className="mt-4 space-y-2">
                       <div className="flex items-center gap-0.5">
                         {ratingStars.map((star) => (
-                          <Star 
-                            key={star} 
-                            size={12} 
+                          <Star
+                            key={star}
+                            size={12}
                             className={star <= (t.rating || 5) ? "fill-amber-400 text-amber-400" : "text-slate-200"}
                           />
                         ))}
@@ -3504,7 +3697,7 @@ export function TestimonialsSection({ showToast }) {
                       {t.headline && (
                         <h5 className="font-black text-xs text-slate-700 leading-snug">“{t.headline}”</h5>
                       )}
-                      
+
                       <p className="text-xs text-slate-500 font-semibold leading-relaxed line-clamp-4">
                         {t.message}
                       </p>
@@ -3514,40 +3707,38 @@ export function TestimonialsSection({ showToast }) {
                   {/* Actions / Setting toggles */}
                   <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between gap-3">
                     <div className="flex items-center gap-2">
-                      <button 
+                      <button
                         onClick={() => handleTogglePublished(t)}
                         title={t.isPublished ? "Unpublish Testimonial" : "Publish Testimonial"}
-                        className={`px-2.5 py-1 rounded-xl text-[9px] font-black uppercase tracking-wider border transition-all ${
-                          t.isPublished 
-                            ? "bg-teal-50 text-teal-600 border-teal-200" 
-                            : "bg-slate-55/60 text-slate-500 border-slate-200"
-                        }`}
+                        className={`px-2.5 py-1 rounded-xl text-[9px] font-black uppercase tracking-wider border transition-all ${t.isPublished
+                          ? "bg-teal-50 text-teal-600 border-teal-200"
+                          : "bg-slate-55/60 text-slate-500 border-slate-200"
+                          }`}
                       >
                         {t.isPublished ? "Live" : "Draft"}
                       </button>
 
-                      <button 
+                      <button
                         onClick={() => handleToggleFeatured(t)}
                         title={t.isFeatured ? "Unfeature Testimonial" : "Feature Testimonial"}
-                        className={`p-1.5 rounded-xl border transition-all ${
-                          t.isFeatured 
-                            ? "bg-amber-50 text-amber-500 border-amber-200" 
-                            : "bg-slate-50 hover:bg-slate-100 text-slate-400 border-slate-200"
-                        }`}
+                        className={`p-1.5 rounded-xl border transition-all ${t.isFeatured
+                          ? "bg-amber-50 text-amber-500 border-amber-200"
+                          : "bg-slate-50 hover:bg-slate-100 text-slate-400 border-slate-200"
+                          }`}
                       >
                         <Star size={12} className={t.isFeatured ? "fill-amber-500" : ""} />
                       </button>
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <button 
+                      <button
                         onClick={() => handleOpenEdit(t)}
                         className="w-7 h-7 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-500 flex items-center justify-center hover:-translate-y-0.5 active:translate-y-0 transition-all cursor-pointer"
                         title="Edit Testimonial"
                       >
                         <Pencil size={11} strokeWidth={2.5} />
                       </button>
-                      <button 
+                      <button
                         onClick={() => handleDelete(t)}
                         className="w-7 h-7 rounded-lg border border-rose-100 bg-white hover:bg-rose-50/50 text-rose-500 flex items-center justify-center hover:-translate-y-0.5 active:translate-y-0 transition-all cursor-pointer"
                         title="Delete Testimonial"
@@ -3605,7 +3796,7 @@ export function TestimonialsSection({ showToast }) {
 
                 {/* Form scroll content */}
                 <form onSubmit={handleSubmit(onSubmit)} className="flex-1 p-6 overflow-y-auto custom-scrollbar space-y-6">
-                  
+
                   {/* SECTION 1 - Person Details */}
                   <div className="p-5 rounded-2xl border border-slate-100 bg-slate-50/40 space-y-4">
                     <div className="border-b border-slate-100 pb-3">
@@ -3615,7 +3806,7 @@ export function TestimonialsSection({ showToast }) {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="flex flex-col gap-1.5">
                         <label className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">Full Name *</label>
-                        <input 
+                        <input
                           type="text"
                           {...register("name")}
                           placeholder="e.g. Vidyavaidya"
@@ -3626,7 +3817,7 @@ export function TestimonialsSection({ showToast }) {
 
                       <div className="flex flex-col gap-1.5">
                         <label className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">Role / Designation *</label>
-                        <input 
+                        <input
                           type="text"
                           {...register("role")}
                           placeholder="e.g. Volunteer / Healthcare Donor"
@@ -3639,7 +3830,7 @@ export function TestimonialsSection({ showToast }) {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="flex flex-col gap-1.5">
                         <label className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">Organization Name</label>
-                        <input 
+                        <input
                           type="text"
                           {...register("organization")}
                           placeholder="e.g. Hyderabad Med-Trust"
@@ -3649,7 +3840,7 @@ export function TestimonialsSection({ showToast }) {
 
                       <div className="flex flex-col gap-1.5">
                         <label className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">Location / City</label>
-                        <input 
+                        <input
                           type="text"
                           {...register("location")}
                           placeholder="e.g. Hyderabad, Telangana"
@@ -3668,7 +3859,7 @@ export function TestimonialsSection({ showToast }) {
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <div className="sm:col-span-2 flex flex-col gap-1.5">
                         <label className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">Short Headline</label>
-                        <input 
+                        <input
                           type="text"
                           {...register("headline")}
                           placeholder="e.g. Life-changing Medical Drive!"
@@ -3693,7 +3884,7 @@ export function TestimonialsSection({ showToast }) {
 
                     <div className="flex flex-col gap-1.5">
                       <label className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">Testimonial Message *</label>
-                      <textarea 
+                      <textarea
                         {...register("message")}
                         placeholder="Write down the impact testimonial story detail here..."
                         className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-xs font-semibold text-slate-700 focus:outline-none focus:border-indigo-500 min-h-[120px] custom-scrollbar transition-all"
@@ -3737,7 +3928,92 @@ export function TestimonialsSection({ showToast }) {
                     </div>
                   </div>
 
+                  {/* SECTION 4 - Display Settings */}
+                  <div className="p-5 rounded-2xl border border-slate-100 bg-slate-50/40 space-y-4">
+                    <div className="border-b border-slate-100 pb-3">
+                      <h4 className="font-extrabold text-sm text-slate-700 uppercase tracking-wider">Display Settings</h4>
+                    </div>
 
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {/* Category */}
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">Category *</label>
+                        <select
+                          {...register("category")}
+                          className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-xs font-semibold text-slate-700 focus:outline-none focus:border-indigo-500 transition-all"
+                        >
+                          <option value="Beneficiary">Beneficiary</option>
+                          <option value="Volunteer">Volunteer</option>
+                          <option value="Donor">Donor</option>
+                          <option value="Healthcare Partner">Healthcare Partner</option>
+                        </select>
+                        {errors.category && <span className="text-[10px] text-rose-500 font-bold">{errors.category.message}</span>}
+                      </div>
+
+                      {/* Display Order */}
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">Display Order</label>
+                        <input
+                          type="number"
+                          min={1}
+                          {...register("displayOrder")}
+                          placeholder="e.g. 1 (lower = first)"
+                          className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-xs font-semibold text-slate-700 focus:outline-none focus:border-indigo-500 transition-all"
+                        />
+                        {errors.displayOrder && <span className="text-[10px] text-rose-500 font-bold">{errors.displayOrder.message}</span>}
+                      </div>
+                    </div>
+
+                    {/* Toggles row */}
+                    <div className="flex flex-wrap gap-4 pt-1">
+                      {/* isPublished toggle */}
+                      <Controller
+                        control={control}
+                        name="isPublished"
+                        render={({ field }) => (
+                          <button
+                            type="button"
+                            onClick={() => field.onChange(!field.value)}
+                            className={`flex items-center gap-2.5 px-4 py-2.5 rounded-xl border text-xs font-extrabold transition-all duration-200 cursor-pointer ${
+                              field.value
+                                ? "bg-teal-50 text-teal-700 border-teal-200 shadow-sm shadow-teal-500/10"
+                                : "bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100"
+                            }`}
+                          >
+                            <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
+                              field.value ? "border-teal-500 bg-teal-500" : "border-slate-300 bg-white"
+                            }`}>
+                              {field.value && <span className="w-1.5 h-1.5 rounded-full bg-white" />}
+                            </span>
+                            Publish on Website
+                          </button>
+                        )}
+                      />
+
+                      {/* isFeatured toggle */}
+                      <Controller
+                        control={control}
+                        name="isFeatured"
+                        render={({ field }) => (
+                          <button
+                            type="button"
+                            onClick={() => field.onChange(!field.value)}
+                            className={`flex items-center gap-2.5 px-4 py-2.5 rounded-xl border text-xs font-extrabold transition-all duration-200 cursor-pointer ${
+                              field.value
+                                ? "bg-amber-50 text-amber-700 border-amber-200 shadow-sm shadow-amber-500/10"
+                                : "bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100"
+                            }`}
+                          >
+                            <Star
+                              size={13}
+                              className={`flex-shrink-0 transition-colors ${field.value ? "fill-amber-500 text-amber-500" : "text-slate-400"}`}
+                            />
+                            Mark as Featured
+                          </button>
+                        )}
+                      />
+                    </div>
+                  </div>
 
                   {/* Sticky Footer actions */}
                   <div className="sticky bottom-0 z-10 flex items-center justify-end gap-3 pt-4 pb-2 mt-4 bg-white border-t border-slate-100">

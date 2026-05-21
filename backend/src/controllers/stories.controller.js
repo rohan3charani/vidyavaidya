@@ -13,6 +13,37 @@ const slugify = (text) => {
     .replace(/-+$/, '');
 };
 
+const uploadBase64Helper = async (base64Data, defaultName = 'image.jpg') => {
+  if (!base64Data || !base64Data.startsWith('data:image/')) {
+    return base64Data; // Already a URL or empty
+  }
+  try {
+    const match = base64Data.match(/^data:(image\/\w+);base64,/);
+    if (!match) return base64Data;
+    const contentType = match[1];
+    const ext = contentType.split('/')[1] || 'jpg';
+    const base64Clean = base64Data.replace(/^data:image\/\w+;base64,/, "");
+    const buffer = Buffer.from(base64Clean, 'base64');
+
+    const bucket = storage.bucket();
+    const uniqueName = `stories/${Date.now()}_${defaultName.replace(/[^a-zA-Z0-9]/g, '_')}.${ext}`;
+    const file = bucket.file(uniqueName);
+
+    await file.save(buffer, {
+      metadata: {
+        contentType: contentType,
+        cacheControl: 'public, max-age=31536000'
+      },
+      public: true
+    });
+
+    return `https://storage.googleapis.com/${bucket.name}/${uniqueName}`;
+  } catch (err) {
+    console.error('Failed to upload base64 image to storage:', err);
+    return base64Data; // Fallback to base64
+  }
+};
+
 const storiesController = {
   /**
    * Public: List all articles with filtration and page index offset pagination
@@ -97,34 +128,44 @@ const storiesController = {
    */
   async createStory(req, res, next) {
     try {
-      const { title, type, content, excerpt, coverImageUrl, galleryUrls = [], tags = [], source = 'Vidyavaidya Board', externalUrl = '', isFeatured = false, isPublished = true } = req.body;
+      const { title, type, content, excerpt, coverImageUrl, galleryUrls = [], galleryImages = [], tags = [], source = 'Vidyavaidya Board', sourceByline = '', externalUrl = '', isFeatured = false, isPublished = true, authorName = '' } = req.body;
 
       const slug = slugify(title);
       const timestamp = admin.firestore.Timestamp.fromDate(new Date());
+
+      // If coverImageUrl is base64, automatically upload to Cloud Storage
+      let finalCoverImageUrl = coverImageUrl || '';
+      if (coverImageUrl && coverImageUrl.startsWith('data:image/')) {
+        finalCoverImageUrl = await uploadBase64Helper(coverImageUrl, title || 'cover');
+      }
+
+      const finalGalleryUrls = (galleryUrls && galleryUrls.length > 0) ? galleryUrls : (galleryImages || []);
+      const finalSource = source !== 'Vidyavaidya Board' ? source : (sourceByline || 'Vidyavaidya Board');
+      const finalAuthorName = authorName || (req.user && req.user.fullName) || 'Vidyavaidya Board';
 
       const storyRef = db.collection('stories').doc();
       const newStory = {
         storyId: storyRef.id,
         title,
         slug,
-        type, // "news" | "impact" | "publishing" | "press" | "blog"
-        content,
-        excerpt: excerpt || content.slice(0, 150),
-        coverImageUrl: coverImageUrl || '',
-        galleryUrls,
+        type: type || 'news', // "news" | "impact" | "publishing" | "press" | "blog"
+        content: content || excerpt || 'Vidyavaidya featured article.',
+        excerpt: excerpt || content?.slice(0, 150) || 'Vidyavaidya featured article.',
+        coverImageUrl: finalCoverImageUrl,
+        galleryUrls: finalGalleryUrls,
         author: {
-          name: req.user.fullName || 'Vidyavaidya Board',
+          name: finalAuthorName,
           role: 'Administrator',
           avatarUrl: ''
         },
         tags,
-        source,
+        source: finalSource,
         externalUrl,
-        isFeatured,
-        isPublished,
+        isFeatured: !!isFeatured,
+        isPublished: !!isPublished,
         viewCount: 0,
         publishedAt: isPublished ? timestamp : null,
-        createdBy: req.user.uid,
+        createdBy: (req.user && req.user.uid) || 'admin',
         createdAt: timestamp,
         updatedAt: timestamp
       };
@@ -154,6 +195,30 @@ const storiesController = {
 
       if (!storySnap.exists) {
         return res.status(404).json({ error: 'Article not found' });
+      }
+
+      // If coverImageUrl is updated with a base64 string, upload to Cloud Storage
+      if (updates.coverImageUrl && updates.coverImageUrl.startsWith('data:image/')) {
+        updates.coverImageUrl = await uploadBase64Helper(updates.coverImageUrl, updates.title || storySnap.data().title || 'cover');
+      }
+
+      if (updates.galleryImages !== undefined && updates.galleryUrls === undefined) {
+        updates.galleryUrls = updates.galleryImages;
+        delete updates.galleryImages;
+      }
+
+      if (updates.sourceByline !== undefined && updates.source === undefined) {
+        updates.source = updates.sourceByline;
+        delete updates.sourceByline;
+      }
+
+      if (updates.authorName !== undefined) {
+        const existingAuthor = storySnap.data().author || { name: 'Vidyavaidya Board', role: 'Administrator', avatarUrl: '' };
+        updates.author = {
+          ...existingAuthor,
+          name: updates.authorName
+        };
+        delete updates.authorName;
       }
 
       if (updates.title && updates.title !== storySnap.data().title) {
@@ -306,6 +371,45 @@ const storiesController = {
       return res.status(200).json({
         success: true,
         uploadUrl,
+        publicUrl
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  /**
+   * Admin-Only: Upload image as base64 directly to Firebase Storage bypassing client-side CORS restrictions
+   */
+  async uploadBase64(req, res, next) {
+    try {
+      const { base64Data, fileName, contentType } = req.body;
+
+      if (!base64Data || !fileName || !contentType) {
+        return res.status(400).json({ error: 'base64Data, fileName and contentType parameters are required' });
+      }
+
+      // Strip off dataurl metadata prefix if present (e.g. data:image/png;base64,)
+      const base64Clean = base64Data.replace(/^data:image\/\w+;base64,/, "");
+      const buffer = Buffer.from(base64Clean, 'base64');
+
+      const bucket = storage.bucket();
+      const uniqueName = `gallery/${Date.now()}_${fileName}`;
+      const file = bucket.file(uniqueName);
+
+      // Save buffer direct to Cloud Storage bucket with public visibility
+      await file.save(buffer, {
+        metadata: {
+          contentType: contentType,
+          cacheControl: 'public, max-age=31536000'
+        },
+        public: true
+      });
+
+      const publicUrl = `https://storage.googleapis.com/${bucket.name}/${uniqueName}`;
+
+      return res.status(200).json({
+        success: true,
         publicUrl
       });
     } catch (error) {

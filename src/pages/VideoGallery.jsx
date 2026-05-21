@@ -19,15 +19,16 @@ export default function VideoGallery() {
   useEffect(() => {
     const fetchVideos = async () => {
       try {
-        const data = await api.stories.list();
-        const vids = (data || []).filter(
-          (s) => s.isPublished && s.type === "gallery_video"
+        const res = await api.events.list({ limit: 1000 });
+        const data = res?.events || (Array.isArray(res) ? res : []);
+        const vids = data.filter(
+          (e) => e.eventType === "video" || !!e.videoUrl
         );
         const mapped = vids.map((v) => ({
-          id: v.id,
+          id: v.id || v.eventId,
           title: v.title,
-          duration: v.videoDuration || "03:00",
-          thumb: v.videoThumbnailUrl || v.coverImageUrl || "https://images.unsplash.com/photo-1494883759339-0b042055a4ee?w=600&q=80",
+          duration: v.videoDuration || "05:00",
+          thumb: v.thumbnailUrl || v.videoThumbnailUrl || "https://images.unsplash.com/photo-1494883759339-0b042055a4ee?w=600&q=80",
           url: v.videoUrl
         }));
         setDynamicVideos(mapped);
@@ -40,7 +41,7 @@ export default function VideoGallery() {
     fetchVideos();
   }, []);
 
-  const videos = dynamicVideos.length > 0 ? dynamicVideos : staticVideos;
+  const videos = [...dynamicVideos, ...staticVideos];
 
   const handleWatch = (url) => {
     if (url) {
