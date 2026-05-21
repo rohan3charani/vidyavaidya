@@ -5,6 +5,7 @@ import {
   Send, Trash2, ChevronDown, Sparkles, Inbox, X, Building, Calendar,
   Search, Check, MessageSquare
 } from "lucide-react";
+import api from "../../services/api";
 
 // Strictly A -> Z Alphabetical Global Country List
 const COUNTRIES_LIST = [
@@ -290,8 +291,28 @@ const MOCK_DONORS_INITIAL = [
 ];
 
 export default function ForeignDonorsSection({ showToast: parentShowToast }) {
-  // Local state with initial mock data
-  const [donors, setDonors] = useState(MOCK_DONORS_INITIAL);
+  // Local state for live data from Firestore
+  const [donors, setDonors] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const fetchDonors = async (silent = false) => {
+    try {
+      if (!silent) setLoading(true);
+      const data = await api.foreignDonors.list();
+      setDonors(data);
+      setError(null);
+    } catch (err) {
+      setError(err.message || "Failed to fetch foreign donor inquiries.");
+      triggerToast(err.message || "Failed to fetch foreign donor inquiries.", "error");
+    } finally {
+      if (!silent) setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDonors();
+  }, []);
 
   // Dropdown states
   const [countryFilter, setCountryFilter] = useState("All Countries");
@@ -364,50 +385,65 @@ export default function ForeignDonorsSection({ showToast: parentShowToast }) {
   };
 
   // Handle Response Reply submission
-  const handleSubmitReply = (id) => {
+  const handleSubmitReply = async (id) => {
     const text = replyTexts[id];
     if (!text || !text.trim()) {
       triggerToast("Please enter an answer before submitting.", "error");
       return;
     }
 
-    setDonors(prev =>
-      prev.map(d =>
-        d.id === id
-          ? {
-              ...d,
-              status: "Solved",
-              adminResponse: text.trim(),
-              repliedAt: new Date().toISOString()
-            }
-          : d
-      )
-    );
-
-    // Clear reply text field
-    setReplyTexts(prev => ({ ...prev, [id]: "" }));
-    triggerToast(`Response answer submitted successfully!`, "success");
+    try {
+      await api.foreignDonors.respond(id, text.trim(), "Solved");
+      // Clear reply text field
+      setReplyTexts(prev => ({ ...prev, [id]: "" }));
+      triggerToast(`Response answer submitted and email sent successfully!`, "success");
+      await fetchDonors(true); // reload list silently
+    } catch (err) {
+      triggerToast(err.message || "Failed to submit response", "error");
+    }
   };
 
   // Handle deleting a donor record locally
-  const handleDeleteDonor = (id) => {
+  const handleDeleteDonor = async (id) => {
     if (!window.confirm("Are you sure you want to permanently delete this foreign donor query?")) return;
-    setDonors(prev => prev.filter(d => d.id !== id));
-    triggerToast("Donor registration deleted successfully.", "info");
+    try {
+      await api.foreignDonors.delete(id);
+      triggerToast("Donor registration deleted successfully.", "info");
+      await fetchDonors(true); // reload list silently
+    } catch (err) {
+      triggerToast(err.message || "Failed to delete query", "error");
+    }
   };
 
   // Change status of a query directly from Actions
-  const handleUpdateStatus = (id, newStatus) => {
-    setDonors(prev =>
-      prev.map(d => (d.id === id ? { ...d, status: newStatus } : d))
-    );
-    triggerToast(`Query status updated to ${newStatus}.`, "info");
+  const handleUpdateStatus = async (id, newStatus) => {
+    try {
+      await api.foreignDonors.updateStatus(id, newStatus);
+      triggerToast(`Query status updated to ${newStatus}.`, "info");
+      await fetchDonors(true); // reload list silently
+    } catch (err) {
+      triggerToast(err.message || "Failed to update status", "error");
+    }
   };
 
-  // Format dates elegantly
-  const formatDate = (isoString) => {
-    if (!isoString) return "N/A";
-    const date = new Date(isoString);
+  // Format dates elegantly (robust to ISO strings, numbers, or Firestore object formats)
+  const formatDate = (dateInput) => {
+    if (!dateInput) return "N/A";
+    let date;
+    if (typeof dateInput === "object") {
+      if (dateInput._seconds) {
+        date = new Date(dateInput._seconds * 1000);
+      } else if (dateInput.seconds) {
+        date = new Date(dateInput.seconds * 1000);
+      } else {
+        date = new Date(dateInput);
+      }
+    } else {
+      date = new Date(dateInput);
+    }
+
+    if (isNaN(date.getTime())) return "N/A";
+
     return date.toLocaleDateString("en-IN", {
       day: "2-digit",
       month: "short",
@@ -458,6 +494,26 @@ export default function ForeignDonorsSection({ showToast: parentShowToast }) {
       transition: { type: "spring", stiffness: 100, damping: 14 }
     }
   };
+
+  if (loading) {
+    return (
+      <div className="adm-section adm-loading">
+        <div className="adm-spinner" />
+        <p>Loading foreign donors...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="adm-section adm-error">
+        <div className="adm-error-alert" style={{ background: '#f2dede', color: '#a94442', padding: '15px', borderRadius: '8px', border: '1px solid #ebccd1' }}>
+          <strong>Error:</strong> {error}
+          <button onClick={() => fetchDonors(false)} className="ml-4 px-3 py-1 bg-rose-700 text-white rounded text-[10px] uppercase font-bold" style={{ cursor: 'pointer' }}>Retry</button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="adm-section">

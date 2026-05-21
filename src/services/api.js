@@ -400,6 +400,21 @@ const api = {
    * 9. Administrative Control Panel Handlers
    */
   admin: {
+    async getProfile() {
+      return apiRequest('/admin/profile');
+    },
+    async updateProfile(updates) {
+      return apiRequest('/admin/profile', {
+        method: 'PUT',
+        body: JSON.stringify(updates)
+      });
+    },
+    async changePassword(currentPassword, newPassword) {
+      return apiRequest('/admin/profile/change-password', {
+        method: 'PUT',
+        body: JSON.stringify({ currentPassword, newPassword })
+      });
+    },
     async getOverview() {
       return apiRequest('/admin/overview');
     },
@@ -477,6 +492,12 @@ const api = {
       return apiRequest(`/foreign-donors/${id}/status`, {
         method: 'PUT',
         body: JSON.stringify({ status })
+      });
+    },
+    async respond(id, adminResponse, status) {
+      return apiRequest(`/foreign-donors/${id}/respond`, {
+        method: 'POST',
+        body: JSON.stringify({ adminResponse, status })
       });
     },
     async delete(id) {

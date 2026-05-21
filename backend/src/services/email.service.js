@@ -366,6 +366,36 @@ const emailService = {
       subject: `Vidyavaidya Community Application Status: [${statusText}]`,
       html
     });
+  },
+
+  /**
+   * Response to Foreign Donor Inquiry
+   */
+  async sendForeignDonorResponseEmail(email, firstName, lastName, queryType, originalMessage, adminResponse) {
+    const content = `
+      <h3>Dear ${firstName} ${lastName},</h3>
+      <p>Thank you for contacting the <strong>Vidyavaidya Foundation</strong> regarding your inquiry about <strong>"${queryType}"</strong>.</p>
+      <p>Our administration team has reviewed your query and provided the following response:</p>
+      
+      <div style="background: #e8f8f5; border-left: 4px solid ${BRAND_COLORS.accent}; padding: 15px; margin: 20px 0; border-radius: 4px;">
+        <h4 style="margin: 0 0 10px 0; color: ${BRAND_COLORS.primary};">Response Answer:</h4>
+        <p style="margin: 0; line-height: 1.6; font-size: 14px; font-weight: bold; color: #2c3e50;">${adminResponse}</p>
+      </div>
+
+      <h4 style="color: #7f8c8d; margin-top: 25px;">Your Original Message:</h4>
+      <blockquote style="background: #f8f9fa; border-left: 4px solid #bdc3c7; padding: 12px; margin: 10px 0; font-size: 13px; color: #555555; font-style: italic;">
+        ${originalMessage}
+      </blockquote>
+
+      <p style="margin-top: 25px;">If you have any further questions or would like to schedule a direct call, please do not hesitate to reply to this email or contact us at <a href="mailto:info@vidyavaidya.org">info@vidyavaidya.org</a>.</p>
+      <p>Warm Regards,<br><strong>Team Vidyavaidya Foundation</strong></p>
+    `;
+    const html = getBaseTemplate("Response to Your Inquiry", content);
+    return this.sendMail({
+      to: email,
+      subject: `Re: Vidyavaidya Inquiry Response - ${queryType}`,
+      html
+    });
   }
 };
 
