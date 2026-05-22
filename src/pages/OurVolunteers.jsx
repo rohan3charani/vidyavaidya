@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Navbar from '../Components/Navbar';
 import Footer from '../Components/Footer';
 import api from '../services/api';
+import './Pages.css';
 
 export default function OurVolunteers() {
   const [volunteers, setVolunteers] = useState([]);

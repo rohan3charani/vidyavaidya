@@ -3,6 +3,7 @@ import Navbar from "../Components/Navbar";
 import Footer from "../Components/Footer";
 import { Loader2 } from "lucide-react";
 import api from "../services/api";
+import "./Pages.css";
 
 // Categories and Data Setup
 const categories = ["All", "Education", "Health", "Community Trust", "Empowerment", "Volunteers"];
@@ -136,26 +137,10 @@ export default function PhotoGallery() {
 
       <main className="flex-grow">
         {/* Header Section */}
-        <section className="relative pt-32 pb-24 px-6 lg:px-20 overflow-hidden bg-gradient-to-br from-green-600 via-teal-700 to-blue-900 text-white min-h-[40vh] flex items-center justify-center">
-          {/* Abstract Background Shapes */}
-          <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
-            <div className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] rounded-full bg-emerald-400/20 blur-[120px]"></div>
-            <div className="absolute top-[40%] -right-[10%] w-[40%] h-[60%] rounded-full bg-cyan-400/20 blur-[120px]"></div>
-          </div>
-
-          <div className="relative z-10 mx-auto flex w-full max-w-7xl items-center justify-center text-center">
-            <div className="mx-auto max-w-3xl space-y-6">
-              <span className="inline-flex rounded-full bg-emerald-500/20 px-4 py-2 text-sm font-semibold uppercase tracking-[0.24em] text-emerald-200">
-                VidyaVaidya Charity Trust
-              </span>
-              <h1 className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
-                Empowering <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-300 to-cyan-300">Education</span>, Nurturing <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-300 to-cyan-300">Health</span>
-              </h1>
-              <p className="mx-auto max-w-2xl text-base text-teal-50 sm:text-xl font-medium italic mt-4">
-                "Building a foundation of trust through charitable action. Witness the moments where healthcare and learning unite to transform lives."
-              </p>
-            </div>
-          </div>
+        <section className="page-hero">
+          <span className="page-hero-tag">VidyaVaidya Charity Trust</span>
+          <h1>Empowering Education, Nurturing Health</h1>
+          <p>"Building a foundation of trust through charitable action. Witness the moments where healthcare and learning unite to transform lives."</p>
         </section>
 
         {/* Categories Navigation */}

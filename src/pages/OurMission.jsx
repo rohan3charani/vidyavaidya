@@ -129,6 +129,13 @@ function AnimatedCounter({ value, duration = 1500 }) {
 }
 
 export default function OurMission() {
+  const [hoveredPillar, setHoveredPillar] = React.useState(null);
+
+  const hoverProps = (pillar) => ({
+    onMouseEnter: () => setHoveredPillar(pillar),
+    onMouseLeave: () => setHoveredPillar(null),
+  });
+
   return (
     <div className="page-wrapper mission-wrapper">
       {/* Premium Clean White Navbar */}
@@ -292,7 +299,7 @@ export default function OurMission() {
               <circle cx="500" cy="232" r="7" fill="#ffffff" stroke="#a855f7" strokeWidth="2.5" className="connector-node purple-node" />
 
               {/* Left Hexagon Card Group (Education) */}
-              <g id="svg-edu-group" className="hex-group green">
+              <g id="svg-edu-group" className={`hex-group green${hoveredPillar === 'educate' ? ' is-hovered' : ''}`} {...hoverProps('educate')}>
                 {/* Soft glow circle behind */}
                 <circle cx="166" cy="110" r="68" fill="rgba(16, 185, 129, 0.12)" filter="url(#glow-green)" className="inner-circle-glow" />
 
@@ -353,7 +360,7 @@ export default function OurMission() {
               </g>
 
               {/* Right Hexagon Card Group (Healthcare) */}
-              <g id="svg-heal-group" className="hex-group blue">
+              <g id="svg-heal-group" className={`hex-group blue${hoveredPillar === 'heal' ? ' is-hovered' : ''}`} {...hoverProps('heal')}>
                 {/* Soft glow circle behind */}
                 <circle cx="834" cy="110" r="68" fill="rgba(59, 130, 246, 0.12)" filter="url(#glow-blue)" className="inner-circle-glow" />
 
@@ -398,7 +405,7 @@ export default function OurMission() {
               </g>
 
               {/* Bottom Center Hexagon Card Group (Empower) */}
-              <g id="svg-emp-group" className="hex-group purple">
+              <g id="svg-emp-group" className={`hex-group purple${hoveredPillar === 'empower' ? ' is-hovered' : ''}`} {...hoverProps('empower')}>
                 {/* Soft glow circle behind */}
                 <circle cx="500" cy="310" r="68" fill="rgba(168, 85, 247, 0.12)" filter="url(#glow-purple)" className="inner-circle-glow" />
 
@@ -454,8 +461,8 @@ export default function OurMission() {
           {/* Text/Content Row aligning perfectly with columns */}
           <div className="mission-grid-text">
             {/* Education Card */}
-            <div className="mission-text-col left-text">
-              <div className="mission-card-glass">
+            <div className="mission-text-col left-text" {...hoverProps('educate')}>
+              <div className={`mission-card-glass${hoveredPillar === 'educate' ? ' is-hovered' : ''}`}>
                 <span className="mission-badge badge-green">01 EDUCATE</span>
                 <h3 className="mission-card-title">Empowering Minds, Building Futures</h3>
                 <p className="mission-card-desc">
@@ -466,8 +473,8 @@ export default function OurMission() {
             </div>
 
             {/* Bottom-Center: EMPOWER Card */}
-            <div className="mission-text-col center-text">
-              <div className="mission-card-glass empower-card-shift">
+            <div className="mission-text-col center-text" {...hoverProps('empower')}>
+              <div className={`mission-card-glass empower-card-shift${hoveredPillar === 'empower' ? ' is-hovered' : ''}`}>
                 <span className="mission-badge badge-purple">03 EMPOWER</span>
                 <h3 className="mission-card-title">Building Livelihoods, Fostering Independence</h3>
                 <p className="mission-card-desc">
@@ -478,8 +485,8 @@ export default function OurMission() {
             </div>
 
             {/* Healthcare Card */}
-            <div className="mission-text-col right-text">
-              <div className="mission-card-glass">
+            <div className="mission-text-col right-text" {...hoverProps('heal')}>
+              <div className={`mission-card-glass${hoveredPillar === 'heal' ? ' is-hovered' : ''}`}>
                 <span className="mission-badge badge-blue">02 HEAL</span>
                 <h3 className="mission-card-title">Providing Compassionate Care, Restoring Hope</h3>
                 <p className="mission-card-desc">

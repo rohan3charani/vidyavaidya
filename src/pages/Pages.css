@@ -31,11 +31,11 @@
 
 /* ── Page Hero Banner ─────────────────────────────────────── */
 .page-hero {
-  background: linear-gradient(135deg, #16a34a 0%, #0f766e 50%, #1e3a8a 100%);
-  padding: 120px 20px 80px;
-  text-align: center;
   position: relative;
+  background: linear-gradient(135deg, #16a34a 0%, #0f766e 50%, #1e3a8a 100%) !important;
+  padding: 40px 20px 35px !important;
   overflow: hidden;
+  text-align: center;
 }
 
 .page-hero::before {
@@ -67,35 +67,41 @@
 }
 
 .page-hero-tag {
-  display: inline-block;
-  background: var(--green-light);
-  color: var(--green);
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  padding: 6px 16px;
-  border-radius: 20px;
-  margin-bottom: 20px;
-  border: 1px solid var(--green-mid);
+  display: inline-block !important;
+  background: rgba(255, 255, 255, 0.12) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  padding: 6px 18px !important;
+  border-radius: 30px !important;
+  font-weight: 700 !important;
+  letter-spacing: 2px !important;
+  font-size: 0.8rem !important;
+  text-transform: uppercase !important;
+  margin-bottom: 12px !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
 }
 
 .page-hero h1 {
-  font-family: 'Inter', sans-serif;
-  font-size: clamp(2.2rem, 5vw, 3.5rem);
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  color: var(--white);
-  margin: 0 0 18px;
-  line-height: 1.15;
+  font-family: 'Inter', sans-serif !important;
+  font-size: clamp(2.4rem, 5.5vw, 3.8rem) !important;
+  font-weight: 800 !important;
+  color: #ffffff !important;
+  letter-spacing: -0.03em !important;
+  line-height: 1.15 !important;
+  margin-top: 0 !important;
+  margin-bottom: 18px !important;
+  text-shadow: 0 2px 10px rgba(15, 23, 42, 0.15);
+  max-width: 900px;
+  margin-left: auto !important;
+  margin-right: auto !important;
 }
 
 .page-hero p {
-  max-width: 650px;
-  margin: 0 auto;
-  color: rgba(255, 255, 255, 0.75);
-  font-size: 1.1rem;
-  line-height: 1.8;
+  max-width: 650px !important;
+  margin: 0 auto !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+  font-size: 1.1rem !important;
+  line-height: 1.8 !important;
 }
 
 /* ── Section Container ────────────────────────────────────── */
@@ -143,7 +149,7 @@
 .mission-hero {
   position: relative;
   background: linear-gradient(135deg, #16a34a 0%, #0f766e 50%, #1e3a8a 100%) !important;
-  padding: 110px 20px 70px !important;
+  padding: 40px 20px 35px !important;
   overflow: hidden;
   text-align: center;
 }
@@ -156,6 +162,7 @@
 }
 
 .gradient-tag {
+  display: inline-block !important;
   background: rgba(255, 255, 255, 0.12) !important;
   color: #ffffff !important;
   border: 1px solid rgba(255, 255, 255, 0.25) !important;
@@ -165,6 +172,7 @@
   letter-spacing: 2px !important;
   font-size: 0.8rem !important;
   text-transform: uppercase;
+  margin-bottom: 12px !important;
 }
 
 .mission-hero-heading {
@@ -174,14 +182,14 @@
   color: #ffffff !important;
   letter-spacing: -0.03em !important;
   line-height: 1.15 !important;
-  margin-top: 10px;
-  margin-bottom: 24px;
+  margin-top: 0 !important;
+  margin-bottom: 18px !important;
   text-shadow: 0 2px 10px rgba(15, 23, 42, 0.15);
 }
 
 .mission-hero-subtitle {
   max-width: 650px;
-  margin: 0 auto 28px;
+  margin: 0 auto 20px;
   color: rgba(255, 255, 255, 0.85);
   font-size: 1.1rem;
   line-height: 1.8;
@@ -192,7 +200,7 @@
   align-items: center;
   justify-content: center;
   gap: 12px;
-  margin-top: 35px;
+  margin-top: 24px;
 }
 
 .step-tag {
@@ -349,22 +357,42 @@
 /* SVG Elements Hover & Focus */
 .hex-group {
   cursor: pointer;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
+.hex-group:hover,
+.hex-group.is-hovered {
+  transform: scale(1.06);
+}
+.hex-group.green {
+  --theme-color: #10b981;
+  --theme-color-rgb: 16, 185, 129;
+  transform-origin: 166px 110px;
+}
+.hex-group.blue {
+  --theme-color: #3b82f6;
+  --theme-color-rgb: 59, 130, 246;
+  transform-origin: 834px 110px;
+}
+.hex-group.purple {
+  --theme-color: #a855f7;
+  --theme-color-rgb: 168, 85, 247;
+  transform-origin: 500px 310px;
+}
+
 .hex-group .hex-polygon-outer {
   transition: stroke-width 0.4s cubic-bezier(0.16, 1, 0.3, 1), stroke 0.4s ease, filter 0.4s;
 }
-.hex-group:hover .hex-polygon-outer {
+.hex-group:hover .hex-polygon-outer,
+.hex-group.is-hovered .hex-polygon-outer {
   stroke-width: 3.5px;
   filter: drop-shadow(0 0 14px var(--theme-color));
 }
-.hex-group.green { --theme-color: #10b981; --theme-color-rgb: 16, 185, 129; }
-.hex-group.blue { --theme-color: #3b82f6; --theme-color-rgb: 59, 130, 246; }
-.hex-group.purple { --theme-color: #a855f7; --theme-color-rgb: 168, 85, 247; }
 
 .hex-group .inner-circle-glow {
   transition: fill-opacity 0.4s ease, r 0.4s ease;
 }
-.hex-group:hover .inner-circle-glow {
+.hex-group:hover .inner-circle-glow,
+.hex-group.is-hovered .inner-circle-glow {
   fill-opacity: 0.22;
   r: 78px;
 }
@@ -372,7 +400,8 @@
 .hex-group .hex-inner-circle {
   transition: stroke 0.3s, fill 0.3s, filter 0.3s;
 }
-.hex-group:hover .hex-inner-circle {
+.hex-group:hover .hex-inner-circle,
+.hex-group.is-hovered .hex-inner-circle {
   stroke: rgba(var(--theme-color-rgb), 0.4);
   fill: #fbfdff;
   filter: drop-shadow(0 4px 10px rgba(var(--theme-color-rgb), 0.15));
@@ -384,7 +413,8 @@
   transform-origin: 24px 24px;
 }
 
-.hex-group:hover .hex-icon-g {
+.hex-group:hover .hex-icon-g,
+.hex-group.is-hovered .hex-icon-g {
   transform: translate(-24px, -24px) scale(1.4) !important;
 }
 
@@ -401,6 +431,7 @@
 .center-hub-group {
   transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   cursor: pointer;
+  transform-origin: 500px 110px;
 }
 .center-hub-group:hover {
   transform: scale(1.08);
@@ -492,7 +523,8 @@ path[stroke="url(#line-grad-purple)"] {
   height: auto;
 }
 
-.mission-card-glass:hover {
+.mission-card-glass:hover,
+.mission-card-glass.is-hovered {
   transform: translateY(-8px);
   background: rgba(255, 255, 255, 0.75);
   border-color: rgba(var(--badge-rgb), 0.45);
@@ -508,7 +540,7 @@ path[stroke="url(#line-grad-purple)"] {
 
 /* Shift bottom center card lower to perfectly align with bottom Purple Hexagon */
 .empower-card-shift {
-  margin-top: 170px;
+  margin-top: 240px;
 }
 
 /* Badges & Titles */
@@ -543,7 +575,8 @@ path[stroke="url(#line-grad-purple)"] {
   border: 1px solid rgba(168, 85, 247, 0.2);
 }
 
-.mission-card-glass:hover .mission-badge {
+.mission-card-glass:hover .mission-badge,
+.mission-card-glass.is-hovered .mission-badge {
   transform: translateY(-2px);
   box-shadow: 0 6px 15px rgba(var(--badge-rgb), 0.15);
 }
@@ -582,7 +615,8 @@ path[stroke="url(#line-grad-purple)"] {
   margin-top: auto;
   transition: width 0.3s ease;
 }
-.mission-card-glass:hover .mission-card-line {
+.mission-card-glass:hover .mission-card-line,
+.mission-card-glass.is-hovered .mission-card-line {
   width: 75px;
 }
 
@@ -1364,7 +1398,23 @@ path[stroke="url(#line-grad-purple)"] {
 /* ── Responsive ───────────────────────────────────────────── */
 @media (max-width: 640px) {
   .page-hero {
-    padding: 70px 20px 50px;
+    padding: 30px 16px 25px;
+  }
+
+  .mission-hero {
+    padding: 30px 16px 25px !important;
+  }
+
+  .mission-hero-heading {
+    margin-bottom: 14px !important;
+  }
+
+  .mission-hero-subtitle {
+    margin-bottom: 16px !important;
+  }
+
+  .mission-hero-steps {
+    margin-top: 18px !important;
   }
 
   .page-section {
