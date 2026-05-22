@@ -230,6 +230,77 @@ const api = {
   },
 
   /**
+   * 4.6. Volunteers Handlers
+   */
+  volunteers: {
+    async list(filters = {}) {
+      try {
+        const params = new URLSearchParams(filters).toString();
+        const res = await apiRequest(`/volunteers?${params}`);
+        return res.partners || [];
+      } catch (err) {
+        if (err.message && err.message.includes('404')) {
+          console.warn('Backend /volunteers endpoint not found (needs server restart). Falling back to client-filtered /partners.');
+          const params = new URLSearchParams(filters).toString();
+          const res = await apiRequest(`/partners?${params}`);
+          const list = res.partners || [];
+          return list.filter(p => p.type === 'government');
+        }
+        throw err;
+      }
+    },
+    async create(data) {
+      try {
+        return await apiRequest('/volunteers', {
+          method: 'POST',
+          body: JSON.stringify(data)
+        });
+      } catch (err) {
+        if (err.message && err.message.includes('404')) {
+          console.warn('Backend /volunteers endpoint not found (needs server restart). Falling back to POST /partners.');
+          return await apiRequest('/partners', {
+            method: 'POST',
+            body: JSON.stringify({ ...data, type: 'government' })
+          });
+        }
+        throw err;
+      }
+    },
+    async update(id, data) {
+      try {
+        return await apiRequest(`/volunteers/${id}`, {
+          method: 'PUT',
+          body: JSON.stringify(data)
+        });
+      } catch (err) {
+        if (err.message && err.message.includes('404')) {
+          console.warn('Backend /volunteers endpoint not found (needs server restart). Falling back to PUT /partners.');
+          return await apiRequest(`/partners/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify({ ...data, type: 'government' })
+          });
+        }
+        throw err;
+      }
+    },
+    async delete(id) {
+      try {
+        return await apiRequest(`/volunteers/${id}`, {
+          method: 'DELETE'
+        });
+      } catch (err) {
+        if (err.message && err.message.includes('404')) {
+          console.warn('Backend /volunteers endpoint not found (needs server restart). Falling back to DELETE /partners.');
+          return await apiRequest(`/partners/${id}`, {
+            method: 'DELETE'
+          });
+        }
+        throw err;
+      }
+    }
+  },
+
+  /**
    * 4.7. Testimonials Handlers
    */
   testimonials: {

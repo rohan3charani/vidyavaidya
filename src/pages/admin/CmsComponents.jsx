@@ -753,7 +753,11 @@ export function PartnersSection({ showToast }) {
   const handleConfirmDelete = async () => {
     if (!partnerToDelete) return;
     try {
-      await api.partners.delete(partnerToDelete.id);
+      if (partnerToDelete.type === "government") {
+        await api.volunteers.delete(partnerToDelete.id);
+      } else {
+        await api.partners.delete(partnerToDelete.id);
+      }
       showToast("Partner deleted successfully", "success");
       setDeleteModalOpen(false);
       setPartnerToDelete(null);
@@ -767,10 +771,18 @@ export function PartnersSection({ showToast }) {
     setSaving(true);
     try {
       if (editPartner) {
-        await api.partners.update(editPartner.id, data);
+        if (data.type === "government") {
+          await api.volunteers.update(editPartner.id, data);
+        } else {
+          await api.partners.update(editPartner.id, data);
+        }
         showToast("Partner updated successfully", "success");
       } else {
-        await api.partners.create(data);
+        if (data.type === "government") {
+          await api.volunteers.create(data);
+        } else {
+          await api.partners.create(data);
+        }
         showToast("Partner created successfully", "success");
       }
       setDrawerOpen(false);
@@ -785,7 +797,11 @@ export function PartnersSection({ showToast }) {
   const handleToggleActive = async (partner) => {
     try {
       const updatedStatus = !partner.isActive;
-      await api.partners.update(partner.id, { isActive: updatedStatus });
+      if (partner.type === "government") {
+        await api.volunteers.update(partner.id, { isActive: updatedStatus });
+      } else {
+        await api.partners.update(partner.id, { isActive: updatedStatus });
+      }
       showToast(`Partner ${updatedStatus ? "activated" : "deactivated"} successfully`, "success");
       fetchPartners();
     } catch (err) {

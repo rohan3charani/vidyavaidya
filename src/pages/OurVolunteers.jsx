@@ -10,9 +10,8 @@ export default function OurVolunteers() {
   useEffect(() => {
     const fetchVolunteers = async () => {
       try {
-        const data = await api.partners.list();
-        const filtered = (data || []).filter(p => p.type === "government" && p.isActive !== false);
-        setVolunteers(filtered);
+        const data = await api.volunteers.list();
+        setVolunteers(data || []);
       } catch (err) {
         console.error("Failed to fetch volunteers:", err);
       } finally {
