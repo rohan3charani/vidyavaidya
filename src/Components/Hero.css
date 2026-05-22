@@ -1,5 +1,5 @@
 /* src/Components/Hero.css */
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 *,
 *::before,
@@ -111,7 +111,7 @@
 
 /* ── Tagline ── */
 .hero-tagline {
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 3px;
@@ -122,7 +122,7 @@
 
 /* ── Main heading ── */
 .hero-heading {
-  font-family: 'Playfair Display', serif;
+  font-family: 'Inter', sans-serif;
   font-size: clamp(44px, 6vw, 90px);
   line-height: 1.05;
   font-weight: 700;
@@ -146,7 +146,7 @@
   padding: 15px 36px;
   background: #ffc220;
   color: #1a1a2e;
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 14px;
   font-weight: 700;
   text-decoration: none;
@@ -216,7 +216,7 @@
 }
 
 .hero-video-label {
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 13px;
   font-weight: 700;
   color: #ffffff;
@@ -384,7 +384,7 @@
 .svc-section {
   background: #f7f7f7;
   padding: 90px 5% 100px;
-  font-family: 'Poppins', 'Inter', system-ui, sans-serif;
+  font-family: 'Inter', system-ui, sans-serif;
 }
 
 .svc-header {
@@ -562,7 +562,7 @@
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  font-family: 'Poppins', 'Inter', system-ui, sans-serif;
+  font-family: 'Inter', system-ui, sans-serif;
   background-image: url('https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=1800&q=85');
   background-size: cover;
   background-position: center 30%;
@@ -920,7 +920,7 @@
 .team-section {
   background: #ffffff;
   padding: 100px 5% 110px;
-  font-family: 'Poppins', 'Inter', system-ui, sans-serif;
+  font-family: 'Inter', system-ui, sans-serif;
   overflow: hidden;
 }
 
@@ -1296,7 +1296,7 @@
 .testi-section {
   background: #0d1f17;
   padding: 90px 5% 100px;
-  font-family: 'Poppins', 'Inter', system-ui, sans-serif;
+  font-family: 'Inter', system-ui, sans-serif;
   position: relative;
   overflow: hidden;
 }
@@ -1637,7 +1637,7 @@
 .st-section {
   background: #ffffff;
   padding: 90px 5% 100px;
-  font-family: 'Poppins', 'Inter', system-ui, sans-serif;
+  font-family: 'Inter', system-ui, sans-serif;
   position: relative;
   overflow: hidden;
 }

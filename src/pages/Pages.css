@@ -2,7 +2,7 @@
    VidyaVaidya - Shared Pages CSS
    ═══════════════════════════════════════════════════════════ */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 :root {
   --navy: #0b3c5d;
@@ -81,11 +81,13 @@
 }
 
 .page-hero h1 {
-  font-family: 'Playfair Display', serif;
+  font-family: 'Inter', sans-serif;
   font-size: clamp(2.2rem, 5vw, 3.5rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
   color: var(--white);
   margin: 0 0 18px;
-  line-height: 1.2;
+  line-height: 1.15;
 }
 
 .page-hero p {
@@ -113,17 +115,22 @@
 
 /* ── Section Title ────────────────────────────────────────── */
 .section-title {
-  font-family: 'Playfair Display', serif;
-  font-size: 2rem;
+  font-family: 'Inter', sans-serif;
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
   color: var(--navy);
   margin-bottom: 10px;
+  line-height: 1.25;
 }
 
 .section-subtitle {
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
   color: var(--muted);
-  font-size: 1rem;
+  font-size: 1.05rem;
   margin-bottom: 40px;
-  line-height: 1.6;
+  line-height: 1.7;
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -161,12 +168,12 @@
 }
 
 .mission-hero-heading {
-  font-family: 'Playfair Display', serif !important;
+  font-family: 'Inter', sans-serif !important;
   font-size: clamp(2.4rem, 5.5vw, 3.8rem) !important;
-  font-weight: 400 !important;
+  font-weight: 800 !important;
   color: #ffffff !important;
-  letter-spacing: -0.01em !important;
-  line-height: 1.28 !important;
+  letter-spacing: -0.03em !important;
+  line-height: 1.15 !important;
   margin-top: 10px;
   margin-bottom: 24px;
   text-shadow: 0 2px 10px rgba(15, 23, 42, 0.15);
@@ -543,7 +550,7 @@ path[stroke="url(#line-grad-purple)"] {
 
 .mission-card-title {
   font-family: 'Inter', sans-serif;
-  font-size: 1.25rem;
+  font-size: 1.15rem;
   font-weight: 700;
   color: #0b3c5d;
   line-height: 1.35;
@@ -758,10 +765,11 @@ path[stroke="url(#line-grad-purple)"] {
 
 .stats-main-title {
   font-family: 'Inter', sans-serif !important;
-  font-size: clamp(2rem, 4.5vw, 2.8rem) !important;
+  font-size: clamp(1.8rem, 4vw, 2.6rem) !important;
   font-weight: 800 !important;
   color: #0b3c5d !important;
   letter-spacing: -0.03em !important;
+  line-height: 1.15 !important;
   margin-top: 8px;
   margin-bottom: 16px;
 }
@@ -1227,7 +1235,7 @@ path[stroke="url(#line-grad-purple)"] {
 }
 
 .contact-info-box h2 {
-  font-family: 'Playfair Display', serif;
+  font-family: 'Inter', sans-serif;
   font-size: 1.8rem;
   margin: 0 0 14px;
 }
