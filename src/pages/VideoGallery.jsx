@@ -53,7 +53,7 @@ export default function VideoGallery() {
     <div className="page-wrapper video-page-bg">
       <Navbar />
 
-      <section className="page-hero" style={{ background: "transparent" }}>
+      <section className="page-hero">
         <span className="page-hero-tag">Events</span>
         <h1>Video Gallery</h1>
         <p>Experience our journey through these moving stories and documentary highlights.</p>

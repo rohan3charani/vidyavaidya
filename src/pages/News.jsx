@@ -61,24 +61,10 @@ export default function News() {
       <Navbar />
 
       {/* Modern Hero Section with Green/Blue Gradient */}
-      <section className="relative pt-40 pb-24 px-6 lg:px-20 overflow-hidden bg-gradient-to-br from-green-600 via-teal-700 to-blue-900 text-white">
-        {/* Abstract Background Shapes */}
-        <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
-          <div className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] rounded-full bg-emerald-400/20 blur-[120px]"></div>
-          <div className="absolute top-[40%] -right-[10%] w-[40%] h-[60%] rounded-full bg-cyan-400/20 blur-[120px]"></div>
-        </div>
-
-        <div className="relative z-10 max-w-5xl mx-auto text-center mt-10">
-          <span className="inline-block py-1.5 px-4 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs md:text-sm font-semibold tracking-widest uppercase mb-6 shadow-xl">
-            Latest Coverage
-          </span>
-          <h1 className="text-5xl md:text-7xl font-extrabold mb-6 tracking-tight">
-            In The <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-300 to-cyan-300">Press</span>
-          </h1>
-          <p className="text-lg md:text-xl text-teal-50 max-w-2xl mx-auto leading-relaxed">
-            Explore our collection of news articles, media features, and stories documenting VidyaVaidya's impact across communities.
-          </p>
-        </div>
+      <section className="page-hero">
+        <span className="page-hero-tag">Latest Coverage</span>
+        <h1>In The Press</h1>
+        <p>Explore our collection of news articles, media features, and stories documenting VidyaVaidya's impact across communities.</p>
       </section>
 
       {loading ? (

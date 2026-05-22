@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Users, Heart, Building2, Hospital } from "lucide-react";
 import "./JoinCommunity.css";
+import "./Pages.css";
 import Navbar from "../Components/Navbar";
 import Footer from "../Components/Footer";
 
@@ -46,14 +47,12 @@ export default function JoinCommunity() {
   return (
     <div className="join-community-wrapper">
       <Navbar />
-      <main className="join-community-page">
-        <header className="community-header">
-          <h1>Join Our Community</h1>
-          <p>
-            Be a part of VidyaVaidya’s mission to create impact through 
-            education and healthcare. Every contribution matters.
-          </p>
-        </header>
+      <section className="page-hero">
+        <span className="page-hero-tag">Community</span>
+        <h1>Join Our Community</h1>
+        <p>Be a part of VidyaVaidya’s mission to create impact through education and healthcare. Every contribution matters.</p>
+      </section>
+      <main className="join-community-page" style={{ paddingTop: "60px" }}>
 
         <section className="cards-grid">
           {COMMUNITY_CARDS.map((card) => (
