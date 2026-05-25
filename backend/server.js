@@ -20,7 +20,7 @@ async function autoUploadNewsStories(db, admin) {
       return;
     }
 
-    const assetsDir = "D:\\vidyavaidya\\dist\\assets\\news";
+    const assetsDir = path.join(__dirname, '..', 'dist', 'assets', 'news');
     console.log(`📂 Auto-uploading news images from: ${assetsDir}`);
 
     if (!fs.existsSync(assetsDir)) {

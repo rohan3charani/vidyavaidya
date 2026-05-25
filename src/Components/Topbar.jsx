@@ -1,10 +1,12 @@
+// CHANGED: R9 — Topbar hidden on mobile viewports < 768px
 import { MapPin, Mail, Phone } from "lucide-react";
 import { Search, Home, Settings, Share2 } from "lucide-react";
 
 export default function Topbar() {
   return (
-    <div className="w-full bg-[#145c43] text-white text-sm">
-      
+    // hidden on screens < md (768px), shown as block on md and above
+    <div className="hidden md:block w-full bg-[#145c43] text-white text-sm">
+
       <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-3">
 
         {/* LEFT SIDE */}
@@ -55,3 +57,4 @@ export default function Topbar() {
     </div>
   );
 }
+

@@ -1,3 +1,5 @@
+/* CHANGED: R1, R13
+   R1, R13 — Sized mobile navigation items and mobile toggle to a minimum of 44px to meet strict touch-target accessibility criteria. */
 :root {
   --navy-blue: #0b3c5d;
   --green-accent: #00a651;
@@ -228,8 +230,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border: none;
   background: none;
   color: var(--navy-blue);
@@ -253,7 +255,22 @@
   padding: 24px 40px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
   z-index: 999;
 }
+
+.vv-mobile-menu .vv-nav-link {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.vv-mobile-menu .vv-btn-login {
+  min-height: 44px;
+  width: 100%;
+  box-sizing: border-box;
+}

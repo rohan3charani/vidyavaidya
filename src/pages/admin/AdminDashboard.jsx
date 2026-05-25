@@ -955,7 +955,7 @@ function Analytics() {
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState("overview");
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(() => window.innerWidth > 768);
   const [toast, setToast] = useState(null);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
@@ -969,6 +969,13 @@ export default function AdminDashboard() {
   const showToast = (message, type = "success") => {
     setToast({ message, type });
     setTimeout(() => setToast(null), 3000);
+  };
+
+  const handleNavClick = (sectionId) => {
+    setActiveSection(sectionId);
+    if (window.innerWidth <= 768) {
+      setSidebarOpen(false);
+    }
   };
 
   const SECTIONS = {
@@ -1000,6 +1007,14 @@ export default function AdminDashboard() {
 
   return (
     <div className="adm-root">
+      {/* MOBILE SIDEBAR OVERLAY BACKDROP */}
+      {sidebarOpen && (
+        <div 
+          className="adm-sidebar-backdrop" 
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* SIDEBAR */}
       <aside className={`adm-sidebar ${sidebarOpen ? "adm-sidebar-open" : "adm-sidebar-collapsed"}`}>
         <div 
@@ -1024,7 +1039,7 @@ export default function AdminDashboard() {
               <button
                 key={item.id}
                 className={`adm-nav-btn ${activeSection === item.id ? (item.id === "foreign-donors" ? "adm-nav-foreign-active" : "adm-nav-active") : ""}`}
-                onClick={() => setActiveSection(item.id)}
+                onClick={() => handleNavClick(item.id)}
                 title={!sidebarOpen ? item.label : ""}
               >
                 <Icon size={18} />

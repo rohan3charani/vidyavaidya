@@ -52,6 +52,34 @@ export default function PhotoGallery() {
   const [dynamicPhotos, setDynamicPhotos] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Mobile Swipe Gesture States (R6)
+  const [touchStart, setTouchStart] = useState(null);
+  const [touchEnd, setTouchEnd] = useState(null);
+
+  const minSwipeDistance = 50;
+
+  const handleTouchStart = (e) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+    if (isLeftSwipe) {
+      setLightboxIndex((prev) => (prev + 1) % filteredPhotos.length);
+    }
+    if (isRightSwipe) {
+      setLightboxIndex((prev) => (prev - 1 + filteredPhotos.length) % filteredPhotos.length);
+    }
+  };
+
   useEffect(() => {
     const fetchPhotos = async () => {
       try {
@@ -221,7 +249,12 @@ export default function PhotoGallery() {
 
         {/* Fullscreen Lightbox Modal */}
         {lightboxIndex !== null && filteredPhotos[lightboxIndex] && (
-          <div className="fixed inset-0 z-[1100] flex items-center justify-center bg-black/95 backdrop-blur-md p-4 transition-opacity duration-300">
+          <div 
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            className="fixed inset-0 z-[1100] flex items-center justify-center bg-black/95 backdrop-blur-md p-4 transition-opacity duration-300"
+          >
             {/* Close */}
             <button
               type="button"

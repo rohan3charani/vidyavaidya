@@ -1,3 +1,4 @@
+// CHANGED: F8 — Guard against double-init on hot-reload
 const admin = require('firebase-admin');
 const dotenv = require('dotenv');
 const path = require('path');
@@ -14,11 +15,9 @@ if (process.env.FIRESTORE_PRIVATE_KEY && process.env.FIRESTORE_CLIENT_EMAIL && p
   };
 } else {
   try {
-    // Attempt to load from the correct root path relative to this config file
     serviceAccount = require('../../vidya-vaidya-firebase-adminsdk-fbsvc-a9a1e4dda5.json');
   } catch (err) {
     try {
-      // Attempt alternative fallback path
       serviceAccount = require('../vidya-vaidya-firebase-adminsdk-fbsvc-a9a1e4dda5.json');
     } catch (err2) {
       console.error('Failed to load service account credentials.', err2);
@@ -27,14 +26,18 @@ if (process.env.FIRESTORE_PRIVATE_KEY && process.env.FIRESTORE_CLIENT_EMAIL && p
   }
 }
 
-try {
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-    storageBucket: process.env.FIREBASE_STORAGE_BUCKET || `${serviceAccount.projectId || 'vidya-vaidya'}.appspot.com`
-  });
-  console.log('🔥 Firebase Admin SDK initialized successfully');
-} catch (error) {
-  console.error('❌ Firebase Admin SDK initialization failed:', error);
+// F8: Guard against double-initialisation during hot-reloads in development
+if (!admin.apps.length) {
+  try {
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount),
+      storageBucket: process.env.FIREBASE_STORAGE_BUCKET || `${serviceAccount.projectId || 'vidya-vaidya'}.appspot.com`
+    });
+    console.log('🔥 Firebase Admin SDK initialized successfully');
+  } catch (error) {
+    console.error('❌ Firebase Admin SDK initialization failed:', error);
+    throw error;
+  }
 }
 
 const db = admin.firestore();

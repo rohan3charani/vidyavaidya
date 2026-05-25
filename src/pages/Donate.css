@@ -1,4 +1,5 @@
-/* ── Donate.css ─────────────────────────────────────────── */
+/* CHANGED: R3
+   R3 — Prepend logging comment and optimize form responsiveness and touch-target sizes (minimum 44px) on smaller screen viewports for accessibility. */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
 /* ── Page layout ── */
@@ -862,5 +863,35 @@
     .dsb-continue-btn {
         padding: 11px 20px;
         font-size: 0.88rem;
+        min-height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .donate-tab-btn {
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .df-input,
+    .donate-select,
+    .donate-custom-input,
+    .donate-custom-symbol {
+        min-height: 44px;
+        font-size: 16px; /* iOS auto-zoom prevention */
+    }
+
+    .df-checkbox-row {
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+    }
+
+    .df-checkbox-row input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
     }
 }

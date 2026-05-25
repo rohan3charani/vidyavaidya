@@ -1,3 +1,8 @@
+// CHANGED: F2, B3, B8
+// F2  — Embed isActive, role, and profileComplete into JWT so authMiddleware skips Firestore
+// B3  — Throw startup error if ADMIN_PASSWORD is unset (no silent fallback)
+// B8  — Log warning instead of silent UUID fallback; UUID still used in dev, error thrown in prod
+
 const { auth, db } = require('../config/firebase');
 const emailService = require('../services/email.service');
 const { encrypt } = require('../services/encryption.service');
@@ -10,16 +15,28 @@ const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) {
   throw new Error('FATAL: JWT_SECRET environment variable is missing.');
 }
+
+// B3: Fail loudly at startup if ADMIN_PASSWORD is not set — no fallback in production
+if (!process.env.ADMIN_PASSWORD && process.env.NODE_ENV === 'production') {
+  throw new Error('FATAL: ADMIN_PASSWORD environment variable is missing. Cannot start in production mode without it.');
+}
+
 const JWT_EXPIRES_IN = '7d';
 
-// Helper to generate a signed JWT for a Firestore user document
+/**
+ * Helper to generate a signed JWT — F2: includes isActive, role, profileComplete so
+ * authMiddleware can skip Firestore lookups on every protected request.
+ */
 function generateJWT(userData) {
   return jwt.sign(
     {
-      uid:   userData.uid,
-      email: userData.email,
-      role:  userData.role  || 'donor',
-      admin: userData.role === 'admin'
+      uid:             userData.uid,
+      email:           userData.email,
+      phone:           userData.phone || '',
+      role:            userData.role  || 'donor',
+      admin:           userData.role === 'admin',
+      isActive:        userData.isActive !== undefined ? userData.isActive : true,
+      profileComplete: userData.profileComplete || false
     },
     JWT_SECRET,
     { expiresIn: JWT_EXPIRES_IN }
@@ -62,7 +79,7 @@ const authController = {
         });
       }
 
-      // 2. Try Firebase Auth createUser (optional — works only when Auth is enabled in console)
+      // 2. Try Firebase Auth createUser
       let firebaseUid = null;
       try {
         const userRecord = await auth.createUser({
@@ -74,49 +91,52 @@ const authController = {
         firebaseUid = userRecord.uid;
         console.log(`✅ Firebase Auth user created: ${firebaseUid}`);
       } catch (authError) {
-        // Firebase Auth not enabled or configured yet — use local UUID fallback
-        console.warn(`⚠️  Firebase Auth createUser skipped (${authError.code || authError.message})`);
-        console.log('🔧 Using UUID fallback — writing profile directly to Firestore.');
+        // B8: In production, Firebase Auth failure is a hard error; in dev warn and use fallback
+        if (process.env.NODE_ENV === 'production') {
+          console.error(`❌ Firebase Auth createUser failed in production: ${authError.message}`);
+          return next(new Error(`User creation failed: ${authError.message}`));
+        }
+        console.warn(`⚠️  Firebase Auth createUser skipped in dev (${authError.code || authError.message}). Using UUID fallback.`);
         firebaseUid = `local-${uuidv4()}`;
       }
 
       // 3. Initialize the Firestore user document
       const timestamp = admin.firestore.Timestamp.fromDate(new Date());
       const userData = {
-        uid: firebaseUid,
-        email: normalizedEmail,
-        phone: normalizedPhone,
+        uid:             firebaseUid,
+        email:           normalizedEmail,
+        phone:           normalizedPhone,
         fullName,
-        role: 'donor', // default role
-        isAlumni: false,
+        role:            'donor',
+        isAlumni:        false,
         profileComplete: false,
         address: {
-          line: '',
-          city: '',
-          state: '',
+          line:    '',
+          city:    '',
+          state:   '',
           country: 'India',
           pincode: ''
         },
-        totalDonated: 0,
+        totalDonated:  0,
         donationCount: 0,
-        lastLoginAt: timestamp,
-        createdAt: timestamp,
-        updatedAt: timestamp,
-        isActive: true
+        lastLoginAt:   timestamp,
+        createdAt:     timestamp,
+        updatedAt:     timestamp,
+        isActive:      true
       };
 
       await db.collection('users').doc(firebaseUid).set(userData);
       console.log(`✅ Firestore user profile created: users/${firebaseUid}`);
 
-      // 3. Dispatch welcome email (fire-and-forget, don't block response)
+      // 4. Dispatch welcome email (fire-and-forget, don't block response)
       emailService.sendWelcomeEmail(normalizedEmail, fullName).catch(err => {
         console.warn('Welcome email dispatch skipped:', err.message);
       });
 
       return res.status(201).json({
         success: true,
-        uid: firebaseUid,
-        email: normalizedEmail,
+        uid:     firebaseUid,
+        email:   normalizedEmail,
         message: 'Account created successfully! Your profile has been saved.'
       });
     } catch (error) {
@@ -166,11 +186,11 @@ const authController = {
 
       const token = generateJWT(userData);
       return res.status(200).json({
-        success: true,
+        success:         true,
         token,
-        uid: userData.uid,
-        email: userData.email,
-        role: userData.role || 'donor',
+        uid:             userData.uid,
+        email:           userData.email,
+        role:            userData.role || 'donor',
         profileComplete: userData.profileComplete || false
       });
     } catch (error) {
@@ -241,7 +261,7 @@ const authController = {
 
       return res.status(200).json({
         success: true,
-        email: normalizedEmail,
+        email:   normalizedEmail,
         message: `OTP sent to ${normalizedEmail}. Valid for 10 minutes.`
       });
     } catch (error) {
@@ -263,7 +283,7 @@ const authController = {
 
       let normalizedEmail = email.trim().toLowerCase();
 
-      // Support phone-to-email resolution in case the phone identifier was passed directly
+      // Support phone-to-email resolution
       const isPhone = /^(\+?\d{1,4})?\d{10}$/.test(normalizedEmail.replace(/[-\s()]/g, ''));
       if (isPhone) {
         const rawDigits = normalizedEmail.replace(/\D/g, '');
@@ -306,19 +326,19 @@ const authController = {
       // Update last login
       await db.collection('users').doc(userData.uid).update({ lastLoginAt: timestamp });
 
-      // Generate a signed JWT
+      // F2: Generate JWT with isActive, role, profileComplete embedded
       const token = generateJWT(userData);
 
       console.log(`✅ OTP verified — JWT issued for: ${normalizedEmail}`);
 
       return res.status(200).json({
-        success: true,
+        success:         true,
         token,
-        uid: userData.uid,
-        email: userData.email,
-        fullName: userData.fullName,
-        role: userData.role,
-        isNewUser: false,
+        uid:             userData.uid,
+        email:           userData.email,
+        fullName:        userData.fullName,
+        role:            userData.role,
+        isNewUser:       false,
         profileComplete: userData.profileComplete || false
       });
     } catch (error) {
@@ -329,6 +349,7 @@ const authController = {
       next(error);
     }
   },
+
   /**
    * Revoke auth refresh tokens
    */
@@ -355,14 +376,14 @@ const authController = {
     try {
       const uid = req.user.uid;
       const userDoc = await db.collection('users').doc(uid).get();
-      
+
       if (!userDoc.exists) {
         return res.status(404).json({ error: 'Profile not found' });
       }
 
       return res.status(200).json({
         success: true,
-        user: userDoc.data()
+        user:    userDoc.data()
       });
     } catch (error) {
       next(error);
@@ -370,14 +391,20 @@ const authController = {
   },
 
   /**
-   * Admin Login support — checks stored scrypt hash first, falls back to static credential
+   * Admin Login — checks stored scrypt hash first, falls back to static credential.
+   * B3: ADMIN_PASSWORD fallback only used in non-production if env var unset.
    */
   async adminLogin(req, res, next) {
     try {
       const { email, password } = req.body;
 
-      const STATIC_EMAIL    = 'admin@vidyavaidya.org';
-      const STATIC_PASSWORD = process.env.ADMIN_PASSWORD || 'vidyavaidya@2024';
+      const STATIC_EMAIL = 'admin@vidyavaidya.org';
+      // B3: No silent fallback in production — startup guard already enforces this
+      const STATIC_PASSWORD = process.env.ADMIN_PASSWORD || (process.env.NODE_ENV !== 'production' ? 'vidyavaidya@2024' : null);
+
+      if (!STATIC_PASSWORD) {
+        return res.status(500).json({ error: 'Server configuration error: ADMIN_PASSWORD not set.' });
+      }
 
       // Only allow known admin email identifiers
       const isAdminEmail = (email === 'admin' || email === STATIC_EMAIL);
@@ -390,15 +417,13 @@ const authController = {
       try {
         const configDoc = await db.collection('admin_config').doc('main').get();
         if (configDoc.exists && configDoc.data().passwordHash) {
-          // Verify against stored scrypt hash (set via change-password endpoint)
           const { _verifyPassword } = require('./admin-profile.controller');
           passwordValid = _verifyPassword(password, configDoc.data().passwordHash);
         } else {
-          // No custom hash yet — fall back to static credential
           passwordValid = (password === STATIC_PASSWORD);
         }
       } catch (firestoreErr) {
-        console.warn('⚠️  Could not fetch admin_config for password check, using static fallback:', firestoreErr.message);
+        console.warn('⚠️  Could not fetch admin_config, using static fallback:', firestoreErr.message);
         passwordValid = (password === STATIC_PASSWORD);
       }
 
@@ -406,17 +431,21 @@ const authController = {
         return res.status(401).json({ error: 'Invalid admin credentials. Please check your password.' });
       }
 
+      // F2: Embed admin role and isActive in JWT
       const token = generateJWT({
-        uid:   'static-demo-admin-uid',
-        email: STATIC_EMAIL,
-        role:  'admin'
+        uid:             'static-demo-admin-uid',
+        email:           STATIC_EMAIL,
+        phone:           '',
+        role:            'admin',
+        isActive:        true,
+        profileComplete: true
       });
 
       return res.status(200).json({
         success: true,
-        uid:   'static-demo-admin-uid',
-        email: STATIC_EMAIL,
-        role:  'admin',
+        uid:     'static-demo-admin-uid',
+        email:   STATIC_EMAIL,
+        role:    'admin',
         token
       });
     } catch (error) {
@@ -436,7 +465,7 @@ const authController = {
 
       // Update Firestore field
       await db.collection('users').doc(targetUid).update({
-        role: 'admin',
+        role:      'admin',
         updatedAt: admin.firestore.Timestamp.fromDate(new Date())
       });
 

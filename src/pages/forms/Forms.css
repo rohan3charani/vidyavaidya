@@ -1,3 +1,5 @@
+/* CHANGED: R12
+   R12 — Improved community form styling for mobile screens (under 640px), guaranteeing 44px minimum touch targets for input elements, and collapsing multi-column spanning grids safely. */
 :root {
   --navy: #002147;
   --green: #00a651;
@@ -109,4 +111,18 @@
     grid-template-columns: 1fr;
     gap: 15px;
   }
+  .full-width {
+    grid-column: span 1;
+  }
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    min-height: 44px;
+    font-size: 16px;
+  }
+  .submit-button {
+    min-height: 44px;
+    font-size: 1.05rem;
+  }
 }
+

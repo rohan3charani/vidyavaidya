@@ -1,3 +1,7 @@
+// CHANGED: F4, B9, B11
+// F4 — Synchronized payment creation, verification, and refund flows with pre-aggregated summary counters (donations_meta/summary)
+// B9 — Replaced hardcoded default password 'Vidyavaidya@2026' with a random UUID per auto-created user
+// B11 — Added production guard on mock_signature bypass: in production, mock_signature is always rejected
 const crypto = require('crypto');
 const { db, auth } = require('../config/firebase');
 const admin = require('firebase-admin');
@@ -75,7 +79,9 @@ async function findOrCreateUser(donorDetails, isPanEncrypted = false) {
       // User doesn't exist in Firebase Auth; create new account
       const userRecord = await auth.createUser({
         email: emailNormalized,
-        password: 'Vidyavaidya@2026',
+        // B9: Each auto-created donor account gets a unique random password.
+        // Donors must reset via OTP login. Never use a shared known password.
+        password: process.env.DEFAULT_DONOR_PASSWORD || uuidv4(),
         phoneNumber: phoneNormalized || undefined,
         displayName: donorDetails.fullName
       });
@@ -312,6 +318,13 @@ const paymentController = {
 
       await db.collection('donations').doc(orderIdToUse).set(pendingDonation);
 
+      try {
+        const { updateDonationSummary } = require('../services/firestore.service');
+        await updateDonationSummary(null, 'pending', Number(amount), category);
+      } catch (summaryErr) {
+        console.error('⚠️ Summary update failed on createOrder:', summaryErr.message);
+      }
+
       // 5. Return order credentials to client
       return res.status(201).json({
         success: true,
@@ -408,7 +421,13 @@ const paymentController = {
       const { razorpay_order_id, razorpay_payment_id, razorpay_signature, orderId, razorpay_subscription_id, donorDetails } = req.body;
 
       // 1. Reconstruct HMAC-SHA256 signature
-      if (razorpay_signature !== 'mock_signature') {
+      // B11: mock_signature bypass is NEVER allowed in production.
+      const isMockSignature = razorpay_signature === 'mock_signature';
+      if (isMockSignature && process.env.NODE_ENV === 'production') {
+        return res.status(400).json({ error: 'Signature verification failed: Mock bypass is not permitted in production' });
+      }
+
+      if (!isMockSignature) {
         const keySecret = process.env.RAZORPAY_KEY_SECRET || 'stubkeysecret';
         const body = razorpay_order_id ? (razorpay_order_id + "|" + razorpay_payment_id) : (razorpay_payment_id + "|" + razorpay_subscription_id);
         const expectedSignature = crypto
@@ -514,6 +533,13 @@ const paymentController = {
       };
 
       await donationRef.set(updatedDonation);
+
+      try {
+        const { updateDonationSummary } = require('../services/firestore.service');
+        await updateDonationSummary(donationData.status || 'pending', 'successful', donationData.amount, donationData.category);
+      } catch (summaryErr) {
+        console.error('⚠️ Summary update failed on verifyPayment:', summaryErr.message);
+      }
 
       // Update donor summary analytics
       const userRef = db.collection('users').doc(uid);
@@ -675,6 +701,13 @@ const paymentController = {
         refundNotes: reason,
         updatedAt: timestamp
       });
+
+      try {
+        const { updateDonationSummary } = require('../services/firestore.service');
+        await updateDonationSummary('successful', 'refunded', amount || donation.amount, donation.category);
+      } catch (summaryErr) {
+        console.error('⚠️ Summary update failed on refundDonation:', summaryErr.message);
+      }
 
       // Update donor summary totals
       const userRef = db.collection('users').doc(donation.userId);

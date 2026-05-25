@@ -1,5 +1,7 @@
+// CHANGED: R1, R13
+// R1, R13 — Added outside click/tap handler to auto-close mobile menu and fixed mobile menu links to point to active gallery routes instead of non-existent /events route.
 import { Menu, X } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, NavLink, useLocation } from "react-router-dom";
 import "./Navbar.css";
 import logo from "../assets/Vidya1.png";
@@ -10,8 +12,23 @@ export default function Navbar() {
   const [storiesDropdown, setStoriesDropdown] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const navbarRef = useRef(null);
 
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (isMobileMenuOpen && navbarRef.current && !navbarRef.current.contains(event.target)) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, [isMobileMenuOpen]);
 
   const navLinks = [
     { title: "Home", path: "/" },
@@ -20,7 +37,7 @@ export default function Navbar() {
   ];
 
   return (
-    <header className="vv-navbar">
+    <header className="vv-navbar" ref={navbarRef}>
       <div className="vv-navbar-inner">
         {/* Brand */}
         <NavLink to="/" className="vv-brand">
@@ -106,7 +123,7 @@ export default function Navbar() {
           </button>
 
           {/* Mobile Toggle */}
-          <button className="vv-mobile-toggle" onClick={toggleMobileMenu}>
+          <button className="vv-mobile-toggle" onClick={toggleMobileMenu} aria-label="Toggle navigation menu">
             {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
         </div>
@@ -125,7 +142,8 @@ export default function Navbar() {
               {link.title}
             </NavLink>
           ))}
-          <NavLink to="/events" className="vv-nav-link" onClick={() => setIsMobileMenuOpen(false)}>Events</NavLink>
+          <NavLink to="/PhotoGallery" className="vv-nav-link" onClick={() => setIsMobileMenuOpen(false)}>Photo Gallery</NavLink>
+          <NavLink to="/VideoGallery" className="vv-nav-link" onClick={() => setIsMobileMenuOpen(false)}>Video Gallery</NavLink>
           <NavLink to="/news" className="vv-nav-link" onClick={() => setIsMobileMenuOpen(false)}>Stories</NavLink>
           <NavLink to="/contact" className="vv-nav-link" onClick={() => setIsMobileMenuOpen(false)}>Contact</NavLink>
           <button
@@ -151,4 +169,5 @@ export default function Navbar() {
     </header>
   );
 }
+
 

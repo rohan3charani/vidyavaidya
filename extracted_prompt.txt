@@ -1,0 +1,86 @@
+<USER_REQUEST>
+Master optimization, security, bug-fix, and mobile-responsiveness prompt for VidyaVaidya project generated from deep analysis of frontend and backend codebases
+VidyaVaidya — master dev prompt
+Generated from deep analysis of backend (Node/Express/Firestore) + frontend (React/Vite/Tailwind)
+
+Firestore performance
+13 critical bugs
+Security hardening
+No-regression optimization
+Mobile responsive
+
+Copy all
+8
+Firestore optimizations
+13
+critical bugs found
+9
+security issues
+11
+perf optimizations
+14
+responsive fixes
+ROLE
+You are a senior full-stack developer. Fix all Firestore performance issues in the
+VidyaVaidya project (Node.js/Express backend + React/Vite frontend) WITHOUT changing
+any business functionality, UI design, or API contracts.
+
+CRITICAL FIRESTORE ISSUES FOUND IN DEEP ANALYSIS
+
+ISSUE F1 — Collection scans on every request (events.controller.js, admin.controller.js)
+  Current: db.collection('events').get()  ← fetches ALL docs then filters in JS
+  Current: db.collection('donations').get() ← fetches ALL docs to compute totals
+  Fix:     Use Firestore .where() + .limit() at the query level.
+  Add Firestore COMPOSITE INDEXES for every multi-field query:
+    donations: status + createdAt (desc)
+    events:    status + startDate (desc)
+    users:     role + createdAt (desc)
+  Create firestore.indexes.json and deploy with: firebase deploy --only firestore:indexes
+
+ISSUE F2 — N+1 query pattern in authMiddleware.js
+  Current: EVERY authenticated request does db.collection('users').doc(uid).get()
+           This adds 30–150ms latency to every single protected API call.
+  Fix:     Cache user role/status in the JWT payload itself (already signed — tamper-proof).
+           In generateJWT() add: isActive, role to token payload.
+           In authMiddleware, skip Firestore fetch if JWT has isActive+role claims.
+           Only re-fetch from Firestore when role is undefined or for admin-sensitive ops.
+
+ISSUE F3 — Duplicate Firestore reads in auth f
+<truncated 26242 bytes>
+7 — Mobile responsiveness (R1–R14)
+  7a. Fix Navbar mobile menu (R1, R13).
+  7b. Fix Hero responsive text + button stack (R2).
+  7c. Fix Donate grid (R3).
+  7d. Fix AdminDashboard stats grid + sidebar + tables (R4, R5).
+  7e. Fix PhotoGallery lightbox swipe + touch targets (R6).
+  7f. Fix Partners cards + PartnerDetail grid (R7).
+  7g. Fix Footer grid (R8).
+  7h. Hide Topbar on mobile (R9).
+  7i. Fix Auth forms touch targets and padding (R10).
+  7j. Fix Dashboard table overflow (R11).
+  7k. Fix form labels + community forms (R12).
+  7l. Fix viewport meta tag + safe-area insets (R14).
+
+OUTPUT FORMAT FOR EACH FILE
+  Show the complete updated file. Do NOT show partial diffs.
+  Add a comment at the top of each changed file:
+    // CHANGED: [list of issue IDs fixed, e.g. F2, SEC4, B11]
+  Do not change any component's visual design, colour, layout logic, or API shape.
+  Do not rename any variable, function, or API endpoint.
+  Do not add new npm packages beyond: node-cache (backend only).
+
+VERIFICATION CHECKLIST (test after each phase)
+  Phase 2: curl /api/auth/send-otp with mock-jwt-bypass token → must return 401.
+  Phase 3: /api/admin/overview must return in < 100ms (reads 1 doc, not 10,000).
+  Phase 5: Lighthouse performance score on landing page must be > 80.
+  Phase 6: Refresh browser on /dashboard while logged out → redirects to /auth with no flash.
+  Phase 7: All pages must render without horizontal scroll on a 375px viewport.
+           All interactive elements must have min 44px touch target size.
+           Mobile menu must open, close on link click, and close on outside tap.
+</USER_REQUEST>
+<ADDITIONAL_METADATA>
+The current local time is: 2026-05-22T14:00:09+05:30.
+</ADDITIONAL_METADATA>
+<USER_SETTINGS_CHANGE>
+The user changed setting `Model Selection` from None to Gemini 3.5 Flash (High). No need to comment on this change if the user doesn't ask about it. If reporting what model you are, please use a human readable name instead of the exact string.
+</USER_SETTINGS_CHANGE>

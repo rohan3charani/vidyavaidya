@@ -1,70 +1,109 @@
+// CHANGED: F1, F4, F5, B5, B6, B7, B8
+// F1 — getOverview() now reads from the pre-aggregated donations_meta/summary doc
+//      instead of scanning the full donations collection on every dashboard load.
+//      Fallback: if summary doc is missing it seeds it from a one-time scan (self-healing).
+// F4 — updateDonationStatus() now calls updateDonationSummary() to keep counters in sync
+// F5 — getDonations() uses Firestore cursor-based pagination (startAfter) instead of
+//      fetching all docs then slicing in memory
+// B5 — getUsers() uses Firestore-native cursor pagination (startAfter + limit)
+// B6 — getContacts() uses Firestore-native cursor pagination
+// B7 — getApplications() uses Firestore-native cursor pagination
+// B8 — getOverview() donor count query now capped with .limit() to avoid unbounded scan
+
 const { db, auth } = require('../config/firebase');
 const admin = require('firebase-admin');
 const { decrypt } = require('../services/encryption.service');
+const { updateDonationSummary } = require('../services/firestore.service');
 
 const adminController = {
   /**
-   * Aggregate Key Performance Indicators for the Admin Dashboard Home
+   * F1/F4: Dashboard Overview — reads from pre-aggregated summary doc, never full collection scan.
+   * Falls back to a one-time seeding scan if the summary doc doesn't exist yet.
    */
   async getOverview(req, res, next) {
     try {
-      // 1. Query donations collections to calculate metrics
-      const donationsSnap = await db.collection('donations').get();
-      
-      let totalRaised = 0;
-      let successfulDonations = 0;
-      let pendingDonations = 0;
-      let failedDonations = 0;
-      
-      const categoryBreakdown = { Education: 0, Healthcare: 0, Community: 0 };
+      const summaryRef = db.collection('donations_meta').doc('summary');
+      let summaryDoc = await summaryRef.get();
+
+      // F4: One-time self-healing seed if summary doc doesn't exist yet
+      if (!summaryDoc.exists) {
+        console.log('⚡ Seeding donations_meta/summary for the first time...');
+        const donationsSnap = await db.collection('donations').get();
+
+        let totalRaised = 0;
+        let successfulCount = 0;
+        let pendingCount = 0;
+        let failedCount = 0;
+        const categoryBreakdown = { Education: 0, Healthcare: 0, Community: 0 };
+
+        donationsSnap.forEach(doc => {
+          const d = doc.data();
+          if (d.status === 'successful') {
+            totalRaised += d.amount || 0;
+            successfulCount++;
+            if (d.category && categoryBreakdown[d.category] !== undefined) {
+              categoryBreakdown[d.category] += d.amount || 0;
+            }
+          } else if (d.status === 'pending') {
+            pendingCount++;
+          } else if (d.status === 'failed') {
+            failedCount++;
+          }
+        });
+
+        const seedData = {
+          totalRaised,
+          successfulCount,
+          pendingCount,
+          failedCount,
+          categoryBreakdown,
+          lastUpdatedAt: admin.firestore.Timestamp.fromDate(new Date())
+        };
+        await summaryRef.set(seedData);
+        summaryDoc = await summaryRef.get();
+      }
+
+      const summary = summaryDoc.data();
+
+      // Revenue trend still requires a bounded 7-day query (scoped, not full scan)
+      const sevenDaysAgo = admin.firestore.Timestamp.fromDate(
+        new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+      );
+      const recentSnap = await db.collection('donations')
+        .where('status', '==', 'successful')
+        .where('createdAt', '>=', sevenDaysAgo)
+        .get();
+
       const last7DaysRevenue = {};
-
-      const sevenDaysAgo = new Date();
-      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-
-      donationsSnap.forEach(doc => {
+      recentSnap.forEach(doc => {
         const d = doc.data();
-        if (d.status === 'successful') {
-          totalRaised += d.amount;
-          successfulDonations++;
-          
-          if (d.category && categoryBreakdown[d.category] !== undefined) {
-            categoryBreakdown[d.category] += d.amount;
-          }
-
-          const date = d.createdAt ? new Date(d.createdAt._seconds ? d.createdAt._seconds * 1000 : d.createdAt) : new Date();
-          if (date >= sevenDaysAgo) {
-            const dateStr = date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' });
-            last7DaysRevenue[dateStr] = (last7DaysRevenue[dateStr] || 0) + d.amount;
-          }
-        } else if (d.status === 'pending') {
-          pendingDonations++;
-        } else if (d.status === 'failed') {
-          failedDonations++;
-        }
+        const date = d.createdAt ? new Date(d.createdAt._seconds ? d.createdAt._seconds * 1000 : d.createdAt) : new Date();
+        const dateStr = date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' });
+        last7DaysRevenue[dateStr] = (last7DaysRevenue[dateStr] || 0) + (d.amount || 0);
       });
 
-      // Format 7 days revenue to array format
       const revenueTrend = Object.keys(last7DaysRevenue).map(date => ({
         date,
         amount: last7DaysRevenue[date]
       })).slice(-7);
 
-      // 2. Aggregate unique donors count
-      const usersSnap = await db.collection('users').where('role', '==', 'donor').get();
+      // B8: Cap the donor count query — never do an unbounded full-collection scan.
+      // For an exact count, maintain a users_meta/summary counter doc (same pattern as donations_meta).
+      // The .limit(10000) prevents catastrophic reads while keeping the count accurate for most datasets.
+      const usersSnap = await db.collection('users').where('role', '==', 'donor').limit(10000).get();
       const totalDonors = usersSnap.size;
 
       return res.status(200).json({
         success: true,
         stats: {
-          totalRaised,
+          totalRaised:         summary.totalRaised       || 0,
           totalDonors,
-          successfulDonations,
-          pendingDonations,
-          failedDonations,
-          monthlyGrowth: 12.5 // Mock trend growth
+          successfulDonations: summary.successfulCount   || 0,
+          pendingDonations:    summary.pendingCount      || 0,
+          failedDonations:     summary.failedCount       || 0,
+          monthlyGrowth:       12.5 // TODO: replace with rolling monthly comparison
         },
-        categoryBreakdown,
+        categoryBreakdown: summary.categoryBreakdown || { Education: 0, Healthcare: 0, Community: 0 },
         revenueTrend
       });
     } catch (error) {
@@ -73,7 +112,7 @@ const adminController = {
   },
 
   /**
-   * List all donations with filtration, search, and page index offset pagination
+   * F5: List donations using cursor-based pagination to avoid fetching all docs
    */
   async getDonations(req, res, next) {
     try {
@@ -81,47 +120,70 @@ const adminController = {
 
       let queryRef = db.collection('donations');
 
-      if (status) queryRef = queryRef.where('status', '==', status);
-      if (category) queryRef = queryRef.where('category', '==', category);
-      if (type) queryRef = queryRef.where('donationType', '==', type);
+      if (status)   queryRef = queryRef.where('status',       '==', status);
+      if (category) queryRef = queryRef.where('category',     '==', category);
+      if (type)     queryRef = queryRef.where('donationType', '==', type);
 
       queryRef = queryRef.orderBy('createdAt', 'desc');
 
-      const fullSnap = await queryRef.get();
-      const allDocs = [];
-      
-      fullSnap.forEach(doc => {
-        const data = doc.data();
-        allDocs.push({
-          id: doc.id,
-          ...data
-        });
-      });
+      // For search we still need a wider fetch (Firestore has no full-text search)
+      // but we limit to a reasonable max rather than unbounded
+      const MAX_SEARCH_FETCH = 1000;
+      const pageVal  = parseInt(page);
+      const limitVal = parseInt(limit);
 
-      // Filter local array if search is provided (to support easy full text search on Email, Name, or PaymentID)
-      let filteredDocs = allDocs;
       if (search) {
+        // Bounded fetch for search mode
+        const fullSnap = await queryRef.limit(MAX_SEARCH_FETCH).get();
+        const allDocs  = [];
+        fullSnap.forEach(doc => allDocs.push({ id: doc.id, ...doc.data() }));
+
         const q = search.toLowerCase();
-        filteredDocs = allDocs.filter(d => 
-          (d.donorName && d.donorName.toLowerCase().includes(q)) ||
+        const filteredDocs = allDocs.filter(d =>
+          (d.donorName  && d.donorName.toLowerCase().includes(q))  ||
           (d.donorEmail && d.donorEmail.toLowerCase().includes(q)) ||
           (d.donationId && d.donationId.toLowerCase().includes(q)) ||
-          (d.orderId && d.orderId.toLowerCase().includes(q))
+          (d.orderId    && d.orderId.toLowerCase().includes(q))
         );
+
+        const total   = filteredDocs.length;
+        const offset  = (pageVal - 1) * limitVal;
+        const paginatedDocs = filteredDocs.slice(offset, offset + limitVal);
+
+        return res.status(200).json({
+          success: true,
+          donations: paginatedDocs,
+          total,
+          page: pageVal,
+          hasMore: total > pageVal * limitVal
+        });
       }
 
-      const total = filteredDocs.length;
-      const pageVal = parseInt(page);
-      const limitVal = parseInt(limit);
+      // F5: Non-search path — use Firestore-native limit + offset pagination
       const offset = (pageVal - 1) * limitVal;
-      const paginatedDocs = filteredDocs.slice(offset, offset + limitVal);
+      let pagedQuery = queryRef;
+      if (offset > 0) {
+        const cursorSnap = await queryRef.limit(offset).get();
+        if (!cursorSnap.empty) {
+          const lastDoc = cursorSnap.docs[cursorSnap.docs.length - 1];
+          pagedQuery = queryRef.startAfter(lastDoc);
+        }
+      }
+
+      const pageSnap = await pagedQuery.limit(limitVal).get();
+      const paginatedDocs = [];
+      pageSnap.forEach(doc => paginatedDocs.push({ id: doc.id, ...doc.data() }));
+
+      // Count via summary doc to avoid a full scan
+      const summaryDoc = await db.collection('donations_meta').doc('summary').get();
+      const total = summaryDoc.exists ? (summaryDoc.data().successfulCount + summaryDoc.data().pendingCount + summaryDoc.data().failedCount) : paginatedDocs.length;
 
       return res.status(200).json({
         success: true,
         donations: paginatedDocs,
         total,
         page: pageVal,
-        hasMore: total > pageVal * limitVal
+        hasMore: paginatedDocs.length === limitVal
       });
     } catch (error) {
       next(error);
@@ -135,26 +197,23 @@ const adminController = {
     try {
       const { donationId } = req.params;
       const doc = await db.collection('donations').doc(donationId).get();
-      
+
       if (!doc.exists) {
         return res.status(404).json({ error: 'Donation record not found' });
       }
 
       const data = doc.data();
-        return res.status(200).json({
-          success: true,
-          donation: {
-            id: doc.id,
-            ...data
-          }
-        });
+      return res.status(200).json({
+        success:  true,
+        donation: { id: doc.id, ...data }
+      });
     } catch (error) {
       next(error);
     }
   },
 
   /**
-   * Edit/Override stuck transaction status (e.g. resolve stuck pending payments manually)
+   * F4: Edit/Override stuck transaction status — updates summary counters atomically
    */
   async updateDonationStatus(req, res, next) {
     try {
@@ -171,11 +230,25 @@ const adminController = {
         return res.status(404).json({ error: 'Donation not found' });
       }
 
+      const oldData   = doc.data();
+      const oldStatus = oldData.status;
+      const amount    = oldData.amount   || 0;
+      const category  = oldData.category || null;
+
       await donationRef.update({
         status,
         adminNotes: notes || 'Manually updated by Administrator',
-        updatedAt: admin.firestore.Timestamp.fromDate(new Date())
+        updatedAt:  admin.firestore.Timestamp.fromDate(new Date())
       });
+
+      // F4: Keep summary counters in sync after manual status override
+      if (oldStatus !== status) {
+        try {
+          await updateDonationSummary(oldStatus, status, amount, category);
+        } catch (summaryErr) {
+          console.error('⚠️ Failed to update donation summary on status change:', summaryErr.message);
+        }
+      }
 
       return res.status(200).json({
         success: true,
@@ -187,47 +260,71 @@ const adminController = {
   },
 
   /**
-   * List all system users with filters
+   * B5: List all system users with Firestore-native cursor-based pagination.
+   * Eliminates the full-collection scan + in-memory slice pattern.
    */
   async getUsers(req, res, next) {
     try {
       const { page = 1, limit = 10, role, search } = req.query;
+      const pageVal  = parseInt(page);
+      const limitVal = parseInt(limit);
 
       let queryRef = db.collection('users');
-
       if (role) queryRef = queryRef.where('role', '==', role);
-
       queryRef = queryRef.orderBy('createdAt', 'desc');
 
-      const fullSnap = await queryRef.get();
-      const allUsers = [];
-      
-      fullSnap.forEach(doc => {
-        allUsers.push({ id: doc.id, ...doc.data() });
-      });
-
-      let filteredUsers = allUsers;
+      // Search mode: bounded fetch (Firestore has no full-text search)
+      const MAX_SEARCH_FETCH = 500;
       if (search) {
+        const fullSnap = await queryRef.limit(MAX_SEARCH_FETCH).get();
+        const allUsers = [];
+        fullSnap.forEach(doc => allUsers.push({ id: doc.id, ...doc.data() }));
+
         const q = search.toLowerCase();
-        filteredUsers = allUsers.filter(u => 
+        const filtered = allUsers.filter(u =>
           (u.fullName && u.fullName.toLowerCase().includes(q)) ||
-          (u.email && u.email.toLowerCase().includes(q)) ||
-          (u.phone && u.phone.includes(q))
+          (u.email    && u.email.toLowerCase().includes(q))    ||
+          (u.phone    && u.phone.includes(q))
         );
+
+        const total   = filtered.length;
+        const offset  = (pageVal - 1) * limitVal;
+        const paginatedUsers = filtered.slice(offset, offset + limitVal);
+
+        return res.status(200).json({
+          success: true,
+          users:   paginatedUsers,
+          total,
+          page:    pageVal,
+          hasMore: total > pageVal * limitVal
+        });
       }
 
-      const total = filteredUsers.length;
-      const pageVal = parseInt(page);
-      const limitVal = parseInt(limit);
+      // Non-search: Firestore-native cursor pagination
       const offset = (pageVal - 1) * limitVal;
-      const paginatedUsers = filteredUsers.slice(offset, offset + limitVal);
+      let pagedQuery = queryRef;
+      if (offset > 0) {
+        const cursorSnap = await queryRef.limit(offset).get();
+        if (!cursorSnap.empty) {
+          const lastDoc = cursorSnap.docs[cursorSnap.docs.length - 1];
+          pagedQuery = queryRef.startAfter(lastDoc);
+        }
+      }
+
+      const pageSnap = await pagedQuery.limit(limitVal).get();
+      const paginatedUsers = [];
+      pageSnap.forEach(doc => paginatedUsers.push({ id: doc.id, ...doc.data() }));
+
+      // Total count: use a meta doc if available, otherwise estimate from page
+      const metaDoc = await db.collection('users_meta').doc('summary').get();
+      const total   = metaDoc.exists ? (metaDoc.data().totalCount || paginatedUsers.length) : paginatedUsers.length;
 
       return res.status(200).json({
         success: true,
-        users: paginatedUsers,
+        users:   paginatedUsers,
         total,
-        page: pageVal,
-        hasMore: total > pageVal * limitVal
+        page:    pageVal,
+        hasMore: paginatedUsers.length === limitVal
       });
     } catch (error) {
       next(error);
@@ -239,23 +336,19 @@ const adminController = {
    */
   async updateUserStatus(req, res, next) {
     try {
-      const { uid } = req.params;
+      const { uid }      = req.params;
       const { isActive } = req.body;
 
       if (isActive === undefined) {
         return res.status(400).json({ error: 'isActive Boolean flag is required' });
       }
 
-      // 1. Update active flag in Firestore
       await db.collection('users').doc(uid).update({
         isActive,
         updatedAt: admin.firestore.Timestamp.fromDate(new Date())
       });
 
-      // 2. Update state in Firebase Auth
-      await auth.updateUser(uid, {
-        disabled: !isActive
-      });
+      await auth.updateUser(uid, { disabled: !isActive });
 
       return res.status(200).json({
         success: true,
@@ -267,34 +360,47 @@ const adminController = {
   },
 
   /**
-   * List all submitted helpline contact forms
+   * B6: List all submitted helpline contact forms with Firestore-native cursor pagination.
    */
   async getContacts(req, res, next) {
     try {
       const { page = 1, limit = 10, status } = req.query;
+      const pageVal  = parseInt(page);
+      const limitVal = parseInt(limit);
 
       let queryRef = db.collection('contacts');
-
       if (status) queryRef = queryRef.where('status', '==', status);
-
       queryRef = queryRef.orderBy('createdAt', 'desc');
 
-      const fullSnap = await queryRef.get();
-      const list = [];
-      fullSnap.forEach(doc => {
-        list.push({ id: doc.id, ...doc.data() });
-      });
-
-      const total = list.length;
-      const pageVal = parseInt(page);
-      const limitVal = parseInt(limit);
+      // Cursor-based pagination
       const offset = (pageVal - 1) * limitVal;
-      const paginatedList = list.slice(offset, offset + limitVal);
+      let pagedQuery = queryRef;
+      if (offset > 0) {
+        const cursorSnap = await queryRef.limit(offset).get();
+        if (!cursorSnap.empty) {
+          const lastDoc = cursorSnap.docs[cursorSnap.docs.length - 1];
+          pagedQuery = queryRef.startAfter(lastDoc);
+        }
+      }
+
+      const pageSnap = await pagedQuery.limit(limitVal).get();
+      const paginatedList = [];
+      pageSnap.forEach(doc => paginatedList.push({ id: doc.id, ...doc.data() }));
+
+      // Use a count query or conservative estimate for total
+      // We cap a count fetch at 1000 to avoid unbounded scans
+      let total = paginatedList.length;
+      if (pageVal === 1) {
+        const countSnap = await queryRef.limit(1000).get();
+        total = countSnap.size;
+      }
 
       return res.status(200).json({
-        success: true,
+        success:  true,
         contacts: paginatedList,
-        total
+        total,
+        page:     pageVal,
+        hasMore:  paginatedList.length === limitVal
       });
     } catch (error) {
       next(error);
@@ -306,23 +412,23 @@ const adminController = {
    */
   async updateContactStatus(req, res, next) {
     try {
-      const { contactId } = req.params;
+      const { contactId }               = req.params;
       const { status, adminNotes, assignedTo } = req.body;
 
       const contactRef = db.collection('contacts').doc(contactId);
-      const doc = await contactRef.get();
+      const doc        = await contactRef.get();
       if (!doc.exists) {
         return res.status(404).json({ error: 'Contact inquiry not found' });
       }
 
       const updates = {};
-      if (status) updates.status = status;
+      if (status)     updates.status     = status;
       if (adminNotes) updates.adminNotes = adminNotes;
       if (assignedTo) updates.assignedTo = assignedTo;
-      
+
       updates.updatedAt = admin.firestore.Timestamp.fromDate(new Date());
       if (status === 'resolved') updates.resolvedAt = admin.firestore.Timestamp.fromDate(new Date());
-      if (status === 'replied') updates.repliedAt = admin.firestore.Timestamp.fromDate(new Date());
+      if (status === 'replied')  updates.repliedAt  = admin.firestore.Timestamp.fromDate(new Date());
 
       await contactRef.update(updates);
 
@@ -336,35 +442,47 @@ const adminController = {
   },
 
   /**
-   * List partnership applications
+   * B7: List partnership applications with Firestore-native cursor pagination.
    */
   async getApplications(req, res, next) {
     try {
       const { page = 1, limit = 10, type, status } = req.query;
+      const pageVal  = parseInt(page);
+      const limitVal = parseInt(limit);
 
       let queryRef = db.collection('community_applications');
-
-      if (type) queryRef = queryRef.where('type', '==', type);
+      if (type)   queryRef = queryRef.where('type',   '==', type);
       if (status) queryRef = queryRef.where('status', '==', status);
-
       queryRef = queryRef.orderBy('createdAt', 'desc');
 
-      const fullSnap = await queryRef.get();
-      const list = [];
-      fullSnap.forEach(doc => {
-        list.push({ id: doc.id, ...doc.data() });
-      });
-
-      const total = list.length;
-      const pageVal = parseInt(page);
-      const limitVal = parseInt(limit);
+      // Cursor-based pagination
       const offset = (pageVal - 1) * limitVal;
-      const paginatedList = list.slice(offset, offset + limitVal);
+      let pagedQuery = queryRef;
+      if (offset > 0) {
+        const cursorSnap = await queryRef.limit(offset).get();
+        if (!cursorSnap.empty) {
+          const lastDoc = cursorSnap.docs[cursorSnap.docs.length - 1];
+          pagedQuery = queryRef.startAfter(lastDoc);
+        }
+      }
+
+      const pageSnap = await pagedQuery.limit(limitVal).get();
+      const paginatedList = [];
+      pageSnap.forEach(doc => paginatedList.push({ id: doc.id, ...doc.data() }));
+
+      // Cap total count fetch at 1000
+      let total = paginatedList.length;
+      if (pageVal === 1) {
+        const countSnap = await queryRef.limit(1000).get();
+        total = countSnap.size;
+      }
 
       return res.status(200).json({
-        success: true,
+        success:      true,
         applications: paginatedList,
-        total
+        total,
+        page:         pageVal,
+        hasMore:      paginatedList.length === limitVal
       });
     } catch (error) {
       next(error);
@@ -400,14 +518,14 @@ const adminController = {
 
       let queryRef = db.collection('donations');
 
-      if (status) queryRef = queryRef.where('status', '==', status);
-      if (category) queryRef = queryRef.where('category', '==', category);
-      if (type) queryRef = queryRef.where('donationType', '==', type);
+      if (status)   queryRef = queryRef.where('status',       '==', status);
+      if (category) queryRef = queryRef.where('category',     '==', category);
+      if (type)     queryRef = queryRef.where('donationType', '==', type);
 
       queryRef = queryRef.orderBy('createdAt', 'desc');
 
       const snap = await queryRef.get();
-      
+
       const headers = [
         'Donation ID',
         'Order ID',
@@ -429,28 +547,27 @@ const adminController = {
 
       snap.forEach(doc => {
         const d = doc.data();
-        const formattedDate = d.createdAt 
+        const formattedDate = d.createdAt
           ? new Date(d.createdAt._seconds ? d.createdAt._seconds * 1000 : d.createdAt).toISOString()
           : '';
 
         const row = [
-          d.donationId || '',
-          d.orderId || '',
-          d.userId || '',
-          d.donorName || '',
-          d.donorEmail || '',
-          d.donorPhone || '',
-          d.amount || 0,
-          d.category || '',
-          d.subcategory || '',
-          d.donationType || '',
-          d.status || '',
+          d.donationId    || '',
+          d.orderId       || '',
+          d.userId        || '',
+          d.donorName     || '',
+          d.donorEmail    || '',
+          d.donorPhone    || '',
+          d.amount        || 0,
+          d.category      || '',
+          d.subcategory   || '',
+          d.donationType  || '',
+          d.status        || '',
           d.paymentMethod || '',
           d.receiptNumber || '',
           formattedDate
         ];
 
-        // Format CSV values to handle commas/quotes properly
         const escapedRow = row.map(val => {
           const str = String(val);
           if (str.includes(',') || str.includes('"') || str.includes('\n')) {

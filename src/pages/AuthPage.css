@@ -220,6 +220,13 @@
   .auth-left-pane {
     min-height: 42vh;
   }
+
+  .auth-tabs button,
+  .auth-primary-btn,
+  .input-wrap,
+  .code-wrap {
+    min-height: 44px;
+  }
 }
 
 /* Success Popup Overlay */
@@ -529,7 +536,53 @@
   margin-top: 10px;
 }
 
-.error-popup-close-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 15px rgba(229, 72, 77, 0.3);
+/* CHANGED: R10 — Auth form touch targets (min 44px) + narrow-screen padding */
+
+/* Ensure all interactive auth elements meet 44px touch target requirement */
+.input-wrap,
+.code-wrap {
+  min-height: 44px;
 }
+
+.auth-tabs button {
+  min-height: 44px;
+}
+
+.auth-primary-btn {
+  min-height: 44px;
+}
+
+@media (max-width: 480px) {
+  .auth-card {
+    padding: 24px 16px;
+    border-radius: 12px;
+  }
+
+  .auth-right-pane {
+    padding: 16px 12px;
+    align-items: flex-start;
+  }
+
+  .auth-card h2 {
+    font-size: 1.6rem;
+  }
+
+  .phone-group {
+    grid-template-columns: 80px 1fr;
+    gap: 8px;
+  }
+
+  .auth-primary-btn {
+    padding: 13px 16px;
+    font-size: 0.95rem;
+  }
+
+  /* Footer link tap target */
+  .auth-footer button {
+    min-height: 44px;
+    padding: 8px 0;
+    display: inline-flex;
+    align-items: center;
+  }
+}
+

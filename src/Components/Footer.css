@@ -314,4 +314,37 @@
   .footer-badges {
     flex-direction: column;
   }
+
+  /* R8: Additional touch target sizes for mobile viewports (e.g. 375px) */
+  .footer-links {
+    gap: 0;
+  }
+  .footer-links a {
+    display: block;
+    padding: 12px 0; /* Ensures touch target height >= 44px */
+    width: 100%;
+  }
+
+  .footer-contact {
+    gap: 0;
+  }
+  .footer-contact li {
+    padding: 12px 0; /* Ensures touch target height >= 44px */
+  }
+
+  .footer-socials a {
+    min-width: 44px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .footer-website-badges {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .website-badge {
+    min-height: 44px; /* Ensure 44px touch target */
+  }
 }

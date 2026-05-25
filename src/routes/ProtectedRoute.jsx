@@ -10,8 +10,33 @@ export default function ProtectedRoute({ children }) {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Replace this with your real auth check
-  const isAuthenticated = localStorage.getItem("vv_auth") === "true";
+  // Strengthened auth check (BUG 13): Verify local storage flag and validate stored JWT expiry
+  const isAuthenticated = (() => {
+    if (localStorage.getItem("vv_auth") !== "true") return false;
+    const token = localStorage.getItem("vv_token");
+    if (!token) return false;
+
+    // Support local developer sandbox/test mock bypass tokens
+    if (token.startsWith("mock-jwt-bypass-")) {
+      return true;
+    }
+
+    const parts = token.split(".");
+    if (parts.length !== 3) return false;
+
+    try {
+      const payload = JSON.parse(atob(parts[1].replace(/-/g, "+").replace(/_/g, "/")));
+      if (payload.exp && Date.now() >= payload.exp * 1000) {
+        // Token has expired
+        localStorage.removeItem("vv_auth");
+        localStorage.removeItem("vv_token");
+        return false;
+      }
+      return true;
+    } catch (e) {
+      return false;
+    }
+  })();
 
   useEffect(() => {
     if (!isAuthenticated) {
