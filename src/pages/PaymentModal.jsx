@@ -92,6 +92,17 @@ const loadRazorpayScript = () => {
     });
 };
 
+const ORG_UPI_ID = "8686219418-2@ybl";
+const ORG_UPI_NAME = "VidyaVaidya Foundation";
+const BANK_DETAILS = {
+    accountName: "VidyaVaidya Foundation",
+    accountNumber: "42782753053",
+    bankName: "STATE BANK OF INDIA",
+    ifscCode: "SBIN0011119",
+    branch: "BuchiReddyPalem Branch",
+    accountType: "SAVINGS ACCOUNT"
+};
+
 export default function PaymentModal({ amount, isMonthly, duration, donationType, category, donorDetails, onClose }) {
     const [payTab, setPayTab] = useState("upi");
     const [upiId, setUpiId] = useState("");
@@ -99,6 +110,93 @@ export default function PaymentModal({ amount, isMonthly, duration, donationType
     const [processing, setProcessing] = useState(false);
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState("");
+    const [utrNumber, setUtrNumber] = useState("");
+    const [copiedField, setCopiedField] = useState("");
+
+    const handleCopy = (text, fieldName) => {
+        navigator.clipboard.writeText(text);
+        setCopiedField(fieldName);
+        setTimeout(() => {
+            setCopiedField("");
+        }, 2000);
+    };
+
+    const renderCopyButton = (text, fieldName) => {
+        const isCopied = copiedField === fieldName;
+        return (
+            <button
+                type="button"
+                className={`pm-copy-btn ${isCopied ? "copied" : ""}`}
+                onClick={() => handleCopy(text, fieldName)}
+                aria-label={`Copy ${fieldName}`}
+                title={`Copy ${fieldName}`}
+            >
+                {isCopied ? (
+                    <span className="pm-copy-text-success">✓ Copied</span>
+                ) : (
+                    <span className="pm-copy-text-default">
+                        <svg className="pm-copy-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                        Copy
+                    </span>
+                )}
+            </button>
+        );
+    };
+
+    const handleManualConfirm = async () => {
+        setError("");
+        const cleanUtr = utrNumber.trim();
+        if (!cleanUtr) {
+            setError("Please enter your Transaction ID or UTR number.");
+            return;
+        }
+        if (cleanUtr.length < 6) {
+            setError("Please enter a valid Transaction ID/UTR (minimum 6 characters).");
+            return;
+        }
+        setProcessing(true);
+
+        try {
+            let res;
+            if (isMonthly) {
+                // Subscription logic
+                res = await api.payment.createSubscription(amount, Number(duration) || 12, donorDetails);
+            } else {
+                // One-time order logic
+                res = await api.payment.createOrder(amount, category, "", donorDetails, donationType);
+            }
+
+            if (!res || (!res.orderId && !res.subscriptionId && !res.order && !res.subscription)) {
+                throw new Error("Failed to register donation order on backend.");
+            }
+
+            const targetOrderId = res.orderId || res.order?.id || res.subscriptionId || res.subscription?.id;
+
+            // Verify using manual verification passing the UTR as the payment ID
+            const verifyRes = await api.payment.verifyPayment({
+                orderId: targetOrderId,
+                razorpay_payment_id: cleanUtr,
+                razorpay_signature: "mock_signature",
+                donorDetails: donorDetails
+            });
+
+            if (verifyRes.success) {
+                setSuccess(true);
+                localStorage.removeItem("pending_donor_details");
+                sessionStorage.setItem("donation_just_completed", "true");
+            } else {
+                throw new Error("Payment verification failed.");
+            }
+        } catch (err) {
+            console.error("Manual payment verification error:", err);
+            setError(err.message || "Something went wrong during manual verification.");
+        } finally {
+            setProcessing(false);
+        }
+    };
 
     const handlePay = async () => {
         setError("");
@@ -257,6 +355,8 @@ export default function PaymentModal({ amount, isMonthly, duration, donationType
         ? `₹${amount}/month`
         : `₹${amount}`;
 
+    const upiUri = `upi://pay?pa=${ORG_UPI_ID}&pn=${encodeURIComponent(ORG_UPI_NAME)}&am=${amount}&cu=INR&tn=${encodeURIComponent(`Donation for ${category}`)}`;
+
     return (
         <div className="pm-backdrop" onClick={handleBackdrop}>
             <div className="pm-modal">
@@ -293,14 +393,18 @@ export default function PaymentModal({ amount, isMonthly, duration, donationType
                         <>
                             <div className="pm-tabs">
                                 {[
-                                    { key: "upi", label: "UPI" },
+                                    { key: "upi", label: "UPI QR" },
+                                    { key: "bank", label: "Bank Transfer" },
                                     { key: "card", label: "Cards" },
                                     { key: "netbanking", label: "Net Banking" },
                                 ].map((t) => (
                                     <button
                                         key={t.key}
                                         className={`pm-tab-btn ${payTab === t.key ? "active" : ""}`}
-                                        onClick={() => setPayTab(t.key)}
+                                        onClick={() => {
+                                            setPayTab(t.key);
+                                            setError("");
+                                        }}
                                     >
                                         {t.label}
                                     </button>
@@ -310,17 +414,87 @@ export default function PaymentModal({ amount, isMonthly, duration, donationType
                             <div className="pm-tab-content">
                                 {payTab === "upi" && (
                                     <div className="pm-upi">
-                                        <p className="pm-upi-heading">Scan QR to Pay</p>
-                                        <div className="pm-qr-wrap">{QR_SVG}</div>
-                                        <p className="pm-upi-or">— or enter UPI ID —</p>
-                                        <div className="pm-input-group">
+                                        <p className="pm-upi-heading">Scan QR Code to Pay</p>
+                                        <div className="pm-qr-section">
+                                            <div className="pm-qr-wrap">
+                                                <img
+                                                    src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(upiUri)}`}
+                                                    alt="UPI QR Code"
+                                                    className="pm-qr-img"
+                                                />
+                                            </div>
+                                            <div className="pm-qr-instruction">
+                                                <span className="pm-qr-amount">Amount: ₹{amount}</span>
+                                                <span className="pm-qr-merchant">Payee: {ORG_UPI_NAME}</span>
+                                            </div>
+                                        </div>
+
+                                        <div className="pm-credential-row">
+                                            <span className="pm-credential-label">UPI ID:</span>
+                                            <span className="pm-credential-value">{ORG_UPI_ID}</span>
+                                            {renderCopyButton(ORG_UPI_ID, "upi_id")}
+                                        </div>
+
+                                        <div className="pm-utr-section">
+                                            <label className="pm-input-label">Transaction ID / UTR (12 digits)</label>
                                             <input
                                                 type="text"
-                                                placeholder="yourname@upi"
-                                                value={upiId}
-                                                onChange={(e) => setUpiId(e.target.value)}
-                                                className="pm-input"
+                                                placeholder="Enter 12-digit UPI Ref/UTR number"
+                                                value={utrNumber}
+                                                onChange={(e) => setUtrNumber(e.target.value.replace(/[^a-zA-Z0-9]/g, ""))}
+                                                className="pm-input pm-utr-input"
+                                                maxLength={16}
                                             />
+                                            <p className="pm-input-hint">Please enter the UTR/Reference number from your payment confirmation screen.</p>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {payTab === "bank" && (
+                                    <div className="pm-bank-transfer">
+                                        <p className="pm-bank-heading">Transfer directly to Bank Account</p>
+                                        
+                                        <div className="pm-bank-card">
+                                            <div className="pm-bank-row">
+                                                <span className="pm-bank-label">Bank Name:</span>
+                                                <span className="pm-bank-value">{BANK_DETAILS.bankName}</span>
+                                            </div>
+                                            <div className="pm-bank-row">
+                                                <span className="pm-bank-label">Account Holder:</span>
+                                                <span className="pm-bank-value">{BANK_DETAILS.accountName}</span>
+                                                {renderCopyButton(BANK_DETAILS.accountName, "holder")}
+                                            </div>
+                                            <div className="pm-bank-row">
+                                                <span className="pm-bank-label">Account Number:</span>
+                                                <span className="pm-bank-value pm-highlight-value">{BANK_DETAILS.accountNumber}</span>
+                                                {renderCopyButton(BANK_DETAILS.accountNumber, "account")}
+                                            </div>
+                                            <div className="pm-bank-row">
+                                                <span className="pm-bank-label">IFSC Code:</span>
+                                                <span className="pm-bank-value pm-highlight-value">{BANK_DETAILS.ifscCode}</span>
+                                                {renderCopyButton(BANK_DETAILS.ifscCode, "ifsc")}
+                                            </div>
+                                            <div className="pm-bank-row">
+                                                <span className="pm-bank-label">Account Type:</span>
+                                                <span className="pm-bank-value">{BANK_DETAILS.accountType}</span>
+                                            </div>
+                                            <div className="pm-bank-row">
+                                                <span className="pm-bank-label">Branch:</span>
+                                                <span className="pm-bank-value">{BANK_DETAILS.branch}</span>
+                                            </div>
+                                        </div>
+
+                                        <div className="pm-utr-section">
+                                            <label className="pm-input-label">Transaction ID / UTR Number</label>
+                                            <input
+                                                type="text"
+                                                placeholder="Enter Bank Transaction Ref/UTR number"
+                                                value={utrNumber}
+                                                onChange={(e) => setUtrNumber(e.target.value.replace(/[^a-zA-Z0-9]/g, ""))}
+                                                className="pm-input pm-utr-input"
+                                                maxLength={22}
+                                            />
+                                            <p className="pm-input-hint">Enter the transaction reference or UTR number from your bank statement/receipt.</p>
                                         </div>
                                     </div>
                                 )}
@@ -370,9 +544,15 @@ export default function PaymentModal({ amount, isMonthly, duration, donationType
                                 )}
                             </div>
 
+                            {error && <p className="pm-error-msg">⚠️ {error}</p>}
+
                             <button
                                 className={`pm-pay-btn ${processing ? "processing" : ""}`}
-                                onClick={handlePay}
+                                onClick={
+                                    (payTab === "upi" || payTab === "bank")
+                                        ? handleManualConfirm
+                                        : handlePay
+                                }
                                 disabled={processing}
                             >
                                 {processing ? (
@@ -380,7 +560,9 @@ export default function PaymentModal({ amount, isMonthly, duration, donationType
                                         <span className="pm-spinner" /> Processing...
                                     </span>
                                 ) : (
-                                    `Pay ${displayAmount}`
+                                    (payTab === "upi" || payTab === "bank")
+                                        ? `Confirm Payment`
+                                        : `Pay ${displayAmount}`
                                 )}
                             </button>
 
@@ -392,3 +574,4 @@ export default function PaymentModal({ amount, isMonthly, duration, donationType
         </div>
     );
 }
+
